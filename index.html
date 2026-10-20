@@ -7,11 +7,11 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#0f172a;--bg2:#0b1220;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;--zebra:#131e33;--hover:#172944;--overlay:rgba(4,10,20,.78);--fs:14.5px}
-body.light{--bg:#eef1f6;--bg2:#ffffff;--panel:#ffffff;--line:#d8dee9;--txt:#1c2b3a;--mut:#5c6b7a;--acc:#0284c7;--ok:#059669;--warn:#b45309;--zebra:#f2f5f9;--hover:#e8eef7;--overlay:rgba(255,255,255,.75)}
+body.light{--bg:#eef1f6;--bg2:#ffffff;--panel:#ffffff;--line:#d8dee9;--txt:#1c2b3a;--mut:#5c6b7a;--acc:#0284c7;--ok:#059669;--warn:#b45309;--zebra:#f2f5f9;--hover:#e8eef7;--overlay:rgba(255,255,255,.82)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.55 system-ui,Segoe UI,Roboto,sans-serif}
 
-/* ===== BARRE DE MENU UNIQUE (toute la navigation) ===== */
+/* ===== BARRE DE MENU UNIQUE ===== */
 .menu-bar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;background:var(--bg2);border-bottom:2px solid var(--line)}
 .menu-item{position:relative;display:flex;align-items:center;gap:7px;padding:12px 18px;background:none;border:0;border-right:1px solid var(--line);color:var(--txt);font:inherit;font-size:14.5px;font-weight:600;cursor:pointer}
 .menu-item:hover{background:var(--hover);color:var(--acc)}
@@ -39,13 +39,22 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mu
 select,input[type=search],input[type=file],button{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
 button{cursor:pointer}
 button:hover{border-color:var(--acc);color:var(--acc)}
+button:disabled{opacity:.45;cursor:not-allowed}
+input[type=range]{accent-color:var(--acc);width:130px;padding:2px}
+input[type=checkbox]{width:auto;accent-color:var(--acc)}
 
-/* Zone de chargement : pleine ou bandeau compact */
 #drop{border-style:dashed}
 #drop.over{border-color:var(--acc);background:var(--hover)}
 #dropFull .expHead{position:static;background:none}
 #dropMini{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13px;padding:2px 0}
 #dropMini .fbtn{font-size:12px;padding:4px 10px}
+
+/* ===== CARTE / PLAN ===== */
+#mapBox{position:relative;height:62vh;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg2)}
+#mapCv{position:absolute;inset:0;display:block}
+#mapTip{position:absolute;display:none;pointer-events:none;background:var(--overlay);border:1px solid var(--acc);border-radius:8px;padding:6px 9px;font-size:12px;max-width:290px;z-index:5;line-height:1.45;color:var(--txt)}
+#mapWrap .row label{min-width:110px}
+#mapInfo{margin-top:8px;font-size:12.5px}
 
 #kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:130px}
@@ -108,12 +117,13 @@ summary:hover{background:var(--hover)}
 @media print{
   body{background:#fff!important;color:#000!important}
   body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
-  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header{display:none!important}
+  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header,#mapWrap .row,#mapTip,#mapSel{display:none!important}
   .panel,.card,.fcard,.fbox,.chip{background:#fff!important;border-color:#999!important;color:#000!important}
   th{background:#eee!important;color:#000!important}
   tbody tr:nth-child(even){background:#f5f5f5!important}
   .tableWrap{max-height:none;overflow:visible;border:0}
   #fiche .fcard ul{max-height:none;overflow:visible}
+  #mapBox{height:45vh;border-color:#999}
 }
 </style>
 </head>
@@ -126,7 +136,6 @@ summary:hover{background:var(--hover)}
   </div>
 </div>
 
-<!-- ===== BARRE DE MENU : TOUTE LA NAVIGATION ICI ===== -->
 <div class="menu-bar" id="menuBar"></div>
 
 <header>
@@ -135,7 +144,6 @@ summary:hover{background:var(--hover)}
 </header>
 
 <main>
-<!-- Zone de chargement : pleine AVANT chargement, bandeau 1 ligne APRÈS -->
 <section id="drop" class="panel">
   <div id="dropFull">
     <div class="expHead"><b>📂 Vos fichiers — chargement en masse</b><button id="dropHide" class="fbtn" title="Masquer la zone de chargement (reste accessible via le menu 📂)">Masquer ▲</button></div>
@@ -163,7 +171,7 @@ summary:hover{background:var(--hover)}
 
 <div class="panel mut" style="font-size:12.5px">
   Légende :<span class="dot k-zi"></span>ZI<span class="dot k-ze"></span>ZE<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG<span class="dot k-tam"></span>Tampon
-  — 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins · ⓘ = définition.
+  — 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins · 🗺 = carte · ⓘ = définition.
 </div>
 
 <section id="fiche" class="panel" hidden></section>
@@ -185,6 +193,36 @@ summary:hover{background:var(--hover)}
   <div id="pathTree" style="margin-top:12px"></div>
 </section>
 
+<!-- ===== CARTE / PLAN PAR MAGASIN ===== -->
+<section id="mapWrap" class="panel" hidden>
+  <div class="expHead" style="position:static;background:none">
+    <b>🗺 Carte / plan par magasin</b>
+    <small>— chaque point = un emplacement F5 placé par ses colonnes POSITION_X / POSITION_Y · survolez pour identifier, cliquez pour la fiche · réglez l'image de fond avec les curseurs</small>
+  </div>
+  <div class="row" style="margin:10px 0">
+    <label>Magasin<select id="mapMag"></select></label>
+    <label>Colorer par<select id="mapMode">
+      <option value="zg">Zone géographique (ZG)</option>
+      <option value="occ">Occupation (places dispo)</option>
+      <option value="zi">ZI / ZE</option>
+    </select></label>
+    <label>Mettre en avant<select id="mapHl"></select></label>
+    <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="mapFlipY"> inverser l'axe Y</label>
+    <label>Image de fond (plan)<input type="file" id="mapImg" accept="image/*"></label>
+    <label>Opacité image<input type="range" id="mapImgOp" min="0" max="100" value="35"></label>
+    <label>Échelle image<input type="range" id="mapImgSc" min="10" max="300" value="100"></label>
+    <label>Décalage X<input type="range" id="mapImgDx" min="-60" max="60" value="0"></label>
+    <label>Décalage Y<input type="range" id="mapImgDy" min="-60" max="60" value="0"></label>
+    <button id="mapImgDel" title="Retirer l'image de fond de ce magasin">🗑 Retirer l'image</button>
+  </div>
+  <div id="mapBox">
+    <canvas id="mapCv"></canvas>
+    <div id="mapTip"></div>
+  </div>
+  <div id="mapInfo" class="mut"></div>
+  <div id="mapSel" class="card" hidden style="margin-top:10px;margin-bottom:0"></div>
+</section>
+
 <div class="tableWrap" id="tableWrap"><table id="grid"></table></div>
 <div id="tableInfo"></div>
 <button id="more" hidden>Afficher 200 lignes de plus</button>
@@ -201,6 +239,7 @@ summary:hover{background:var(--hover)}
 <li><b>Tampon</b> : zone d'attente traversée entre un groupe de départ et un groupe d'arrivée. Ex. <code>HUBT/S</code> = « HUB Tampon Sortie ».</li>
 <li><b>Emplacement (F5)</b> : adresse physique = Allée + Face + Colonne + Niveau + Emplacement. Ex. <code>M2_LC006N4E1</code>.</li>
 <li><b>Séquence (F4)</b> : ordre de priorité du tampon dans un flux.</li>
+<li><b>POSITION_X / POSITION_Y (F5)</b> : coordonnées utilisées pour dessiner la carte du magasin.</li>
 </ul>
 </details>
 
@@ -214,6 +253,7 @@ summary:hover{background:var(--hover)}
 <li><b>F4 (tampon)</b> : Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
 <li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
 <li><b>Chemins (🧭)</b> : emplacement → ZG (F5) → groupes (F1/F2) → flux (F2) → tampon (F4) → ZG cible → emplacements (F5).</li>
+<li><b>Carte (🗺)</b> : un point par emplacement F5 ayant POSITION_X et POSITION_Y renseignées, groupés par code magasin.</li>
 </ul>
 </details>
 </main>
@@ -228,6 +268,7 @@ const K=(...a)=>a.map(x=>String(x??'').trim()).join('|');
 const uniq=a=>[...new Set(a.filter(x=>x!==undefined&&x!==null&&x!==''))];
 const sortU=a=>uniq(a).sort((x,y)=>String(x).localeCompare(String(y),'fr',{numeric:true}));
 const fmt=n=>Number(n||0).toLocaleString('fr-FR');
+const pf=v=>{const n=parseFloat(String(v??'').replace(',','.'));return isFinite(n)?n:null;};
 const DEPOT_KEEP='NE1';
 const EMPL_NAME_FIELDS=['allee','face','colonne','niveau','empl'];
 const EMPL_NAME_SEP='';
@@ -319,7 +360,10 @@ function detectByName(name){
 const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements'};
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
   flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'accueil',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
-  showDrop:true,
+  showDrop:true,posCount:0,mapSel:null,
+  map:{mag:'',mode:'zg',hl:''},
+  mapCfg:(()=>{try{return JSON.parse(localStorage.getItem('zgMapCfg')||'{}')}catch(e){return{}}})(),
+  _imgs:{},_mapXY:[],_mapGrid:new Map(),
   pathView:localStorage.getItem('zgPathView')||'simple',
   simple:localStorage.getItem('zgMode')!=='expert',
   theme:localStorage.getItem('zgTheme')||'dark',
@@ -342,7 +386,7 @@ magasin:'Code magasin rattaché (F5).',nbStock:'Supports stockables (F5).',nbDis
 depGroups:'Groupes de départ utilisant cette ZG (F1).',arrGroups:'Groupes d’arrivée utilisant cette ZG (F2).',libZg:'Libellé métier de la ZG (F2).',libGdep:'Libellé du groupe de départ.',
 libGarr:'Libellé du groupe d’arrivée.',_lab:'Chemin tampon complet (séquence + codes + libellé).',typeEmpl:'Type physique de l’emplacement tampon.',_file:'Fichier d’origine de la ligne.',
 topTampon:'Indicateur tampon (F5).',topStock:'Indicateur stockage (F5).',topPick:'Indicateur picking (F5).',active:'Implantation active ? (F5).',zp:'Zone physique ZP (F5).',zs:'Zone physique ZS (F5).',
-posX:'Coordonnée X (F5).',posY:'Coordonnée Y (F5).',taille:'Code taille de l’emplacement (F5).'};
+posX:'Coordonnée X (F5) utilisée pour la carte.',posY:'Coordonnée Y (F5) utilisée pour la carte.',taille:'Code taille de l’emplacement (F5).'};
 
 function tamponLabel(r){
   const em=[r.empl1,r.empl2,r.empl3,r.empl4,r.empl5]
@@ -410,7 +454,7 @@ async function loadFiles(files){
   await frame();
   try{
     buildModel();
-    if(done.length)S.showDrop=false;   /* ← masquage automatique après chargement réussi */
+    if(done.length)S.showDrop=false;
     render();
     $('#bulkState').innerHTML=done.length
       ?`<span class="ok">✓ ${done.length} fichier(s) chargé(s)</span> : ${done.map(k=>LABELS[k]).join(', ')}`
@@ -478,11 +522,12 @@ function buildModel(){
     arrGroups:[...(IDX.byArrZg.get(K(r.depot,r.zg))||[])].sort().join(', ')}));
   S.empl=S.raw.empl.map(r=>{
     const ref=IDX.ref.get(K(r.depot,r.zg))||[];
-    return {...r,nomEmpl:buildEmplName(r),
+    return {...r,nomEmpl:buildEmplName(r),px:pf(r.posX),py:pf(r.posY),
       refVia:sortU(ref.map(x=>x.zi+'/'+x.ze)),
       depGroups:[...(IDX.byDepZg.get(K(r.depot,r.zg))||[])].sort().join(', '),
       arrGroups:[...(IDX.byArrZg.get(K(r.depot,r.zg))||[])].sort().join(', ')};
   });
+  S.posCount=S.empl.filter(r=>r.px!=null&&r.py!=null).length;
   buildLabels();
   S.controls=makeControls();
 }
@@ -529,7 +574,7 @@ const FICHE=(k,getCode)=>C(k,'📄',{btn:r=>{const v=getCode(r);return v?`<butto
 const zgLab=z=>(LAB.zg.get(z)?LAB.zg.get(z)+' ('+z+')':z);
 const gLab=g=>(LAB.g.get(g)||g);
 const COLS={
- accueil:[],
+ accueil:[],carte:[],
  flux:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
   C('zi','ZI',{dim:true,dict:'zi',lSimple:'ZI'}),
@@ -605,6 +650,7 @@ const COLS={
   C('zg','Zone géo (ZG)',{dim:true,dict:'zg',lSimple:'ZG'}),
   FICHE('_fiche',r=>r.zg),
   C('_path','🧭',{btn:r=>`<button class="fbtn" data-path="${esc(r.nomEmpl)}" title="Chemins depuis cet emplacement">🧭</button>`}),
+  C('_map','🗺',{btn:r=>(r.px!=null&&r.py!=null)?`<button class="fbtn" data-map="${esc(r.nomEmpl)}" title="Voir cet emplacement sur la carte du magasin">🗺</button>`:''}),
   C('refVia','ZI / ZE via F3',{get:r=>(r.refVia||[]).join(', '),expertOnly:true}),
   C('depGroups','Groupes départ (F1)',{expertOnly:true}),
   C('arrGroups','Groupes arrivée (F2)',{expertOnly:true}),
@@ -622,7 +668,7 @@ const COLS={
   C('topPick','Top picking',{dim:true,expertOnly:true}),
   C('active','IMPLANTATION_ACTIVE',{dim:true,expertOnly:true}),
   C('zp','ZP',{expertOnly:true}),C('zs','ZS',{expertOnly:true}),
-  C('posX','POSITION_X',{expertOnly:true}),C('posY','POSITION_Y',{expertOnly:true}),
+  C('posX','POSITION_X',{dim:true}),C('posY','POSITION_Y',{dim:true}),
   C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>
     `${r.nomEmpl} : allée ${r.allee||'—'}, face ${r.face||'—'}, colonne ${r.colonne||'—'}, niveau ${r.niveau||'—'} — dans la ZG ${zgLab(r.zg)}`+
     (r.refVia.length?`, rattachée à ${r.refVia.join(' / ')}.`:'.')})
@@ -645,7 +691,7 @@ function cols(){
 }
 const lbl=c=>(S.simple&&c.lSimple)?c.lSimple:c.l;
 function colDef(k){return cols().find(c=>c.k===k);}
-function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,excl:S.exclRows,ecart:[],arbre:[],chemin:[],accueil:[]})[S.tab]||[];}
+function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,excl:S.exclRows,ecart:[],arbre:[],chemin:[],accueil:[],carte:[]})[S.tab]||[];}
 function withSearch(rows){if(!S.q)return rows;const q=N(S.q);return rows.filter(r=>N(JSON.stringify(r)).includes(q));}
 function matchRow(c,r,v){return c.has?c.has(r,v):String(c.get(r))===v;}
 function filtered(){
@@ -663,7 +709,6 @@ function chipHTML(c,v){
   return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)} — double-clic : fiche">${txt}</button>`;
 }
 
-/* ===== Statut de chargement (bandeau compact + badge du menu) ===== */
 function loadStatusHTML(){
   const ks=Object.keys(LABELS).filter(k=>S.files[k]);
   const miss=Object.keys(LABELS).filter(k=>!S.files[k]);
@@ -696,6 +741,7 @@ function renderHome(){
         <button class="homeCard" data-home="flux"><b>📦 Voir les flux</b><small>${fmt(S.flux.length)} lignes de flux enrichies (F1+F2+F3+F4)</small></button>
         <button class="homeCard" data-home="arbre"><b>🌳 Arborescence</b><small>ZI → ZE → Groupe → ZG, avec nb d'emplacements</small></button>
         <button class="homeCard" data-home="chemin"><b>🧭 Chemins</b><small>D'où vient / où va un emplacement, via quels tampons</small></button>
+        <button class="homeCard" data-home="carte"><b>🗺 Carte / plan</b><small>Positions X/Y des emplacements par magasin, avec plan en image de fond</small></button>
         <button class="homeCard" data-home="empl"><b>📍 Emplacements</b><small>${fmt(S.empl.length)} emplacements NE1 (F5)</small></button>
         <button class="homeCard" data-home="ecart"><b>⚠ Écarts</b><small>${fmt(S.controls.reduce((s,c)=>s+c.items.length,0))} anomalie(s) détectée(s)</small></button>
       </div>`;
@@ -812,6 +858,164 @@ function renderPath(){
   box.innerHTML=html;
 }
 
+/* ================= CARTE / PLAN PAR MAGASIN ================= */
+const PAL=['#38bdf8','#34d399','#fbbf24','#c084fc','#f472b6','#fb923c','#a3e635','#22d3ee','#f87171','#818cf8','#facc15','#4ade80','#e879f9','#60a5fa'];
+const hash=s=>{let h=0;const t=String(s??'');for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return Math.abs(h);};
+const magOf=r=>r.magasin||'(sans code magasin)';
+function mapPts(mag){return S.empl.filter(r=>r.px!=null&&r.py!=null&&(mag==='*'||magOf(r)===mag));}
+function ziOf(r){const v=(r.refVia||[])[0]||'';return v.split('/')[0]||'(sans ZI)';}
+function colorFor(r,mode){
+  if(mode==='occ'){
+    const st=+(r.nbStock??0)||0,di=+(r.nbDispo??0)||0;
+    if(!st)return '#64748b';
+    if(di<=0)return '#f87171';
+    if(di<st)return '#fbbf24';
+    return '#34d399';
+  }
+  if(mode==='zi')return PAL[hash(ziOf(r))%PAL.length];
+  return PAL[hash(r.zg||'?')%PAL.length];
+}
+function hlMatch(r,hl){
+  if(!hl)return true;
+  const i=hl.indexOf(':'),t=hl.slice(0,i),v=hl.slice(i+1);
+  if(t==='zg')return r.zg===v;
+  return (r.depGroups||'').split(', ').includes(v)||(r.arrGroups||'').split(', ').includes(v);
+}
+function cfgFor(m){
+  let c=S.mapCfg[m];
+  if(!c)c=S.mapCfg[m]={op:35,sc:100,dx:0,dy:0,flip:false};
+  if(!('img' in c)){try{c.img=localStorage.getItem('zgMapImg:'+m)||''}catch(e){c.img=''}}
+  return c;
+}
+function saveCfg(){
+  const o={};Object.keys(S.mapCfg).forEach(k=>{const c=S.mapCfg[k];o[k]={op:c.op,sc:c.sc,dx:c.dx,dy:c.dy,flip:c.flip};});
+  try{localStorage.setItem('zgMapCfg',JSON.stringify(o))}catch(e){}
+}
+function saveImg(m){
+  const c=cfgFor(m);
+  try{if(c.img)localStorage.setItem('zgMapImg:'+m,c.img);else localStorage.removeItem('zgMapImg:'+m);}catch(e){/* image trop lourde : gardée en mémoire pour la session */}
+}
+function ensureImg(mag){
+  const cfg=cfgFor(mag);
+  if(!cfg.img||S._imgs[mag])return;
+  const im=new Image();
+  im.onload=()=>{S._imgs[mag]=im;if(S.tab==='carte')drawMap();};
+  im.src=cfg.img;
+}
+function renderMapControls(){
+  const list=sortU(S.empl.map(magOf));
+  if(!S.map.mag||!list.includes(S.map.mag))S.map.mag=list.find(m=>m!=='(sans code magasin)')||list[0]||'*';
+  $('#mapMag').innerHTML=`<option value="*">∗ Tous les magasins (superposition)</option>`+
+    list.map(m=>`<option value="${esc(m)}"${m===S.map.mag?' selected':''}>${esc(m)}</option>`).join('');
+  $('#mapMode').value=S.map.mode;
+  const pts=mapPts(S.map.mag);
+  const zgs=sortU(pts.map(r=>r.zg).filter(Boolean));
+  const gs=sortU(uniq(pts.flatMap(r=>[...(r.depGroups||'').split(', '),...(r.arrGroups||'').split(', ')].filter(Boolean))));
+  if(S.map.hl){
+    const i=S.map.hl.indexOf(':'),t=S.map.hl.slice(0,i),v=S.map.hl.slice(i+1);
+    if(t==='zg'?!zgs.includes(v):!gs.includes(v))S.map.hl='';
+  }
+  $('#mapHl').innerHTML=`<option value="">Aucun</option>`+
+    (zgs.length?`<optgroup label="ZG">${zgs.map(z=>`<option value="zg:${esc(z)}">${esc(zgLab(z))}</option>`).join('')}</optgroup>`:'')+
+    (gs.length?`<optgroup label="Groupes">${gs.map(g=>`<option value="g:${esc(g)}">${esc(gLab(g))}</option>`).join('')}</optgroup>`:'');
+  $('#mapHl').value=S.map.hl;
+  const cfg=cfgFor(S.map.mag);
+  $('#mapImgOp').value=cfg.op;$('#mapImgSc').value=cfg.sc;$('#mapImgDx').value=cfg.dx;$('#mapImgDy').value=cfg.dy;
+  $('#mapFlipY').checked=!!cfg.flip;
+  $('#mapImgDel').disabled=!cfg.img;
+  ensureImg(S.map.mag);
+}
+function renderMap(){renderMapControls();drawMap();renderMapSel();}
+function drawMap(){
+  const box=$('#mapBox'),cv=$('#mapCv'),tip=$('#mapTip');
+  tip.style.display='none';
+  const W=box.clientWidth,H=box.clientHeight,dpr=window.devicePixelRatio||1;
+  cv.width=Math.max(1,Math.round(W*dpr));cv.height=Math.max(1,Math.round(H*dpr));
+  cv.style.width=W+'px';cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  const mag=S.map.mag,mode=S.map.mode,hl=S.map.hl,cfg=cfgFor(mag);
+  const pts=mapPts(mag);
+  const tot=(mag==='*'?S.empl:S.empl.filter(r=>magOf(r)===mag)).length;
+  const noPos=tot-pts.length;
+  if(!pts.length){
+    S._mapXY=[];S._mapGrid=new Map();
+    $('#mapInfo').innerHTML=`<span class="warn">Aucun emplacement avec POSITION_X / POSITION_Y renseignées pour « ${esc(mag==='*'?'tous magasins':mag)} ».</span>`;
+    return;
+  }
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  pts.forEach(r=>{if(r.px<minX)minX=r.px;if(r.px>maxX)maxX=r.px;if(r.py<minY)minY=r.py;if(r.py>maxY)maxY=r.py;});
+  const pad=26,sx=(maxX-minX)||1,sy=(maxY-minY)||1;
+  const X=v=>pad+(v-minX)/sx*(W-2*pad);
+  const Y=v=>{const t=(v-minY)/sy*(H-2*pad);return cfg.flip?pad+t:H-pad-t;};
+  /* image de fond (plan) */
+  const im=S._imgs[mag];
+  if(im&&im.complete&&im.naturalWidth){
+    ctx.save();ctx.globalAlpha=(+cfg.op)/100;
+    const sc=(+cfg.sc)/100,iw=W*sc,ih=H*sc;
+    ctx.drawImage(im,(W-iw)/2+(+cfg.dx)/100*W,(H-ih)/2+(+cfg.dy)/100*H,iw,ih);
+    ctx.restore();
+  }
+  /* points (passe 1 : estompés, passe 2 : mis en avant) */
+  S._mapXY=[];S._mapGrid=new Map();const CELL=10;
+  const put=(x,y,r)=>{const i=S._mapXY.length;S._mapXY.push({x,y,r});
+    const k=Math.floor(x/CELL)+':'+Math.floor(y/CELL);
+    if(!S._mapGrid.has(k))S._mapGrid.set(k,[]);S._mapGrid.get(k).push(i);};
+  const rad=pts.length>8000?2:pts.length>3000?2.5:3.5;
+  for(let pass=0;pass<2;pass++){
+    for(const r of pts){
+      const m=hlMatch(r,hl);
+      if(pass===0&&m)continue;
+      if(pass===1&&!m)continue;
+      const x=X(r.px),y=Y(r.py);
+      if(!m){ctx.globalAlpha=.15;ctx.fillStyle='#94a3b8';ctx.beginPath();ctx.arc(x,y,rad*.8,0,7);ctx.fill();ctx.globalAlpha=1;}
+      else{ctx.fillStyle=colorFor(r,mode);ctx.beginPath();ctx.arc(x,y,rad,0,7);ctx.fill();
+        if(hl){ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=1;ctx.stroke();}}
+      put(x,y,r);
+    }
+  }
+  /* légende + info */
+  let leg='';
+  if(mode==='occ'){
+    leg=[['#34d399','places disponibles'],['#fbbf24','partiellement plein'],['#f87171','plein'],['#64748b','non stockable']]
+      .map(([c,t])=>`<span class="dot" style="background:${c};margin-left:14px"></span>${t}`).join('');
+  }else{
+    const cnt=new Map();
+    pts.forEach(r=>{const k=mode==='zi'?ziOf(r):(r.zg||'?');cnt.set(k,(cnt.get(k)||0)+1);});
+    const top=[...cnt].sort((a,b)=>b[1]-a[1]).slice(0,10);
+    leg=top.map(([k,n])=>`<span class="dot" style="background:${colorFor(mode==='zi'?{refVia:[k+'/']}:({zg:k}),mode)};margin-left:14px"></span>${esc(mode==='zi'?k:zgLab(k))} <small>(${fmt(n)})</small>`).join('')
+      +(cnt.size>10?` <span class="mut">· + ${cnt.size-10} autres</span>`:'');
+  }
+  $('#mapInfo').innerHTML=`<b>${fmt(pts.length)}</b> emplacements positionnés · magasin : <b>${esc(mag==='*'?'tous (superposition)':mag)}</b>`+
+    (noPos?` · <span class="warn">${fmt(noPos)} sans position X/Y (ignorés)</span>`:'')+
+    (hl?` · mise en avant : <b>${esc(hl.slice(hl.indexOf(':')+1))}</b>`:'')+
+    (im&&im.naturalWidth?` · <span class="ok">image de fond active</span>`:'')+
+    `<br>${leg}`;
+}
+function mapHit(mx,my){
+  const CELL=10,R=9;let best=null,bd=R*R;
+  const cx=Math.floor(mx/CELL),cy=Math.floor(my/CELL);
+  for(let i=cx-1;i<=cx+1;i++)for(let j=cy-1;j<=cy+1;j++){
+    const arr=S._mapGrid.get(i+':'+j);if(!arr)continue;
+    arr.forEach(ix=>{const p=S._mapXY[ix];const d=(p.x-mx)*(p.x-mx)+(p.y-my)*(p.y-my);if(d<bd){bd=d;best=p;}});
+  }
+  return best;
+}
+function renderMapSel(){
+  const box=$('#mapSel'),r=S.mapSel;
+  if(!r||S.tab!=='carte'){box.hidden=true;return;}
+  box.hidden=false;
+  box.innerHTML=`<div class="expHead" style="position:static;background:none"><b>📍 Emplacement sélectionné — ${esc(r.nomEmpl)}</b>
+    <span class="row">
+      ${r.zg?`<button class="fbtn" data-fiche="zg:${esc(r.zg)}">📄 Fiche ZG ${esc(r.zg)}</button>`:''}
+      <button class="fbtn" data-path="${esc(r.nomEmpl)}">🧭 Chemins</button>
+      ${r.zg?`<button class="fbtn" data-mapfilter="${esc(r.zg)}">🔎 Filtrer le tableau sur cette ZG</button>`:''}
+      <button class="fbtn" data-selclose>Fermer ×</button>
+    </span></div>
+    <div class="mut" style="font-size:12.5px">Magasin : ${esc(magOf(r))} · ZG : ${zgLab(r.zg)} · ${esc((r.refVia||[]).join(' / ')||'ZI/ZE inconnue')} ·
+    allée ${esc(r.allee||'—')}, face ${esc(r.face||'—')}, colonne ${esc(r.colonne||'—')}, niveau ${esc(r.niveau||'—')}, empl. ${esc(r.empl||'—')} ·
+    places dispo/stock : ${esc(r.nbDispo??'—')}/${esc(r.nbStock??'—')} · position X ${esc(r.posX??'—')} / Y ${esc(r.posY??'—')}</div>`;
+}
+
 function fcard(t,items){return `<div class="fcard"><h4>${esc(t)}</h4><ul>${items.length?items.map(x=>`<li>${x}</li>`).join(''):'<li class="mut">aucun</li>'}</ul></div>`;}
 function renderFiche(){
   const box=$('#fiche');
@@ -866,12 +1070,13 @@ function renderFiche(){
     <div class="ficheGrid">${cards}</div>`;
 }
 
-/* ===== BARRE DE MENU : toute la navigation + compteurs ===== */
+/* ===== BARRE DE MENU ===== */
 function renderMenu(){
   const n=k=>{
     if(k==='flux')return S.flux.length; if(k==='depart')return S.depart.length; if(k==='ref')return S.ref.length;
     if(k==='tampon')return S.raw.tampon.length; if(k==='empl')return S.empl.length; if(k==='excl')return S.exclRows.length;
     if(k==='arbre')return uniq(S.raw.depart.map(r=>r.zi)).length; if(k==='ecart')return S.controls.reduce((s,c)=>s+c.items.length,0);
+    if(k==='carte')return S.posCount;
     return null;};
   const cnt=k=>{const c=n(k);return c!=null?` <small>${fmt(c)}</small>`:'';};
   const mi=(k,lab)=>`<button data-go="${k}" class="${S.tab===k?'on':''}">${lab}${cnt(k)}</button>`;
@@ -880,8 +1085,8 @@ function renderMenu(){
   $('#menuBar').innerHTML=
     `<button class="menu-item${S.tab==='accueil'?' active':''}" data-go="accueil">🏠 Accueil</button>`+
     `<button class="menu-item" id="menuChargement" title="Afficher / masquer la zone de chargement — ${esc(loadStatusText())}">📂 Chargement <span class="mbadge ${has?'ok':'warn'}">${has}/5</span></button>`+
-    dd('explorer','📊','Explorer',['flux','empl','arbre','chemin'].includes(S.tab),
-       mi('flux','📦 Flux enrichis')+mi('empl','📍 Emplacements · F5')+mi('arbre','🌳 Arborescence')+mi('chemin','🧭 Chemins'))+
+    dd('explorer','📊','Explorer',['flux','empl','arbre','chemin','carte'].includes(S.tab),
+       mi('flux','📦 Flux enrichis')+mi('empl','📍 Emplacements · F5')+mi('arbre','🌳 Arborescence')+mi('chemin','🧭 Chemins')+mi('carte','🗺 Carte / plan'))+
     dd('refs','📚','Référentiels',['depart','ref','tampon'].includes(S.tab),
        mi('depart','Départ · F1')+mi('ref','Référentiel · F3')+mi('tampon','Tampon · F4'))+
     dd('qual','✅','Qualité',['ecart','excl'].includes(S.tab),
@@ -906,6 +1111,7 @@ function renderStats(){
     ['Couples départ→arrivée',fmt(uniq(S.flux.map(r=>K(r.gdep,r.garr))).length)],
     ['Tampons (F4)',fmt(S.raw.tampon.length)],
     ['Emplacements (F5)',fmt(S.empl.length)],
+    ['Emplacements positionnés',fmt(S.posCount)],
     ['Lignes exclues (≠NE1)',fmt(S.exclRows.length)],
     ['Écarts détectés',fmt(ec)]
   ].map(([l,v])=>`<div class="kpi"><small>${l}</small><b>${v}</b></div>`).join('');
@@ -951,7 +1157,7 @@ function renderGrid(){
   });
   html+='</tbody>';
   grid.innerHTML=rows.length?html:`<thead><tr>${cs.map(c=>`<th>${esc(lbl(c))}</th>`).join('')}</tr></thead><tbody><tr><td colspan="${cs.length}" class="mut">Aucune ligne ne correspond aux filtres.</td></tr></tbody>`;
-  $('#tableInfo').textContent=`${fmt(Math.min(rows.length,S.limit))} ligne(s) affichée(s) sur ${fmt(rows.length)} · 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins · ⓘ = définition.`;
+  $('#tableInfo').textContent=`${fmt(Math.min(rows.length,S.limit))} ligne(s) affichée(s) sur ${fmt(rows.length)} · 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins · 🗺 = carte · ⓘ = définition.`;
   $('#more').hidden=rows.length<=S.limit;
 }
 function explorer(k){
@@ -980,7 +1186,6 @@ function renderControls(){
 function render(){
   const valid=new Set(cols().filter(c=>c.dim).map(c=>c.k));
   Object.keys(S.filters).forEach(k=>{if(!valid.has(k))delete S.filters[k];});
-  /* Zone de chargement : pleine si aucun fichier, bandeau compact sinon */
   const hasFiles=Object.keys(S.files).length>0;
   const showFull=!hasFiles||S.showDrop;
   $('#dropFull').hidden=!showFull;
@@ -988,14 +1193,17 @@ function render(){
   $('#dropHide').hidden=!hasFiles;
   if(!showFull)$('#miniState').innerHTML=loadStatusHTML();
   renderMenu();renderStats();renderHome();renderFilters();renderControls();renderFiche();
-  const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',hideTable=isTree||isPath||isHome;
+  const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte';
+  const hideTable=isTree||isPath||isHome||isMap;
   $('#treeWrap').hidden=!isTree;
   $('#pathWrap').hidden=!isPath;
+  $('#mapWrap').hidden=!isMap;
   $('#tableWrap').style.display=hideTable?'none':'';
   $('#tableInfo').style.display=hideTable?'none':'';
-  $('#filterPanel').style.display=isHome?'none':'';
+  $('#filterPanel').style.display=(isHome||isMap)?'none':'';
   if(isTree){renderTree();$('#more').hidden=true;}
   else if(isPath){renderPath();$('#more').hidden=true;}
+  else if(isMap){renderMap();$('#more').hidden=true;}
   else if(!isHome)renderGrid();
 }
 
@@ -1017,6 +1225,7 @@ function exportCSV(){
 function clearAll(){
   S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[]};S.files={};S.stats={};S.exclRows=[];S.fiche=null;S.path=null;
   S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';S.tab='accueil';S.showDrop=true;
+  S.posCount=0;S.mapSel=null;S.map.mag='';
   $('#bulk').value='';$('#bulkState').textContent='Aucun fichier chargé';
   $('#explorer').hidden=true;
   buildModel();render();
@@ -1026,9 +1235,8 @@ function setMode(s){
   render();
 }
 
-/* ===== Clics : menus déroulants + toutes les actions ===== */
+/* ===== Clics globaux ===== */
 document.addEventListener('click',e=>{
-  /* ouverture / fermeture des menus déroulants */
   const mi=e.target.closest('.menu-item');
   if(mi&&mi.dataset.menu&&!e.target.closest('.menu-dropdown')){
     const was=mi.classList.contains('open');closeMenus();if(!was)mi.classList.add('open');
@@ -1041,6 +1249,11 @@ document.addEventListener('click',e=>{
   if(b.dataset.printfiche){window.print();return;}
   if(b.dataset.fiche){const [t,c]=b.dataset.fiche.split(':');S.fiche={type:t,code:c};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});return;}
   if(b.dataset.path){S.path={q:b.dataset.path,dir:(S.path&&S.path.dir)||'aller'};S.tab='chemin';render();return;}
+  if(b.dataset.map){const r=S.empl.find(x=>x.nomEmpl===b.dataset.map);
+    if(r){S.mapSel=r;S.map.mag=magOf(r);S.map.hl=r.zg?'zg:'+r.zg:'';S.tab='carte';render();}
+    return;}
+  if(b.dataset.mapfilter){S.tab='empl';S.filters={zg:b.dataset.mapfilter};S.q='';$('#q').value='';S.limit=200;render();$('#tableWrap').scrollIntoView({behavior:'smooth'});return;}
+  if(b.dataset.selclose){S.mapSel=null;$('#mapSel').hidden=true;return;}
   if(b.id==='dropHide'){S.showDrop=false;render();return;}
   if(b.id==='dropShow'){S.showDrop=true;render();$('#drop').scrollIntoView({behavior:'smooth',block:'nearest'});return;}
   if(b.id==='menuChargement'){
@@ -1109,6 +1322,56 @@ const dz=$('#drop');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
 dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');loadFiles([...e.dataTransfer.files]);});
+
+/* ===== Événements de la carte ===== */
+$('#mapMag').addEventListener('change',e=>{S.map.mag=e.target.value;S.map.hl='';renderMapControls();drawMap();});
+$('#mapMode').addEventListener('change',e=>{S.map.mode=e.target.value;drawMap();});
+$('#mapHl').addEventListener('change',e=>{S.map.hl=e.target.value;drawMap();});
+[['mapImgOp','op'],['mapImgSc','sc'],['mapImgDx','dx'],['mapImgDy','dy']].forEach(([id,k])=>{
+  $('#'+id).addEventListener('input',e=>{cfgFor(S.map.mag)[k]=+e.target.value;saveCfg();drawMap();});
+});
+$('#mapFlipY').addEventListener('change',e=>{cfgFor(S.map.mag).flip=e.target.checked;saveCfg();drawMap();});
+$('#mapImg').addEventListener('change',e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const mag=S.map.mag,cfg=cfgFor(mag);
+    cfg.img=rd.result;saveImg(mag);
+    const im=new Image();
+    im.onload=()=>{S._imgs[mag]=im;drawMap();};
+    im.src=cfg.img;
+    $('#mapImgDel').disabled=false;
+  };
+  rd.readAsDataURL(f);
+});
+$('#mapImgDel').addEventListener('click',()=>{
+  const mag=S.map.mag,cfg=cfgFor(mag);
+  cfg.img='';delete S._imgs[mag];saveImg(mag);
+  $('#mapImgDel').disabled=true;drawMap();
+});
+const cvEl=$('#mapCv'),tipEl=$('#mapTip');
+cvEl.addEventListener('mousemove',e=>{
+  if(S.tab!=='carte')return;
+  const rect=cvEl.getBoundingClientRect();
+  const p=mapHit(e.clientX-rect.left,e.clientY-rect.top);
+  if(!p){tipEl.style.display='none';cvEl.style.cursor='default';return;}
+  cvEl.style.cursor='pointer';
+  const r=p.r;
+  tipEl.innerHTML=`<b>${esc(r.nomEmpl)}</b><br>ZG : ${zgLab(r.zg)}<br>Magasin : ${esc(magOf(r))}${(r.refVia||[]).length?' · '+esc(r.refVia.join(' / ')):''}<br>Allée ${esc(r.allee||'—')} · Face ${esc(r.face||'—')} · Col. ${esc(r.colonne||'—')} · Niv. ${esc(r.niveau||'—')}<br>Places dispo/stock : ${esc(r.nbDispo??'—')}/${esc(r.nbStock??'—')}<br><span class="mut">X ${esc(r.posX)} · Y ${esc(r.posY)} — cliquer pour la fiche</span>`;
+  tipEl.style.display='block';
+  const bw=tipEl.offsetWidth,bh=tipEl.offsetHeight,W=cvEl.clientWidth,H=cvEl.clientHeight;
+  let lx=p.x+14,ly=p.y+14;
+  if(lx+bw>W-6)lx=p.x-bw-14;
+  if(ly+bh>H-6)ly=p.y-bh-14;
+  tipEl.style.left=Math.max(2,lx)+'px';tipEl.style.top=Math.max(2,ly)+'px';
+});
+cvEl.addEventListener('mouseleave',()=>{tipEl.style.display='none';});
+cvEl.addEventListener('click',e=>{
+  const rect=cvEl.getBoundingClientRect();
+  const p=mapHit(e.clientX-rect.left,e.clientY-rect.top);
+  if(p){S.mapSel=p.r;renderMapSel();}
+});
+window.addEventListener('resize',()=>{if(S.tab==='carte')drawMap();});
 
 /* Démarrage */
 if(typeof XLSX==='undefined'){
