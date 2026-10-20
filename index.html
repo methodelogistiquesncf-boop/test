@@ -6,10 +6,11 @@
 <title>Explorateur ZI · ZE · ZG · Tampons · Emplacements</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#0f172a;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;--fs:14.5px}
+:root{--bg:#0f172a;--bg2:#0b1220;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;--zebra:#131e33;--hover:#172944;--overlay:rgba(4,10,20,.78);--fs:14.5px}
+body.light{--bg:#eef1f6;--bg2:#ffffff;--panel:#ffffff;--line:#d8dee9;--txt:#1c2b3a;--mut:#5c6b7a;--acc:#0284c7;--ok:#059669;--warn:#b45309;--zebra:#f2f5f9;--hover:#e8eef7;--overlay:rgba(255,255,255,.75)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.55 system-ui,Segoe UI,Roboto,sans-serif}
-header{padding:16px 22px;background:#0b1220;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+header{padding:16px 22px;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 h1{font-size:19px;margin:0}
 h3{margin:0 0 6px}
 main{padding:18px 22px;max-width:1900px;margin:auto}
@@ -18,16 +19,17 @@ main{padding:18px 22px;max-width:1900px;margin:auto}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
 label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
-select,input[type=search],input[type=file]{background:#0b1220;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
-button{background:#0b1220;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer;font:inherit}
+select,input[type=search],input[type=file],button{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
+button{cursor:pointer}
 button:hover{border-color:var(--acc);color:var(--acc)}
 #drop{border:1px dashed var(--line)}
-#drop.over{border-color:var(--acc);background:#0b2233}
+#drop.over{border-color:var(--acc);background:var(--hover)}
 #kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:130px}
 .kpi b{display:block;font-size:20px;color:var(--acc)}
-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
 nav button.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
+.grp{color:var(--mut);font-size:11px;margin:0 4px 0 12px;text-transform:uppercase;letter-spacing:.06em}
 #fselects{display:flex;flex-wrap:wrap;gap:10px}
 #fselects select{min-width:170px;max-width:300px}
 #explorer,#treeWrap,#pathTree{margin-bottom:6px;max-height:60vh;overflow:auto}
@@ -37,13 +39,14 @@ nav button.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-w
 .expItem i{position:absolute;left:0;bottom:0;height:3px;background:var(--acc);opacity:.5}
 .tableWrap{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:12px}
 table{border-collapse:collapse;width:100%;font-size:13.5px}
-th{position:sticky;top:0;background:#0b1220;z-index:2;text-align:left;border-bottom:1px solid var(--line)}
+th{position:sticky;top:0;background:var(--bg2);z-index:2;text-align:left;border-bottom:1px solid var(--line)}
 .th{border:0;background:none;border-radius:0;padding:10px 8px;font-weight:600}
-.th span{color:var(--acc);font-size:11px}
+.th span.lk{color:var(--acc);font-size:11px}
+.ib{color:var(--acc);cursor:help;font-size:11px;margin-left:4px}
 .sort{border:0;background:none;padding:4px 8px;color:var(--mut)}
-td{padding:6px 8px;border-bottom:1px solid #1e2b43;vertical-align:top}
-tbody tr:nth-child(even){background:#131e33}
-tbody tr:hover{background:#172944}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:hover{background:var(--hover)}
 .chip{padding:2px 8px;margin:1px;border-radius:20px;font-size:12.5px;white-space:normal;text-align:left;max-width:300px;border-left-width:3px;border-left-style:solid}
 .chip.on{background:var(--acc);color:#04121f;border-color:var(--acc)}
 .chip small{opacity:.75}
@@ -51,36 +54,45 @@ tbody tr:hover{background:#172944}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 5px -1px 10px}
 .plain{color:var(--mut)}
 .phrase{white-space:normal;max-width:560px;color:var(--txt)}
-#notice{border-color:#7a5b17;color:var(--warn)}
+#notice{border-color:var(--warn);color:var(--warn)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
 details{font-size:13.5px;color:var(--mut)}
 #tableInfo{margin:10px 0;color:var(--mut);font-size:12.5px}
 summary{cursor:pointer;padding:3px 6px;border-radius:6px;color:var(--txt)}
-summary:hover{background:#172944}
+summary:hover{background:var(--hover)}
 .tin{margin-left:20px;border-left:1px solid var(--line);padding-left:10px}
 .trow{margin:2px 0;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
 .trow>details{flex:1;min-width:260px}
 .fbtn{padding:1px 7px;font-size:11px;border-radius:6px}
 .ficheGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-top:10px}
-.fcard{background:#0b1220;border:1px solid var(--line);border-radius:10px;padding:10px}
+.fcard{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px}
 .fcard h4{margin:0 0 6px;font-size:13px;color:var(--acc)}
-.fcard ul{margin:0;padding-left:16px;font-size:12.5px;max-height:200px;overflow:auto}
-#loading{position:fixed;inset:0;background:rgba(4,10,20,.78);display:flex;align-items:center;justify-content:center;z-index:60}
+.fcard ul{margin:0;padding-left:16px;font-size:12.5px;max-height:220px;overflow:auto}
+.flow{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0}
+.fbox{border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12.5px;background:var(--bg2)}
+.fbox.g{border-left:4px solid #fbbf24}.fbox.t{border-left:4px solid #f472b6}.fbox.z{border-left:4px solid #c084fc}.fbox.e{border-left:4px solid #34d399}
+.farr{color:var(--mut)}
+.homeGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.homeCard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;text-align:left}
+.homeCard:hover{border-color:var(--acc)}
+.homeCard b{display:block;font-size:16px;margin-bottom:6px}
+.homeCard small{color:var(--mut)}
+#loading{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;z-index:60}
 #loading[hidden]{display:none}
-.loadBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 36px;text-align:center;max-width:600px;box-shadow:0 10px 40px rgba(0,0,0,.55)}
+.loadBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 36px;text-align:center;max-width:600px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .spin{width:44px;height:44px;margin:0 auto 14px;border:4px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:rot 1s linear infinite}
 @keyframes rot{to{transform:rotate(360deg)}}
 #loadingMsg{font-size:15px;font-weight:600}
 #loadingSub{font-size:12.5px;color:var(--mut);margin-top:6px}
 @media print{
-  body *{visibility:hidden}
-  #fiche,#fiche *{visibility:visible}
-  #fiche{position:absolute;left:0;top:0;width:100%;border:0;background:#fff;color:#000}
-  #fiche .fcard{background:#fff;border-color:#999}
-  #fiche h4{color:#000}
-  #fiche button{display:none!important}
+  body{background:#fff!important;color:#000!important}
+  body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
+  header .row,#drop,#fselects,nav,#explorer,#controls,#more,.panel.mut,#loading,#home{display:none!important}
+  .panel,.card,.fcard,.fbox,.chip{background:#fff!important;border-color:#999!important;color:#000!important}
+  th{background:#eee!important;color:#000!important}
+  tbody tr:nth-child(even){background:#f5f5f5!important}
+  .tableWrap{max-height:none;overflow:visible;border:0}
   #fiche .fcard ul{max-height:none;overflow:visible}
-  #loading{display:none!important}
 }
 </style>
 </head>
@@ -97,6 +109,8 @@ summary:hover{background:#172944}
   <div><h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements</h1>
   <small>5 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small></div>
   <div class="row">
+    <button id="theme" title="Basculer thème clair / sombre">🌙 Sombre</button>
+    <button id="fsz" title="Taille du texte">A</button>
     <button id="mode">👓 Mode débutant</button>
     <button id="reset">Réinitialiser les filtres</button>
     <button id="csv">Exporter CSV</button>
@@ -108,7 +122,7 @@ summary:hover{background:#172944}
 <main>
 <section id="drop" class="panel">
   <b>Vos fichiers — chargement en masse</b>
-  <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> dans cette zone, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom) : F1 départ, F2 flux, F3 référentiel, F4 tampon, F5 emplacements. L'ordre n'a aucune importance. Un message vous prévient pendant le chargement.</span>
+  <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> ici, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom). L'ordre n'a aucune importance.</span>
   <div class="row" style="margin-top:10px">
     <label>Charger 1 à 5 fichiers Excel<input type="file" accept=".xlsx,.xls" multiple id="bulk"></label>
     <span class="mut" id="bulkState">Aucun fichier chargé</span>
@@ -117,15 +131,16 @@ summary:hover{background:#172944}
 
 <div id="notice" class="panel" hidden></div>
 <div id="kpis"></div>
+<section id="home" class="panel" hidden></section>
 
-<section class="panel">
+<section class="panel" id="filterPanel">
   <div id="fselects"></div>
   <div style="margin-top:10px"><label>Recherche libre (code, libellé, n° emplacement…)<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, LAVAGE, M2_LC006…"></label></div>
 </section>
 
 <div class="panel mut" style="font-size:12.5px">
-  Légende :<span class="dot k-zi"></span>ZI (zone d'intervention)<span class="dot k-ze"></span>ZE (zone d'évolution)<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG (zone géographique)<span class="dot k-tam"></span>Tampon
-  — 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins.
+  Légende :<span class="dot k-zi"></span>ZI<span class="dot k-ze"></span>ZE<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG<span class="dot k-tam"></span>Tampon
+  — 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins · ⓘ = définition.
 </div>
 
 <nav id="tabs"></nav>
@@ -148,7 +163,7 @@ summary:hover{background:#172944}
   <div id="pathTree" style="margin-top:12px"></div>
 </section>
 
-<div class="tableWrap"><table id="grid"></table></div>
+<div class="tableWrap" id="tableWrap"><table id="grid"></table></div>
 <div id="tableInfo"></div>
 <button id="more" hidden>Afficher 200 lignes de plus</button>
 <section id="controls" style="margin-top:16px"></section>
@@ -162,7 +177,7 @@ summary:hover{background:#172944}
 <li><b>ZG — Zone Géographique</b> : plus petite zone de localisation du stock. Ex. <code>ZGMAG3</code> = « LI-MAG3 ».</li>
 <li><b>Groupe ZG (GZG…)</b> : paquet de ZG utilisé comme point de départ ou d'arrivée des flux. Ex. <code>GZGHUB</code> = « Groupe ZG HUB ».</li>
 <li><b>Tampon</b> : zone d'attente traversée entre un groupe de départ et un groupe d'arrivée. Ex. <code>HUBT/S</code> = « HUB Tampon Sortie ».</li>
-<li><b>Emplacement (F5)</b> : adresse physique exacte = Allée + Face + Colonne + Niveau + Emplacement. Ex. <code>M2_LC006N4E1</code>.</li>
+<li><b>Emplacement (F5)</b> : adresse physique = Allée + Face + Colonne + Niveau + Emplacement. Ex. <code>M2_LC006N4E1</code>.</li>
 <li><b>Séquence (F4)</b> : ordre de priorité du tampon dans un flux.</li>
 </ul>
 </details>
@@ -170,13 +185,13 @@ summary:hover{background:#172944}
 <details class="panel" style="margin-top:12px">
 <summary>Règles de jointure appliquées</summary>
 <ul>
-<li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées ; les autres sont listées dans l'onglet « Exclus (≠NE1) ».</li>
-<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ (la ZE n'est pas utilisée comme clé).</li>
+<li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées ; les autres dans « Exclus (≠NE1) ».</li>
+<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ZG de départ (la ZE n'est pas une clé).</li>
 <li><b>F2</b> : grain = Dépôt + ZI + ZE flux + Groupe départ + Groupe arrivée + ZG arrivée.</li>
-<li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE de rattachement.</li>
+<li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE.</li>
 <li><b>F4 (tampon)</b> : Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
-<li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom d'emplacement = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
-<li><b>Chemins (🧭)</b> : emplacement → ZG (F5) → groupes (F1 départ / F2 arrivée) → flux (F2) → tampon (F4) → ZG cible → emplacements (F5). Sens retour = parcours inverse.</li>
+<li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
+<li><b>Chemins (🧭)</b> : emplacement → ZG (F5) → groupes (F1/F2) → flux (F2) → tampon (F4) → ZG cible → emplacements (F5).</li>
 </ul>
 </details>
 </main>
@@ -190,6 +205,7 @@ const N=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLower
 const K=(...a)=>a.map(x=>String(x??'').trim()).join('|');
 const uniq=a=>[...new Set(a.filter(x=>x!==undefined&&x!==null&&x!==''))];
 const sortU=a=>uniq(a).sort((x,y)=>String(x).localeCompare(String(y),'fr',{numeric:true}));
+const fmt=n=>Number(n||0).toLocaleString('fr-FR');
 const DEPOT_KEEP='NE1';
 const EMPL_NAME_FIELDS=['allee','face','colonne','niveau','empl'];
 const EMPL_NAME_SEP='';
@@ -279,15 +295,31 @@ function detectByName(name){
 /* ================= État ================= */
 const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements'};
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
-  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
+  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'accueil',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
   pathView:localStorage.getItem('zgPathView')||'simple',
-  simple:localStorage.getItem('zgMode')!=='expert'};
+  simple:localStorage.getItem('zgMode')!=='expert',
+  theme:localStorage.getItem('zgTheme')||'dark',
+  fsz:localStorage.getItem('zgFs')||'0'};
 const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),
   tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map(),fluxDepZg:new Map()};
 const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map()};
 const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg};
-/* Renvoie le libellé connu d'une valeur, ou '' si aucun dictionnaire ne s'applique (évite tout crash). */
 const labOf=(c,v)=>{const m=c&&c.dict?DICT[c.dict]:null;return m?(m.get(v)||''):'';};
+
+/* Définitions courtes affichées dans les bulles ⓘ */
+const INFO={depot:'Site physique (ici NE1).',zi:'Zone d’Intervention : périmètre organisationnel.',ze:'Zone d’Évolution : sous-zone où circule le stock.',
+gdep:'Groupe de ZG d’où part le flux.',garr:'Groupe de ZG où arrive le flux.',zgArr:'Zone géographique de destination.',zgDep:'Zone géographique contenue dans le groupe de départ.',
+zg:'Zone géographique : plus petite zone de stock.',tamponList:'Tampon(s) traversé(s) entre départ et arrivée (F4).',depZGs:'ZG contenues dans le groupe de départ (F1).',
+refZEs:'ZE du référentiel où existe cette ZG (F3).',nbEmpl:'Nombre d’emplacements F5 rattachés à cette ZG.',numEmpl:'Numéro interne de l’emplacement (F5).',
+nomEmpl:'Nom complet = Allée+Face+Colonne+Niveau+Emplacement.',allee:'Allée de l’emplacement.',face:'Face de l’emplacement.',colonne:'Colonne de l’emplacement.',
+niveau:'Niveau de l’emplacement.',empl:'Complément d’adresse de l’emplacement.',sequence:'Ordre de priorité du tampon (F4).',empl1:'Code principal du tampon.',
+empl2:'Sens : S sortie, E entrée, T transit.',empl3:'Sous-localisation du tampon.',libTampon:'Libellé lisible du tampon.',inFlux:'Un flux F2 utilise-t-il cet élément ?',
+usage:'La ZG est-elle utilisée par un groupe ?',_ctl:'État de cohérence de la ligne.',_phrase:'Explication de la ligne en une phrase.',zoneInv:'Zone d’inventaire (F5).',
+magasin:'Code magasin rattaché (F5).',nbStock:'Supports stockables (F5).',nbDispo:'Supports disponibles (F5).',libEmpl:'Libellé de l’emplacement.',refVia:'ZI/ZE du référentiel (F3).',
+depGroups:'Groupes de départ utilisant cette ZG (F1).',arrGroups:'Groupes d’arrivée utilisant cette ZG (F2).',libZg:'Libellé métier de la ZG (F2).',libGdep:'Libellé du groupe de départ.',
+libGarr:'Libellé du groupe d’arrivée.',_lab:'Chemin tampon complet (séquence + codes + libellé).',typeEmpl:'Type physique de l’emplacement tampon.',_file:'Fichier d’origine de la ligne.',
+topTampon:'Indicateur tampon (F5).',topStock:'Indicateur stockage (F5).',topPick:'Indicateur picking (F5).',active:'Implantation active ? (F5).',zp:'Zone physique ZP (F5).',zs:'Zone physique ZS (F5).',
+posX:'Coordonnée X (F5).',posY:'Coordonnée Y (F5).',taille:'Code taille de l’emplacement (F5).'};
 
 function tamponLabel(r){
   const em=[r.empl1,r.empl2,r.empl3,r.empl4,r.empl5]
@@ -305,6 +337,13 @@ function buildLabels(){
   }));
 }
 const gl=(d,v)=>{const l=d.get(v);return l?`${esc(l)} (<b>${esc(v)}</b>)`:`<b>${esc(v)}</b>`;};
+function flowHTML(dg,ag,tam,nz,ne){
+  return `<span class="flow"><span class="fbox g">${esc(LAB.g.get(dg)||dg)}</span><span class="farr">→</span>`+
+    `<span class="fbox t">⏳ ${esc(tam||'sans tampon')}</span><span class="farr">→</span>`+
+    `<span class="fbox g">${esc(LAB.g.get(ag)||ag)}</span>`+
+    (nz!=null?`<span class="farr">→</span><span class="fbox z">${fmt(nz)} ZG</span>`:'')+
+    (ne!=null?`<span class="farr">→</span><span class="fbox e">${fmt(ne)} empl.</span>`:'')+`</span>`;
+}
 function store(kind,rows,name){
   if(kind==='empl')rows.forEach(r=>{
     if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}
@@ -322,14 +361,12 @@ async function ingest(kind,buf,name){
   wb.SheetNames.forEach(sn=>{rows=rows.concat(parseSheet(wb.Sheets[sn],name,sn));});
   store(kind,rows,name);
 }
-/* ========== Écran d'attente ========== */
 function showLoad(msg,sub){
   $('#loadingMsg').textContent=msg;
   $('#loadingSub').textContent=sub||'Merci de patienter — le traitement se fait entièrement dans votre navigateur.';
   $('#loading').hidden=false;
 }
 function hideLoad(){$('#loading').hidden=true;}
-/* ========== Chargement en masse ========== */
 async function loadFiles(files){
   if(!files||!files.length||S.loading)return;
   S.loading=true;
@@ -348,7 +385,7 @@ async function loadFiles(files){
       const kind=detectKind(rows)||detectByName(f.name);
       if(!kind){alert('Fichier non reconnu : '+f.name);continue;}
       store(kind,rows,f.name);done.push(kind);
-      showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+rows.length+' lignes reconnues → '+LABELS[kind]);
+      showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+fmt(rows.length)+' lignes reconnues → '+LABELS[kind]);
       await frame();
     }catch(err){alert('Erreur de lecture '+f.name+' : '+err.message);}
   }
@@ -359,10 +396,7 @@ async function loadFiles(files){
     $('#bulkState').innerHTML=done.length
       ?`<span class="ok">✓ ${done.length} fichier(s) chargé(s)</span> : ${done.map(k=>LABELS[k]).join(', ')}`
       :'<span class="warn">Aucun fichier reconnu</span>';
-  }finally{
-    hideLoad();
-    S.loading=false;
-  }
+  }finally{hideLoad();S.loading=false;}
 }
 function buildModel(){
   Object.values(IDX).forEach(m=>m.clear());
@@ -475,7 +509,10 @@ function makeControls(){
 const C=(k,l,ex={})=>({k,l,dim:false,get:r=>r[k]??'',...ex});
 const MULTI=(k,l,ex={})=>C(k,l,{dim:true,vals:r=>r[k]||[],has:(r,v)=>(r[k]||[]).some(t=>String(t).includes(v)),get:r=>(r[k]||[]).join(', '),...ex});
 const FICHE=(k,getCode)=>C(k,'📄',{btn:r=>{const v=getCode(r);return v?`<button class="fbtn" data-fiche="zg:${esc(v)}" title="Fiche détaillée de ${esc(v)}">📄</button>`:'';}});
+const zgLab=z=>(LAB.zg.get(z)?LAB.zg.get(z)+' ('+z+')':z);
+const gLab=g=>(LAB.g.get(g)||g);
 const COLS={
+ accueil:[],
  flux:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
   C('zi','ZI',{dim:true,dict:'zi',lSimple:'ZI'}),
@@ -489,20 +526,18 @@ const COLS={
   FICHE('_fiche',r=>r.zgArr),
   MULTI('depZGs','ZG du groupe de départ · F1',{dict:'zg',lSimple:'ZG contenues dans le groupe de départ'}),
   C('refZEs','ZE du ZG arrivée · F3',{get:r=>(r.refZEs||[]).join(', '),expertOnly:true}),
-  C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':n;},lSimple:'Nb d’emplacements (F5)'}),
+  C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':fmt(n);},lSimple:'Nb d’emplacements (F5)'}),
   MULTI('tamponList','Tampon · F4',{dict:'tam',lSimple:'Tampon traversé'}),
   C('_ctl','Contrôle',{get:r=>{
     const w=[];
-    if(!r.hasDep)w.push('⚠ groupe départ absent de F1');
-    if(!r.hasRef)w.push('⚠ ZG arrivée sans ZE dans F3');
-    if(!(r.tamponList||[]).length)w.push('⚠ aucun tampon F4');
-    return w.length?w.join(' · '):'✓';},lSimple:'État'}),
+    if(!r.hasDep)w.push('groupe départ absent de F1');
+    if(!r.hasRef)w.push('ZG arrivée sans ZE dans F3');
+    if(!(r.tamponList||[]).length)w.push('aucun tampon F4');
+    return w.length?('À vérifier : '+w.join(' · ')):'OK';},lSimple:'État'}),
   C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>{
-    const g1=LAB.g.get(r.gdep)||r.gdep,g2=LAB.g.get(r.garr)||r.garr;
     const tam=(r.tamponList||[])[0]||'aucun tampon défini';
-    const zg=r.zgArr?((LAB.zg.get(r.zgArr)||'')+' ('+r.zgArr+')'):'';
     const n=r.depZGs.length?(' Le groupe de départ contient '+r.depZGs.length+' ZG.'):'';
-    return `Le groupe « ${g1} » envoie vers le groupe « ${g2} » en passant par ${tam}. ZG d’arrivée : ${zg}.${n}`;}})
+    return `Le groupe « ${gLab(r.gdep)} » envoie vers le groupe « ${gLab(r.garr)} » en passant par ${tam}. ZG d’arrivée : ${zgLab(r.zgArr)}.${n}`;}})
  ],
  depart:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
@@ -512,7 +547,10 @@ const COLS={
   C('zgDep','ZG du groupe de départ',{dim:true,dict:'zg',lSimple:'ZG de départ'}),
   FICHE('_fiche',r=>r.zgDep),
   C('refZEs','ZE du ZG dans F3',{get:r=>(r.refZEs||[]).join(', '),expertOnly:true}),
-  C('inFlux','Groupe utilisé dans F2 ?',{lSimple:'Flux existant ?'})
+  C('inFlux','Groupe utilisé dans F2 ?',{lSimple:'Flux existant ?'}),
+  C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>
+    `La ZG ${zgLab(r.zgDep)} appartient au groupe de départ « ${gLab(r.gdep)} » de ${LAB.zi.get(r.zi)||r.zi} / ${LAB.ze.get(r.ze)||r.ze}.`+
+    (r.refZEs.length?` Référentiel F3 : ZE ${r.refZEs.join(', ')}.`:' Absente du référentiel F3.')})
  ],
  ref:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
@@ -522,8 +560,11 @@ const COLS={
   C('libZg','Libellé (F2)',{expertOnly:true}),
   C('depGroups','Groupes de départ (F1)',{expertOnly:true}),
   C('arrGroups','Groupes d’arrivée (F2)',{expertOnly:true}),
-  C('nbEmpl','Empl. F5',{get:r=>{const n=emplCount(r.depot,r.zg);return n===0?'—':n;},lSimple:'Nb d’emplacements (F5)'}),
-  C('usage','Utilisé ?',{get:r=>(r.depGroups||r.arrGroups)?'oui':'non',lSimple:'Utilisée ?'})
+  C('nbEmpl','Empl. F5',{get:r=>{const n=emplCount(r.depot,r.zg);return n===0?'—':fmt(n);},lSimple:'Nb d’emplacements (F5)'}),
+  C('usage','Utilisé ?',{get:r=>(r.depGroups||r.arrGroups)?'oui':'non',lSimple:'Utilisée ?'}),
+  C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>
+    `La ZG ${zgLab(r.zg)} est rattachée à ${LAB.zi.get(r.zi)||r.zi} / ${LAB.ze.get(r.ze)||r.ze}.`+
+    (r.depGroups?` Groupe(s) de départ : ${r.depGroups}.`:'')+(r.arrGroups?` Groupe(s) d’arrivée : ${r.arrGroups}.`:'')})
  ],
  tampon:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
@@ -536,7 +577,9 @@ const COLS={
   C('empl4','EMPL 4',{expertOnly:true}),C('empl5','EMPL 5',{expertOnly:true}),
   C('libTampon','Libellé',{dim:true}),C('typeEmpl','Type emplacement',{expertOnly:true}),
   C('_lab','Chemin tampon',{get:r=>r._label||'',lSimple:'Chemin du tampon'}),
-  C('inFlux','Flux F2 correspondant ?',{get:r=>r.hasFlux?'oui':'non',lSimple:'Flux existant ?'})
+  C('inFlux','Flux F2 correspondant ?',{get:r=>r.hasFlux?'oui':'non',lSimple:'Flux existant ?'}),
+  C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>
+    `Pour aller de « ${gLab(r.gdep)} » vers « ${gLab(r.garr)} », on passe par ${r._label||'un tampon non nommé'}.`})
  ],
  empl:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
@@ -562,7 +605,10 @@ const COLS={
   C('topPick','Top picking',{dim:true,expertOnly:true}),
   C('active','IMPLANTATION_ACTIVE',{dim:true,expertOnly:true}),
   C('zp','ZP',{expertOnly:true}),C('zs','ZS',{expertOnly:true}),
-  C('posX','POSITION_X',{expertOnly:true}),C('posY','POSITION_Y',{expertOnly:true})
+  C('posX','POSITION_X',{expertOnly:true}),C('posY','POSITION_Y',{expertOnly:true}),
+  C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>
+    `${r.nomEmpl} : allée ${r.allee||'—'}, face ${r.face||'—'}, colonne ${r.colonne||'—'}, niveau ${r.niveau||'—'} — dans la ZG ${zgLab(r.zg)}`+
+    (r.refVia.length?`, rattachée à ${r.refVia.join(' / ')}.`:'.')})
  ],
  excl:[
   C('_file','Fichier d’origine'),C('depot','Dépôt',{dim:true}),
@@ -582,7 +628,7 @@ function cols(){
 }
 const lbl=c=>(S.simple&&c.lSimple)?c.lSimple:c.l;
 function colDef(k){return cols().find(c=>c.k===k);}
-function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,excl:S.exclRows,ecart:[],arbre:[],chemin:[]})[S.tab]||[];}
+function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,excl:S.exclRows,ecart:[],arbre:[],chemin:[],accueil:[]})[S.tab]||[];}
 function withSearch(rows){if(!S.q)return rows;const q=N(S.q);return rows.filter(r=>N(JSON.stringify(r)).includes(q));}
 function matchRow(c,r,v){return c.has?c.has(r,v):String(c.get(r))===v;}
 function filtered(){
@@ -598,6 +644,32 @@ function chipHTML(c,v){
   if(S.simple){const l=labOf(c,v);if(l){txt=`${esc(l)} <small>(${esc(v)})</small>`;title=`${v} = ${l}`;}}
   const kc=c.dict?(' k-'+c.dict):(c.k==='tamponList'?' k-tam':'');
   return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)} — double-clic : fiche">${txt}</button>`;
+}
+
+/* ================= Accueil / tableau de bord ================= */
+function renderHome(){
+  const box=$('#home');
+  const has=Object.keys(S.files).length>0;
+  if(S.tab!=='accueil'){box.hidden=true;box.innerHTML='';return;}
+  box.hidden=false;
+  if(!has){
+    box.innerHTML=`<b>👋 Bienvenue — démarrez en 3 étapes</b>
+      <div class="homeGrid" style="margin-top:12px">
+        <button class="homeCard" data-home="load"><b>1 · Charger vos fichiers</b><small>Cliquez ici (ou glissez-déposez) pour sélectionner vos 5 classeurs Excel d'un coup. Rien n'est envoyé sur Internet.</small></button>
+        <button class="homeCard" data-home="arbre"><b>2 · Explorer</b><small>Parcourez l'arborescence ZI → ZE → Groupe → ZG, cherchez un emplacement, calculez des chemins.</small></button>
+        <button class="homeCard" data-home="ecart"><b>3 · Vérifier & exporter</b><small>Consultez les écarts détectés entre fichiers, puis exportez le résultat en CSV ou PDF.</small></button>
+      </div>`;
+  }else{
+    box.innerHTML=`<b>🏠 Tableau de bord — que voulez-vous faire ?</b>
+      <div class="homeGrid" style="margin-top:12px">
+        <button class="homeCard" data-home="search"><b>🔎 Chercher</b><small>Un emplacement, une ZG, un groupe… (recherche libre)</small></button>
+        <button class="homeCard" data-home="flux"><b>📦 Voir les flux</b><small>${fmt(S.flux.length)} lignes de flux enrichies (F1+F2+F3+F4)</small></button>
+        <button class="homeCard" data-home="arbre"><b>🌳 Arborescence</b><small>ZI → ZE → Groupe → ZG, avec nb d'emplacements</small></button>
+        <button class="homeCard" data-home="chemin"><b>🧭 Chemins</b><small>D'où vient / où va un emplacement, via quels tampons</small></button>
+        <button class="homeCard" data-home="empl"><b>📍 Emplacements</b><small>${fmt(S.empl.length)} emplacements NE1 (F5)</small></button>
+        <button class="homeCard" data-home="ecart"><b>⚠ Écarts</b><small>${fmt(S.controls.reduce((s,c)=>s+c.items.length,0))} anomalie(s) détectée(s)</small></button>
+      </div>`;
+  }
 }
 
 /* ================= Arborescence ================= */
@@ -625,7 +697,7 @@ function renderTree(){
         zgs.forEach(z=>{
           const n=emplCount(D,z);
           h+=`<div class="trow"><button class="fbtn" data-fiche="zg:${esc(z)}" title="Fiche de ${esc(z)}">📄</button>
-            <span class="dot k-zg"></span>${esc(LAB.zg.get(z)||z)} <span class="mut">(${esc(z)})${n?` · ${n} empl.`:''}</span></div>`;
+            <span class="dot k-zg"></span>${esc(LAB.zg.get(z)||z)} <span class="mut">(${esc(z)})${n?` · ${fmt(n)} empl.`:''}</span></div>`;
         });
         h+=`</div></details></div>`;
       });
@@ -637,7 +709,7 @@ function renderTree(){
     <span class="mut">— construite depuis F1 · dépliez avec les flèches · cliquez 📄 pour la fiche détaillée</span>`+h;
 }
 
-/* ================= Chemins entre emplacements ================= */
+/* ================= Chemins ================= */
 function fillPathList(){
   const q=N($('#pathQ').value);
   const out=[];
@@ -677,16 +749,15 @@ function renderPath(){
   const noTam=paths.filter(p=>!p.tams.length).length;
   const totEm=paths.reduce((s,p)=>s+p.emCount,0);
   const head=`<b>${forward?'🚚 Depuis':'🛬 Vers'} ${esc(startLabel)}</b>
-    <span class="mut">· ${paths.length} chemin(s) · ${totEm} emplacements ${forward?'accessibles':'pouvant arriver ici'} · ${noTam?`<span class="warn">${noTam} sans tampon défini</span>`:'tous avec tampon'}</span>`;
+    <span class="mut">· ${fmt(paths.length)} chemin(s) · ${fmt(totEm)} emplacements ${forward?'accessibles':'pouvant arriver ici'} · ${noTam?`<span class="warn">${noTam} sans tampon défini</span>`:'tous avec tampon'}</span>`;
   if(S.pathView==='simple'){
     box.innerHTML=head+`<div style="overflow:auto;margin-top:10px"><table><thead><tr>
-      <th>Groupe de départ</th><th>Tampon traversé (F4)</th><th>Groupe d’arrivée</th><th>ZG</th><th>Emplacements</th>
+      <th>Schéma du chemin</th><th>Tampon traversé (F4)</th><th>ZG</th><th>Emplacements</th>
       </tr></thead><tbody>`+
       paths.map(p=>`<tr>
-        <td>${esc(LAB.g.get(p.g)||p.g)} <span class="mut">(${esc(p.g)})</span></td>
+        <td>${flowHTML(p.g,p.t,p.tams[0],p.zgs.length,p.emCount)}</td>
         <td>${p.tams.length?`<span class="chip k-tam">⏳ ${p.tams.map(esc).join(' · ')}</span>`:'<span class="chip warn">⚠ sans tampon</span>'}</td>
-        <td>${esc(LAB.g.get(p.t)||p.t)} <span class="mut">(${esc(p.t)})</span></td>
-        <td>${p.zgs.length}</td><td>${p.emCount}</td></tr>`).join('')+
+        <td>${p.zgs.length}</td><td>${fmt(p.emCount)}</td></tr>`).join('')+
       `</tbody></table></div>`;
     return;
   }
@@ -697,11 +768,11 @@ function renderPath(){
     ps.forEach(p=>{
       html+=`<div class="trow">${p.tams.length?`<span class="chip k-tam" title="Tampon(s) défini(s) dans F4">⏳ ${p.tams.map(esc).join(' · ')}</span>`:'<span class="chip warn">⚠ sans tampon F4</span>'}
         <span class="mut">${forward?'→':'←'}</span><span class="dot k-g"></span>
-        <details><summary><b>${esc(LAB.g.get(p.t)||p.t)}</b> <span class="mut">(${esc(p.t)}) · ${p.zgs.length} ZG · ${p.emCount} empl.</span></summary><div class="tin">`+
+        <details><summary><b>${esc(LAB.g.get(p.t)||p.t)}</b> <span class="mut">(${esc(p.t)}) · ${p.zgs.length} ZG · ${fmt(p.emCount)} empl.</span></summary><div class="tin">`+
         p.zgs.sort().slice(0,40).map(z=>{
           const els=IDX.empl.get(K(D,z))||[];
           const isTam=/tampon/i.test(LAB.zg.get(z)||'');
-          return `<div class="trow"><span class="dot k-zg"></span><details><summary>${esc(LAB.zg.get(z)||z)} <span class="mut">(${esc(z)}) · ${els.length} empl.</span>${isTam?' <span class="chip k-tam">zone tampon</span>':''}</summary><div class="tin">`+
+          return `<div class="trow"><span class="dot k-zg"></span><details><summary>${esc(LAB.zg.get(z)||z)} <span class="mut">(${esc(z)}) · ${fmt(els.length)} empl.</span>${isTam?' <span class="chip k-tam">zone tampon</span>':''}</summary><div class="tin">`+
             (els.length?els.slice(0,15).map(e=>`<div class="trow mut">${esc(e.nomEmpl)}</div>`).join(''):'<div class="trow mut">aucun emplacement F5</div>')+
             (els.length>15?`<div class="trow mut">… +${els.length-15} autres</div>`:'')+`</div></details></div>`;
         }).join('')+
@@ -734,8 +805,8 @@ function renderFiche(){
     cards=fcard('Rattachement géographique (F3)',uniq(ref.map(r=>gl(LAB.zi,r.zi)+' / '+gl(LAB.ze,r.ze))))
       +fcard('Groupes de départ (F1)',gD.map(g=>gl(LAB.g,g)))
       +fcard('Groupes d’arrivée (F2)',gA.map(g=>gl(LAB.g,g)))
-      +fcard('Flux entrants (F2 → cette ZG)',uniq(fl.map(r=>gl(LAB.g,r.gdep)+' → '+gl(LAB.g,r.garr)+' · tampon : '+esc((r.tamponList||[])[0]||'—'))))
-      +fcard('Emplacements physiques (F5)',em.length?[`<b>${em.length}</b> emplacement(s)`,...em.slice(0,8).map(e=>esc(e.nomEmpl||''))]:[])
+      +fcard('Schéma des flux entrants (F2 → cette ZG)',uniq(fl.map(r=>flowHTML(r.gdep,r.garr,(r.tamponList||[])[0],null,null))))
+      +fcard('Emplacements physiques (F5)',em.length?[`<b>${fmt(em.length)}</b> emplacement(s)`,...em.slice(0,8).map(e=>esc(e.nomEmpl||''))]:[])
       +fcard('État',w.length?w:['<span class="ok">✓ aucun écart détecté</span>']);
   }else if(type==='g'){
     head=`Fiche groupe — <b>${esc(code)}</b>${LAB.g.get(code)?` · ${esc(LAB.g.get(code))}`:''}`;
@@ -747,8 +818,10 @@ function renderFiche(){
     if(!out.length&&!inn.length)w.push('<span class="warn">⚠ aucun flux (F2)</span>');
     cards=fcard('ZI / ZE déclarées (F1)',dG?[...dG.zes].sort().map(z=>gl(LAB.ze,z)):[])
       +fcard('ZG contenues (F1)',dG?[...dG.zgs].sort().map(z=>gl(LAB.zg,z)):[])
-      +fcard('Flux sortants (vers)',out.map(g=>{const t=(IDX.tam4.get(K(D,code,g))||[])[0]||'';return gl(LAB.g,g)+(t?` · tampon : ${esc(t)}`:'');}))
-      +fcard('Flux entrants (depuis)',inn.map(g=>{const t=(IDX.tam4.get(K(D,g,code))||[])[0]||'';return gl(LAB.g,g)+(t?` · tampon : ${esc(t)}`:'');}))
+      +fcard('Schéma des flux sortants',out.map(g=>flowHTML(code,g,(IDX.tam4.get(K(D,code,g))||[])[0],
+        ((IDX.fluxDepZg.get(K(D,code))||new Map()).get(g)||new Set()).size,
+        [...((IDX.fluxDepZg.get(K(D,code))||new Map()).get(g)||[])].reduce((s,z)=>s+emplCount(D,z),0))))
+      +fcard('Schéma des flux entrants',inn.map(g=>flowHTML(g,code,(IDX.tam4.get(K(D,g,code))||[])[0],null,null)))
       +fcard('État',w.length?w:['<span class="ok">✓ aucun écart détecté</span>']);
   }else{
     const isZI=type==='zi';
@@ -768,28 +841,31 @@ function renderFiche(){
 
 /* ================= Rendu ================= */
 function renderTabs(){
-  const defs=[['flux','Flux enrichis',S.flux.length],['depart','Départ · F1',S.depart.length],
-    ['ref','Référentiel ZG · F3',S.ref.length],['tampon','Tampon · F4',S.raw.tampon.length],
-    ['empl','Emplacements · F5',S.empl.length],['arbre','🌳 Arborescence',uniq(S.raw.depart.map(r=>r.zi)).length],
-    ['chemin','🧭 Chemins',null],['excl','Exclus (≠NE1)',S.exclRows.length],
-    ['ecart','Écarts',S.controls.reduce((s,c)=>s+c.items.length,0)]];
-  $('#tabs').innerHTML=defs.map(([k,l,n])=>
-    `<button data-go="${k}" class="${S.tab===k?'on':''}">${l}${n!=null?` <small>${n}</small>`:''}</button>`).join('');
+  const n=k=>{
+    if(k==='flux')return S.flux.length; if(k==='depart')return S.depart.length; if(k==='ref')return S.ref.length;
+    if(k==='tampon')return S.raw.tampon.length; if(k==='empl')return S.empl.length; if(k==='excl')return S.exclRows.length;
+    if(k==='arbre')return uniq(S.raw.depart.map(r=>r.zi)).length; if(k==='ecart')return S.controls.reduce((s,c)=>s+c.items.length,0);
+    return null;};
+  const L={accueil:'🏠 Accueil',flux:'Flux enrichis',empl:'Emplacements · F5',arbre:'🌳 Arborescence',chemin:'🧭 Chemins',
+    depart:'Départ · F1',ref:'Référentiel · F3',tampon:'Tampon · F4',ecart:'⚠ Écarts',excl:'Exclus (≠NE1)'};
+  const groups=[['Démarrer',['accueil']],['Explorer',['flux','empl','arbre','chemin']],['Référentiels',['depart','ref','tampon']],['Qualité',['ecart','excl']]];
+  $('#tabs').innerHTML=groups.map(([g,ks])=>`<span class="grp">${g}</span>`+ks.map(k=>{
+    const c=n(k);return `<button data-go="${k}" class="${S.tab===k?'on':''}">${L[k]}${c!=null?` <small>${fmt(c)}</small>`:''}</button>`;}).join('')).join('');
 }
 function renderStats(){
   const ec=S.controls.reduce((s,c)=>s+c.items.length,0);
   $('#kpis').innerHTML=[
-    ['Lignes de flux',S.flux.length],
-    ['ZG arrivée distincts',uniq(S.flux.map(r=>r.zgArr)).length],
-    ['Couples départ→arrivée',uniq(S.flux.map(r=>K(r.gdep,r.garr))).length],
-    ['Tampons (F4)',S.raw.tampon.length],
-    ['Emplacements (F5)',S.empl.length],
-    ['Lignes exclues (≠NE1)',S.exclRows.length],
-    ['Écarts détectés',ec]
+    ['Lignes de flux',fmt(S.flux.length)],
+    ['ZG arrivée distincts',fmt(uniq(S.flux.map(r=>r.zgArr)).length)],
+    ['Couples départ→arrivée',fmt(uniq(S.flux.map(r=>K(r.gdep,r.garr))).length)],
+    ['Tampons (F4)',fmt(S.raw.tampon.length)],
+    ['Emplacements (F5)',fmt(S.empl.length)],
+    ['Lignes exclues (≠NE1)',fmt(S.exclRows.length)],
+    ['Écarts détectés',fmt(ec)]
   ].map(([l,v])=>`<div class="kpi"><small>${l}</small><b>${v}</b></div>`).join('')
   +Object.keys(LABELS).map(k=>`<div class="kpi"><small>${LABELS[k]}</small>
-    <b style="font-size:15px;color:${S.files[k]?'var(--ok)':'var(--warn)'}">${S.files[k]?S.stats[k].n+' lignes':'non chargé'}</b>
-    <small>${S.files[k]?(S.stats[k].dup+' doublon(s) · '+S.stats[k].excl+' exclue(s)'):''}</small></div>`).join('');
+    <b style="font-size:15px;color:${S.files[k]?'var(--ok)':'var(--warn)'}">${S.files[k]?fmt(S.stats[k].n)+' lignes':'non chargé'}</b>
+    <small>${S.files[k]?(fmt(S.stats[k].dup)+' doublon(s) · '+fmt(S.stats[k].excl)+' exclue(s)'):''}</small></div>`).join('');
   const missing=Object.keys(LABELS).filter(k=>!S.files[k]);
   const empty=Object.keys(LABELS).filter(k=>S.files[k]&&S.stats[k].n===0&&S.stats[k].excl>0);
   const msgs=[];
@@ -813,13 +889,15 @@ function renderFilters(){
 }
 function renderGrid(){
   const cs=cols(),rows=filtered(),grid=$('#grid');
-  if(!cs.length){grid.innerHTML='';$('#tableInfo').textContent='Voir les contrôles ci-dessous.';$('#more').hidden=true;return;}
-  let html='<thead><tr>'+cs.map(c=>`<th>
-    <button class="th" data-explorer="${c.k}" title="Explorer les valeurs et les liens de cette colonne">${esc(lbl(c))} <span>🔗</span></button>
-    <button class="sort" data-sort="${c.k}" title="Trier">${S.sort&&S.sort.k===c.k?(S.sort.dir>0?'↑':'↓'):'↕'}</button></th>`).join('')+'</tr></thead><tbody>';
+  if(!cs.length){grid.innerHTML='';$('#tableInfo').textContent='';$('#more').hidden=true;return;}
+  let html='<thead><tr>'+cs.map(c=>{
+    const info=c.info||INFO[c.k];
+    return `<th><button class="th" data-explorer="${c.k}" title="Explorer les valeurs et les liens de cette colonne">${esc(lbl(c))} <span class="lk">🔗</span>${info?`<span class="ib" title="${esc(info)}">ⓘ</span>`:''}</button>
+    <button class="sort" data-sort="${c.k}" title="Trier">${S.sort&&S.sort.k===c.k?(S.sort.dir>0?'↑':'↓'):'↕'}</button></th>`;}).join('')+'</tr></thead><tbody>';
   rows.slice(0,S.limit).forEach(r=>{
     html+='<tr>'+cs.map(c=>{
       if(c.btn)return `<td>${c.btn(r)}</td>`;
+      if(c.k==='_ctl'){const v=c.get(r);const bad=v!=='OK';return `<td><span class="${bad?'warn':'ok'}">${esc(v)}</span></td>`;}
       const vals=(c.vals?c.vals(r):[c.get(r)]).filter(v=>v!==''&&v!=null);
       if(c.dim&&vals.length){
         const shown=vals.slice(0,3).map(v=>chipHTML(c,v)).join('');
@@ -830,7 +908,7 @@ function renderGrid(){
   });
   html+='</tbody>';
   grid.innerHTML=rows.length?html:`<thead><tr>${cs.map(c=>`<th>${esc(lbl(c))}</th>`).join('')}</tr></thead><tbody><tr><td colspan="${cs.length}" class="mut">Aucune ligne ne correspond aux filtres.</td></tr></tbody>`;
-  $('#tableInfo').textContent=`${Math.min(rows.length,S.limit)} ligne(s) affichée(s) sur ${rows.length} · 1 clic = filtrer · double-clic sur une pastille = fiche · 📄 = fiche · 🧭 = chemins.`;
+  $('#tableInfo').textContent=`${fmt(Math.min(rows.length,S.limit))} ligne(s) affichée(s) sur ${fmt(rows.length)} · 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins · ⓘ = définition.`;
   $('#more').hidden=rows.length<=S.limit;
 }
 function explorer(k){
@@ -840,34 +918,44 @@ function explorer(k){
     .forEach(v=>{const s=String(v);m.set(s,(m.get(s)||0)+1);}));
   const list=[...m].sort((a,b)=>b[1]-a[1]),max=Math.max(1,...list.map(x=>x[1]));
   const box=$('#explorer');box.hidden=false;
-  box.innerHTML=`<div class="expHead"><b>Explorateur · ${esc(lbl(c))}</b><small>${list.length} valeur(s) · cliquez pour filtrer toutes les colonnes liées</small><button id="closeExp">Fermer ×</button></div><div class="expList">`+
-    list.map(([v,n])=>{const l=S.simple?labOf(c,v):'';return `<button class="expItem" data-dim="${k}" data-val="${esc(v)}"><span>${esc(l?l+' ('+v+')':v)}</span><b>${n}</b><i style="width:${100*n/max}%"></i></button>`;}).join('')+'</div>';
+  box.innerHTML=`<div class="expHead"><b>Explorateur · ${esc(lbl(c))}</b><small>${fmt(list.length)} valeur(s) · cliquez pour filtrer toutes les colonnes liées</small><button id="closeExp">Fermer ×</button></div><div class="expList">`+
+    list.map(([v,n])=>{const l=S.simple?labOf(c,v):'';return `<button class="expItem" data-dim="${k}" data-val="${esc(v)}"><span>${esc(l?l+' ('+v+')':v)}</span><b>${fmt(n)}</b><i style="width:${100*n/max}%"></i></button>`;}).join('')+'</div>';
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function renderControls(){
   const box=$('#controls');
   if(S.tab!=='ecart'){box.innerHTML='';return;}
-  box.innerHTML=S.controls.length?S.controls.map(c=>`<div class="card"><h3>${esc(c.title)} <small>(${c.items.length})</small></h3>
+  box.innerHTML=S.controls.length?S.controls.map(c=>`<div class="card"><h3>${esc(c.title)} <small>(${fmt(c.items.length)})</small></h3>
     <p class="mut">${esc(c.hint)}</p>`+
     c.items.map(i=>{
       const d=Object.keys(i.filters)[0],v=i.filters[d];
       const dict=d==='zi'?LAB.zi:d==='ze'?LAB.ze:(d==='gdep'||d==='garr')?LAB.g:(d==='zg'||d==='zgArr'||d==='zgDep')?LAB.zg:null;
-      return `<button class="chip" data-ctrl="1" data-tab="${i.tab}" data-filters='${esc(JSON.stringify(i.filters))}' title="${esc(v)}">${esc(S.simple&&dict?((dict.get(v)||'')+' ('+v+')'):v)} · ${i.n}</button>`;
+      return `<button class="chip" data-ctrl="1" data-tab="${i.tab}" data-filters='${esc(JSON.stringify(i.filters))}' title="${esc(v)}">${esc(S.simple&&dict?((dict.get(v)||'')+' ('+v+')'):v)} · ${fmt(i.n)}</button>`;
     }).join('')+'</div>').join('')
     :'<div class="card">Aucun écart détecté sur les fichiers chargés. 🎉</div>';
 }
 function render(){
   const valid=new Set(cols().filter(c=>c.dim).map(c=>c.k));
   Object.keys(S.filters).forEach(k=>{if(!valid.has(k))delete S.filters[k];});
-  renderTabs();renderStats();renderFilters();renderControls();renderFiche();
-  const isTree=S.tab==='arbre',isPath=S.tab==='chemin',hideTable=isTree||isPath;
+  renderTabs();renderStats();renderHome();renderFilters();renderControls();renderFiche();
+  const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',hideTable=isTree||isPath||isHome;
   $('#treeWrap').hidden=!isTree;
   $('#pathWrap').hidden=!isPath;
-  $('.tableWrap').style.display=hideTable?'none':'';
+  $('#tableWrap').style.display=hideTable?'none':'';
   $('#tableInfo').style.display=hideTable?'none':'';
+  $('#filterPanel').style.display=isHome?'none':'';
   if(isTree){renderTree();$('#more').hidden=true;}
   else if(isPath){renderPath();$('#more').hidden=true;}
-  else renderGrid();
+  else if(!isHome)renderGrid();
+}
+
+/* ================= Thème & taille ================= */
+const FS=['14.5px','16px','17.5px'],FL=['A','A+','A++'];
+function applyTheme(){
+  document.body.classList.toggle('light',S.theme==='light');
+  $('#theme').textContent=S.theme==='light'?'☀️ Clair':'🌙 Sombre';
+  document.documentElement.style.setProperty('--fs',FS[+S.fsz||0]);
+  $('#fsz').textContent=FL[+S.fsz||0];
 }
 
 /* ================= Actions ================= */
@@ -882,7 +970,7 @@ function exportCSV(){
 }
 function clearAll(){
   S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[]};S.files={};S.stats={};S.exclRows=[];S.fiche=null;S.path=null;
-  S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';
+  S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';S.tab='accueil';
   $('#bulk').value='';$('#bulkState').textContent='Aucun fichier chargé';
   $('#explorer').hidden=true;
   buildModel();render();
@@ -899,8 +987,16 @@ document.addEventListener('click',e=>{
   if(b.dataset.printfiche){window.print();return;}
   if(b.dataset.fiche){const [t,c]=b.dataset.fiche.split(':');S.fiche={type:t,code:c};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});return;}
   if(b.dataset.path){S.path={q:b.dataset.path,dir:(S.path&&S.path.dir)||'aller'};S.tab='chemin';render();return;}
+  if(b.dataset.home){
+    const h=b.dataset.home;
+    if(h==='load'){$('#bulk').click();return;}
+    if(h==='search'){S.tab='flux';render();setTimeout(()=>$('#q').focus(),50);return;}
+    S.tab=h;render();return;
+  }
   if(b.id==='pathGo'){S.path={q:$('#pathQ').value,dir:$('#pathDir').value};renderPath();return;}
   if(b.id==='pathView'){S.pathView=S.pathView==='simple'?'detail':'simple';localStorage.setItem('zgPathView',S.pathView);renderPath();return;}
+  if(b.id==='theme'){S.theme=S.theme==='light'?'dark':'light';localStorage.setItem('zgTheme',S.theme);applyTheme();return;}
+  if(b.id==='fsz'){S.fsz=String(((+S.fsz||0)+1)%3);localStorage.setItem('zgFs',S.fsz);applyTheme();return;}
   if(b.id==='mode'){setMode(!S.simple);return;}
   if(b.id==='reset'){S.filters={};S.q='';$('#q').value='';S.limit=200;render();return;}
   if(b.id==='csv'){exportCSV();return;}
@@ -919,7 +1015,7 @@ document.addEventListener('click',e=>{
   if(b.dataset.go){S.tab=b.dataset.go;S.filters={};S.sort=null;S.limit=200;$('#explorer').hidden=true;render();return;}
   if(b.dataset.ctrl){
     S.tab=b.dataset.tab;S.filters=JSON.parse(b.dataset.filters);S.q='';$('#q').value='';S.limit=200;render();
-    $('.tableWrap').scrollIntoView({behavior:'smooth'});return;
+    $('#tableWrap').scrollIntoView({behavior:'smooth'});return;
   }
 });
 document.addEventListener('dblclick',e=>{
@@ -950,6 +1046,7 @@ if(typeof XLSX==='undefined'){
   $('#notice').hidden=false;
   $('#notice').textContent='Librairie SheetJS non chargée : connexion Internet requise au premier affichage.';
 }
+applyTheme();
 setMode(S.simple);
 buildModel();render();
 </script>
