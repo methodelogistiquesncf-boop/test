@@ -81,7 +81,7 @@ details{font-size:13px;color:var(--mut)}
 
 <section class="panel">
   <div id="fselects"></div>
-  <div style="margin-top:10px"><label>Recherche libre (code, libellé, n° emplacement…)<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, 34 451…"></label></div>
+  <div style="margin-top:10px"><label>Recherche libre (code, libellé, n° emplacement…)<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, M2_LC006N4E1…"></label></div>
 </section>
 
 <nav id="tabs"></nav>
@@ -95,7 +95,8 @@ details{font-size:13px;color:var(--mut)}
 <summary>Règles de jointure appliquées</summary>
 <ul>
 <li><b>Filtre dépôt</b> : seules les lignes dont le Dépôt = <code>NE1</code> sont conservées (tous fichiers). Les lignes exclues sont consultables dans l'onglet « Exclus (≠NE1) ».</li>
-<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ (la ZE n'est pas utilisée comme clé).</li>
+<li><b>Nom emplacement (F5)</b> : concaténation des champs <code>Allée + Face + Colonne + Niveau + Emplacement</code> (configurable dans la constante <code>EMPL_NAME_FIELDS</code> du script).</li>
+<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ.</li>
 <li><b>F2</b> : grain = Dépôt + ZI + ZE flux + Groupe départ + Groupe arrivée + ZG arrivée.</li>
 <li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE de rattachement (non exclusif).</li>
 <li><b>F4 (tampon)</b> : jointure prioritaire Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
@@ -114,11 +115,17 @@ const N=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLower
 const K=(...a)=>a.map(x=>String(x??'').trim()).join('|');
 const uniq=a=>[...new Set(a.filter(x=>x!==undefined&&x!==null&&x!==''))];
 const sortU=a=>uniq(a).sort((x,y)=>String(x).localeCompare(String(y),'fr',{numeric:true}));
-/* Dépôt unique conservé : modifiez ici si besoin */
+
+/* ========== Constantes configurables ========== */
 const DEPOT_KEEP='NE1';
+/* Champs utilisés pour construire le "Nom emplacement" (F5).
+   Retirez un champ de cette liste si le nom officiel n'en utilise que 4. */
+const EMPL_NAME_FIELDS=['allee','face','colonne','niveau','empl'];
+const EMPL_NAME_SEP=''; // mettez '-' ou '_' si vous préférez un séparateur
 
 /* ========== Reconnaissance des en-têtes ========== */
-const EXACT={depot:'depot',zi:'zi',ze:'ze',zg:'zg',zonegeo:'zg',libellezi:'libZI',libellecourtzi:'courtZI',
+const EXACT={depot:'depot',zi:'zi',ze:'ze',zg:'zg',zonegeo:'zg',zonegeoographique:'zg',
+libellezi:'libZI',libellecourtzi:'courtZI',
 libelleze:'libZE',libellezg:'libZg',groupezgdepart:'gdep',groupezgarrivee:'garr',
 libellegroupezgdepart:'libGdep',libellegroupzgdepart:'libGdep',
 libellegroupezgarrivee:'libGarr',libellegroupzgarrivee:'libGarr',
@@ -199,11 +206,20 @@ function tamponLabel(r){
     .map(v=>String(v??'').trim()).filter(v=>v&&v!=='.').join('/');
   return [r.sequence?('S'+r.sequence):'',em,r.libTampon].filter(Boolean).join(' · ');
 }
+function buildEmplName(r){
+  return EMPL_NAME_FIELDS.map(k=>String(r[k]??'').trim()).join(EMPL_NAME_SEP);
+}
 function store(kind,rows,name){
-  if(kind==='empl')rows.forEach(r=>{if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}});
+  if(kind==='empl')rows.forEach(r=>{
+    if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}
+    r.nomEmpl=buildEmplName(r);
+  });
   /* Filtre dépôt : on ne garde que NE1 */
   const kept=[],excl=[];
-  rows.forEach(r=>{if(N(r.depot)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);});
+  rows.forEach(r=>{
+    const d=String(r.depot??'').trim();
+    if(N(d)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);
+  });
   S.exclRows=S.exclRows.concat(excl);
   const d=dedup(kept);
   S.raw[kind]=d.rows;S.stats[kind]={n:d.rows.length,dup:d.dup,excl:excl.length};S.files[kind]=name;
@@ -216,6 +232,15 @@ async function ingest(kind,buf,name){
 }
 function buildModel(){
   Object.values(IDX).forEach(m=>m.clear());
+  S.exclRows=[];
+  Object.keys(S.raw).forEach(k=>{
+    const all=S.raw[k];
+    const kept=[],excl=[];
+    all.forEach(r=>{const d=String(r.depot??'').trim();
+      if(N(d)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);});
+    S.exclRows=S.exclRows.concat(excl);
+    S.raw[k]=kept;
+  });
   S.raw.depart.forEach(r=>{
     const k=K(r.depot,r.zi,r.gdep);
     if(!IDX.dep.has(k))IDX.dep.set(k,{zgs:new Set(),zes:new Set()});
@@ -265,10 +290,12 @@ function buildModel(){
   S.empl=S.raw.empl.map(r=>{
     const ref=IDX.ref.get(K(r.depot,r.zg))||[];
     return {...r,
+      nomEmpl:buildEmplName(r),
       refVia:sortU(ref.map(x=>x.zi+'/'+x.ze)),
       depGroups:[...(IDX.byDepZg.get(K(r.depot,r.zg))||[])].sort().join(', '),
       arrGroups:[...(IDX.byArrZg.get(K(r.depot,r.zg))||[])].sort().join(', ')};
   });
+  S.exclRows.forEach(r=>{r.nomEmpl=buildEmplName(r);});
   S.controls=makeControls();
 }
 const emplCount=(depot,zg)=>{const a=IDX.empl.get(K(depot,zg));return a?a.length:0;};
@@ -355,12 +382,13 @@ const COLS={
  ],
  empl:[
   C('depot','Dépôt',{dim:true}),C('numEmpl','N° emplacement',{dim:true}),
+  C('nomEmpl','Nom emplacement (concaténé)',{dim:true}),
   C('zg','Zone géo (ZG)',{dim:true}),
   C('refVia','ZI / ZE via F3',{get:r=>(r.refVia||[]).join(', ')}),
   C('depGroups','Groupes départ (F1)'),C('arrGroups','Groupes arrivée (F2)'),
   C('zoneInv','Zone inventaire',{dim:true}),C('magasin','Code magasin',{dim:true}),
-  C('allee','Allée',{dim:true}),C('face','Face'),C('colonne','Colonne'),C('niveau','Niveau'),
-  C('empl','Emplacement'),C('libEmpl','Libellé'),C('taille','Code taille'),
+  C('allee','Allée',{dim:true}),C('face','Face',{dim:true}),C('colonne','Colonne',{dim:true}),C('niveau','Niveau',{dim:true}),
+  C('empl','Emplacement',{dim:true}),C('libEmpl','Libellé'),C('taille','Code taille'),
   C('nbStock','Nb supports stockables'),C('nbDispo','Nb supports dispo'),
   C('topTampon','Top tampon',{dim:true}),C('topStock','Top stockage',{dim:true}),C('topPick','Top picking',{dim:true}),
   C('active','IMPLANTATION_ACTIVE',{dim:true}),C('zp','ZP'),C('zs','ZS'),
@@ -369,6 +397,7 @@ const COLS={
  excl:[
   C('_file','Fichier d’origine'),C('depot','Dépôt',{dim:true}),
   C('zg','Zone géo / ZG',{dim:true}),C('numEmpl','N° emplacement'),
+  C('nomEmpl','Nom emplacement'),
   C('zoneInv','Zone inventaire'),C('allee','Allée'),C('face','Face'),C('colonne','Colonne'),C('niveau','Niveau'),
   C('empl','Emplacement'),C('libEmpl','Libellé'),
   C('nbStock','Nb supports stockables'),C('nbDispo','Nb supports dispo')
@@ -553,7 +582,7 @@ dz.addEventListener('drop',async e=>{
   buildModel();render();
 });
 
-/* Démarrage : aucun fichier préchargé — chargement 100 % manuel */
+/* Démarrage */
 if(typeof XLSX==='undefined'){
   $('#notice').hidden=false;
   $('#notice').textContent='Librairie SheetJS non chargée : connexion Internet requise au premier affichage.';
