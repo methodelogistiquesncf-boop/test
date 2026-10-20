@@ -65,6 +65,14 @@ summary:hover{background:#172944}
 .fcard{background:#0b1220;border:1px solid var(--line);border-radius:10px;padding:10px}
 .fcard h4{margin:0 0 6px;font-size:13px;color:var(--acc)}
 .fcard ul{margin:0;padding-left:16px;font-size:12.5px;max-height:200px;overflow:auto}
+/* Écran d'attente pendant le chargement */
+#loading{position:fixed;inset:0;background:rgba(4,10,20,.78);display:flex;align-items:center;justify-content:center;z-index:60}
+#loading[hidden]{display:none}
+.loadBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 36px;text-align:center;max-width:600px;box-shadow:0 10px 40px rgba(0,0,0,.55)}
+.spin{width:44px;height:44px;margin:0 auto 14px;border:4px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:rot 1s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+#loadingMsg{font-size:15px;font-weight:600}
+#loadingSub{font-size:12.5px;color:var(--mut);margin-top:6px}
 @media print{
   body *{visibility:hidden}
   #fiche,#fiche *{visibility:visible}
@@ -73,10 +81,19 @@ summary:hover{background:#172944}
   #fiche h4{color:#000}
   #fiche button{display:none!important}
   #fiche .fcard ul{max-height:none;overflow:visible}
+  #loading{display:none!important}
 }
 </style>
 </head>
 <body>
+<div id="loading" hidden>
+  <div class="loadBox">
+    <div class="spin"></div>
+    <div id="loadingMsg">Chargement des fichiers…</div>
+    <div id="loadingSub">Merci de patienter — le traitement se fait entièrement dans votre navigateur.</div>
+  </div>
+</div>
+
 <header>
   <div><h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements</h1>
   <small>5 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small></div>
@@ -92,7 +109,7 @@ summary:hover{background:#172944}
 <main>
 <section id="drop" class="panel">
   <b>Vos fichiers — chargement en masse</b>
-  <span class="mut">— glissez-déposez <b>tous vos classeurs d’un coup</b> dans cette zone, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom) : F1 départ, F2 flux, F3 référentiel, F4 tampon, F5 emplacements. L’ordre n’a aucune importance.</span>
+  <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> dans cette zone, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom) : F1 départ, F2 flux, F3 référentiel, F4 tampon, F5 emplacements. L'ordre n'a aucune importance. Un message vous prévient pendant le chargement.</span>
   <div class="row" style="margin-top:10px">
     <label>Charger 1 à 5 fichiers Excel<input type="file" accept=".xlsx,.xls" multiple id="bulk"></label>
     <span class="mut" id="bulkState">Aucun fichier chargé</span>
@@ -108,7 +125,7 @@ summary:hover{background:#172944}
 </section>
 
 <div class="panel mut" style="font-size:12.5px">
-  Légende :<span class="dot k-zi"></span>ZI (zone d’intervention)<span class="dot k-ze"></span>ZE (zone d’évolution)<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG (zone géographique)<span class="dot k-tam"></span>Tampon
+  Légende :<span class="dot k-zi"></span>ZI (zone d'intervention)<span class="dot k-ze"></span>ZE (zone d'évolution)<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG (zone géographique)<span class="dot k-tam"></span>Tampon
   — 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins.
 </div>
 
@@ -119,12 +136,12 @@ summary:hover{background:#172944}
 
 <section id="pathWrap" class="panel" hidden>
   <b>🧭 Chemins entre emplacements</b>
-  <span class="mut">— choisissez un emplacement (ou une ZG) et le sens : la vue simplifiée liste chaque chemin sur une ligne ; basculez vers l’arbre pour le détail.</span>
+  <span class="mut">— choisissez un emplacement (ou une ZG) et le sens : la vue simplifiée liste chaque chemin sur une ligne ; basculez vers l'arbre pour le détail.</span>
   <div class="row" style="margin-top:10px">
     <label>Emplacement ou ZG<input id="pathQ" list="pathList" placeholder="Ex. M2_LC006N4E1, 2 416, ZGMAG3…"><datalist id="pathList"></datalist></label>
     <label>Sens du chemin<select id="pathDir">
       <option value="aller">Aller : ce que je peux atteindre depuis ici</option>
-      <option value="retour">Retour : ce qui peut arriver jusqu’ici</option>
+      <option value="retour">Retour : ce qui peut arriver jusqu'ici</option>
     </select></label>
     <button id="pathGo">Calculer les chemins</button>
     <button id="pathView">🌳 Version détaillée (arbre)</button>
@@ -141,11 +158,11 @@ summary:hover{background:#172944}
 <summary>📖 Glossaire pour les non-initiés (exemples tirés de vos fichiers)</summary>
 <ul>
 <li><b>Dépôt (NE1)</b> : le site physique. Tous les fichiers sont filtrés sur NE1.</li>
-<li><b>ZI — Zone d’Intervention</b> : périmètre organisationnel, « qui intervient où ». Ex. <code>ZIHUB</code> = « Zone Intervention HUB ».</li>
-<li><b>ZE — Zone d’Évolution</b> : sous-zone d’une ZI, « où ça circule ». Ex. <code>ZEHUB</code> = « Zone Evolution HUB ».</li>
+<li><b>ZI — Zone d'Intervention</b> : périmètre organisationnel, « qui intervient où ». Ex. <code>ZIHUB</code> = « Zone Intervention HUB ».</li>
+<li><b>ZE — Zone d'Évolution</b> : sous-zone d'une ZI, « où ça circule ». Ex. <code>ZEHUB</code> = « Zone Evolution HUB ».</li>
 <li><b>ZG — Zone Géographique</b> : plus petite zone de localisation du stock. Ex. <code>ZGMAG3</code> = « LI-MAG3 ».</li>
-<li><b>Groupe ZG (GZG…)</b> : paquet de ZG utilisé comme point de départ ou d’arrivée des flux. Ex. <code>GZGHUB</code> = « Groupe ZG HUB ».</li>
-<li><b>Tampon</b> : zone d’attente traversée entre un groupe de départ et un groupe d’arrivée. Ex. <code>HUBT/S</code> = « HUB Tampon Sortie ».</li>
+<li><b>Groupe ZG (GZG…)</b> : paquet de ZG utilisé comme point de départ ou d'arrivée des flux. Ex. <code>GZGHUB</code> = « Groupe ZG HUB ».</li>
+<li><b>Tampon</b> : zone d'attente traversée entre un groupe de départ et un groupe d'arrivée. Ex. <code>HUBT/S</code> = « HUB Tampon Sortie ».</li>
 <li><b>Emplacement (F5)</b> : adresse physique exacte = Allée + Face + Colonne + Niveau + Emplacement. Ex. <code>M2_LC006N4E1</code>.</li>
 <li><b>Séquence (F4)</b> : ordre de priorité du tampon dans un flux.</li>
 </ul>
@@ -154,12 +171,12 @@ summary:hover{background:#172944}
 <details class="panel" style="margin-top:12px">
 <summary>Règles de jointure appliquées</summary>
 <ul>
-<li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées ; les autres sont listées dans l’onglet « Exclus (≠NE1) ».</li>
-<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ (la ZE n’est pas utilisée comme clé).</li>
+<li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées ; les autres sont listées dans l'onglet « Exclus (≠NE1) ».</li>
+<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ (la ZE n'est pas utilisée comme clé).</li>
 <li><b>F2</b> : grain = Dépôt + ZI + ZE flux + Groupe départ + Groupe arrivée + ZG arrivée.</li>
 <li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE de rattachement.</li>
 <li><b>F4 (tampon)</b> : Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
-<li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom d’emplacement = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
+<li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom d'emplacement = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
 <li><b>Chemins (🧭)</b> : emplacement → ZG (F5) → groupes (F1 départ / F2 arrivée) → flux (F2) → tampon (F4) → ZG cible → emplacements (F5). Sens retour = parcours inverse.</li>
 </ul>
 </details>
@@ -177,6 +194,7 @@ const sortU=a=>uniq(a).sort((x,y)=>String(x).localeCompare(String(y),'fr',{numer
 const DEPOT_KEEP='NE1';
 const EMPL_NAME_FIELDS=['allee','face','colonne','niveau','empl'];
 const EMPL_NAME_SEP='';
+const frame=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 
 /* ========== Reconnaissance des en-têtes ========== */
 const EXACT={depot:'depot',zi:'zi',ze:'ze',zg:'zg',zonegeo:'zg',zonegeoographique:'zg',
@@ -262,7 +280,7 @@ function detectByName(name){
 /* ================= État ================= */
 const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements'};
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
-  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[],fiche:null,path:null,
+  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
   pathView:localStorage.getItem('zgPathView')||'simple',
   simple:localStorage.getItem('zgMode')!=='expert'};
 const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),
@@ -303,12 +321,25 @@ async function ingest(kind,buf,name){
   wb.SheetNames.forEach(sn=>{rows=rows.concat(parseSheet(wb.Sheets[sn],name,sn));});
   store(kind,rows,name);
 }
+/* ========== Écran d'attente ========== */
+function showLoad(msg,sub){
+  $('#loadingMsg').textContent=msg;
+  $('#loadingSub').textContent=sub||'Merci de patienter — le traitement se fait entièrement dans votre navigateur.';
+  $('#loading').hidden=false;
+}
+function hideLoad(){$('#loading').hidden=true;}
 /* ========== Chargement en masse ========== */
 async function loadFiles(files){
-  if(!files||!files.length)return;
+  if(!files||!files.length||S.loading)return;
+  S.loading=true;
+  showLoad('Préparation du chargement…','0 / '+files.length+' fichier(s)');
+  await frame();
   S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[]};S.files={};S.stats={};S.exclRows=[];
-  const done=[];
+  const done=[];let i=0;
   for(const f of files){
+    i++;
+    showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'Ouverture et reconnaissance des colonnes…');
+    await frame();
     try{
       const buf=await f.arrayBuffer();
       const wb=XLSX.read(buf,{type:'array'});
@@ -316,12 +347,18 @@ async function loadFiles(files){
       const kind=detectKind(rows)||detectByName(f.name);
       if(!kind){alert('Fichier non reconnu : '+f.name);continue;}
       store(kind,rows,f.name);done.push(kind);
+      showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+rows.length+' lignes reconnues → '+LABELS[kind]);
+      await frame();
     }catch(err){alert('Erreur de lecture '+f.name+' : '+err.message);}
   }
+  showLoad('Calcul des recoupements…',done.length+' fichier(s) chargé(s) : '+done.map(k=>LABELS[k]).join(', '));
+  await frame();
+  buildModel();render();
   $('#bulkState').innerHTML=done.length
     ?`<span class="ok">✓ ${done.length} fichier(s) chargé(s)</span> : ${done.map(k=>LABELS[k]).join(', ')}`
     :'<span class="warn">Aucun fichier reconnu</span>';
-  buildModel();render();
+  hideLoad();
+  S.loading=false;
 }
 function buildModel(){
   Object.values(IDX).forEach(m=>m.clear());
