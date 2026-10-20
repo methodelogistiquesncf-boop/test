@@ -11,19 +11,24 @@ body.light{--bg:#eef1f6;--bg2:#ffffff;--panel:#ffffff;--line:#d8dee9;--txt:#1c2b
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.55 system-ui,Segoe UI,Roboto,sans-serif}
 
-/* ===== BARRE DE MENU PRINCIPALE ===== */
-.menu-bar{display:flex;background:var(--bg2);border-bottom:2px solid var(--line);padding:0;position:sticky;top:0;z-index:50}
-.menu-item{position:relative;padding:14px 22px;cursor:pointer;font-size:15px;font-weight:600;border-right:1px solid var(--line);transition:all .2s;display:flex;align-items:center;gap:8px}
+/* ===== BARRE DE MENU UNIQUE (toute la navigation) ===== */
+.menu-bar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;background:var(--bg2);border-bottom:2px solid var(--line)}
+.menu-item{position:relative;display:flex;align-items:center;gap:7px;padding:12px 18px;background:none;border:0;border-right:1px solid var(--line);color:var(--txt);font:inherit;font-size:14.5px;font-weight:600;cursor:pointer}
 .menu-item:hover{background:var(--hover);color:var(--acc)}
-.menu-item.active{background:var(--acc);color:#04121f;border-color:var(--acc)}
-.menu-dropdown{position:absolute;top:100%;left:0;background:var(--panel);border:1px solid var(--line);border-radius:0 0 10px 10px;min-width:220px;display:none;box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:60}
-.menu-item:hover .menu-dropdown{display:block}
-.menu-dropdown button{display:block;width:100%;text-align:left;padding:10px 18px;background:none;border:none;color:var(--txt);font:inherit;cursor:pointer}
+.menu-item.active{background:var(--acc);color:#04121f}
+.menu-item.cur{color:var(--acc)}
+.menu-dropdown{position:absolute;top:100%;left:0;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:0 0 10px 10px;box-shadow:0 10px 26px rgba(0,0,0,.35);display:none;padding:4px 0;z-index:60}
+.menu-item.open .menu-dropdown{display:block}
+.menu-dropdown button{display:block;width:100%;text-align:left;padding:9px 16px;background:none;border:0;color:var(--txt);font:inherit;font-size:13.5px;cursor:pointer}
 .menu-dropdown button:hover{background:var(--hover);color:var(--acc)}
+.menu-dropdown button.on{color:var(--acc);font-weight:700;background:var(--hover)}
+.menu-dropdown button small{color:var(--mut);float:right;margin-left:12px}
 .menu-sep{height:1px;background:var(--line);margin:4px 0}
+.mbadge{margin-left:4px;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;background:var(--hover);border:1px solid var(--line)}
+.mbadge.ok{color:var(--ok)} .mbadge.warn{color:var(--warn)}
 
-header{padding:12px 22px;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-h1{font-size:17px;margin:0;font-weight:500;color:var(--mut)}
+header{padding:10px 22px;background:var(--bg2);border-bottom:1px solid var(--line)}
+h1{font-size:17px;margin:0;font-weight:600}
 h3{margin:0 0 6px}
 main{padding:18px 22px;max-width:1900px;margin:auto}
 .mut,small{color:var(--mut)}
@@ -34,14 +39,17 @@ label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mu
 select,input[type=search],input[type=file],button{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
 button{cursor:pointer}
 button:hover{border-color:var(--acc);color:var(--acc)}
-#drop{border:1px dashed var(--line)}
+
+/* Zone de chargement : pleine ou bandeau compact */
+#drop{border-style:dashed}
 #drop.over{border-color:var(--acc);background:var(--hover)}
+#dropFull .expHead{position:static;background:none}
+#dropMini{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13px;padding:2px 0}
+#dropMini .fbtn{font-size:12px;padding:4px 10px}
+
 #kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:130px}
 .kpi b{display:block;font-size:20px;color:var(--acc)}
-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
-nav button.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
-.grp{color:var(--mut);font-size:11px;margin:0 4px 0 12px;text-transform:uppercase;letter-spacing:.06em}
 #fselects{display:flex;flex-wrap:wrap;gap:10px}
 #fselects select{min-width:170px;max-width:300px}
 #explorer,#treeWrap,#pathTree{margin-bottom:6px;max-height:60vh;overflow:auto}
@@ -96,10 +104,11 @@ summary:hover{background:var(--hover)}
 @keyframes rot{to{transform:rotate(360deg)}}
 #loadingMsg{font-size:15px;font-weight:600}
 #loadingSub{font-size:12.5px;color:var(--mut);margin-top:6px}
+@media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}}
 @media print{
   body{background:#fff!important;color:#000!important}
   body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
-  header .row,#drop,#fselects,nav,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar{display:none!important}
+  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header{display:none!important}
   .panel,.card,.fcard,.fbox,.chip{background:#fff!important;border-color:#999!important;color:#000!important}
   th{background:#eee!important;color:#000!important}
   tbody tr:nth-child(even){background:#f5f5f5!important}
@@ -117,37 +126,29 @@ summary:hover{background:var(--hover)}
   </div>
 </div>
 
-<!-- BARRE DE MENU PRINCIPALE -->
-<div class="menu-bar">
-  <div class="menu-item" id="menu-accueil">🏠 Accueil</div>
-  <div class="menu-item" id="menu-chargement">📂 Chargement</div>
-  <div class="menu-item">⚙️ Autre
-    <div class="menu-dropdown">
-      <button id="menu-export">📥 Exporter CSV</button>
-      <button id="menu-reset">🔄 Réinitialiser filtres</button>
-      <button id="menu-clear">🗑️ Vider les fichiers</button>
-      <div class="menu-sep"></div>
-      <button id="menu-theme">🌙 Thème clair/sombre</button>
-      <button id="menu-fsz">🔤 Taille du texte</button>
-      <button id="menu-mode">👓 Mode débutant</button>
-      <div class="menu-sep"></div>
-      <button onclick="location.href='aide.html'">❓ Aide</button>
-    </div>
-  </div>
-</div>
+<!-- ===== BARRE DE MENU : TOUTE LA NAVIGATION ICI ===== -->
+<div class="menu-bar" id="menuBar"></div>
 
 <header>
-  <div><h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements</h1>
-  <small>5 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small></div>
+  <h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements</h1>
+  <small>5 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small>
 </header>
 
 <main>
+<!-- Zone de chargement : pleine AVANT chargement, bandeau 1 ligne APRÈS -->
 <section id="drop" class="panel">
-  <b>Vos fichiers — chargement en masse</b>
-  <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> ici, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom). L'ordre n'a aucune importance.</span>
-  <div class="row" style="margin-top:10px">
-    <label>Charger 1 à 5 fichiers Excel<input type="file" accept=".xlsx,.xls" multiple id="bulk"></label>
-    <span class="mut" id="bulkState">Aucun fichier chargé</span>
+  <div id="dropFull">
+    <div class="expHead"><b>📂 Vos fichiers — chargement en masse</b><button id="dropHide" class="fbtn" title="Masquer la zone de chargement (reste accessible via le menu 📂)">Masquer ▲</button></div>
+    <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> ici, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom). L'ordre n'a aucune importance.</span>
+    <div class="row" style="margin-top:10px">
+      <label>Charger 1 à 5 fichiers Excel<input type="file" accept=".xlsx,.xls" multiple id="bulk"></label>
+      <span class="mut" id="bulkState">Aucun fichier chargé</span>
+    </div>
+  </div>
+  <div id="dropMini" hidden>
+    <span id="miniState"></span>
+    <button id="dropShow" class="fbtn" title="Ré-afficher la zone de chargement complète">📂 Afficher / modifier les fichiers</button>
+    <span class="mut">(vous pouvez aussi glisser-déposer de nouveaux fichiers directement ici)</span>
   </div>
 </section>
 
@@ -165,7 +166,6 @@ summary:hover{background:var(--hover)}
   — 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins · ⓘ = définition.
 </div>
 
-<nav id="tabs"></nav>
 <section id="fiche" class="panel" hidden></section>
 <section id="explorer" class="panel" hidden></section>
 <div id="treeWrap" class="panel" hidden></div>
@@ -232,6 +232,7 @@ const DEPOT_KEEP='NE1';
 const EMPL_NAME_FIELDS=['allee','face','colonne','niveau','empl'];
 const EMPL_NAME_SEP='';
 const frame=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
+const closeMenus=()=>$$('.menu-item.open').forEach(x=>x.classList.remove('open'));
 
 /* ========== Reconnaissance des en-têtes ========== */
 const EXACT={depot:'depot',zi:'zi',ze:'ze',zg:'zg',zonegeo:'zg',zonegeoographique:'zg',
@@ -318,6 +319,7 @@ function detectByName(name){
 const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements'};
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
   flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'accueil',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
+  showDrop:true,
   pathView:localStorage.getItem('zgPathView')||'simple',
   simple:localStorage.getItem('zgMode')!=='expert',
   theme:localStorage.getItem('zgTheme')||'dark',
@@ -376,12 +378,6 @@ function store(kind,rows,name){
   const d=dedup(kept);
   S.raw[kind]=d.rows;S.stats[kind]={n:d.rows.length,dup:d.dup,excl:excl.length};S.files[kind]=name;
 }
-async function ingest(kind,buf,name){
-  const wb=XLSX.read(buf,{type:'array'});
-  let rows=[];
-  wb.SheetNames.forEach(sn=>{rows=rows.concat(parseSheet(wb.Sheets[sn],name,sn));});
-  store(kind,rows,name);
-}
 function showLoad(msg,sub){
   $('#loadingMsg').textContent=msg;
   $('#loadingSub').textContent=sub||'Merci de patienter — le traitement se fait entièrement dans votre navigateur.';
@@ -413,7 +409,9 @@ async function loadFiles(files){
   showLoad('Calcul des recoupements…',done.length+' fichier(s) chargé(s) : '+done.map(k=>LABELS[k]).join(', '));
   await frame();
   try{
-    buildModel();render();
+    buildModel();
+    if(done.length)S.showDrop=false;   /* ← masquage automatique après chargement réussi */
+    render();
     $('#bulkState').innerHTML=done.length
       ?`<span class="ok">✓ ${done.length} fichier(s) chargé(s)</span> : ${done.map(k=>LABELS[k]).join(', ')}`
       :'<span class="warn">Aucun fichier reconnu</span>';
@@ -665,6 +663,20 @@ function chipHTML(c,v){
   return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)} — double-clic : fiche">${txt}</button>`;
 }
 
+/* ===== Statut de chargement (bandeau compact + badge du menu) ===== */
+function loadStatusHTML(){
+  const ks=Object.keys(LABELS).filter(k=>S.files[k]);
+  const miss=Object.keys(LABELS).filter(k=>!S.files[k]);
+  let s=ks.length?`<span class="ok">✓ ${ks.length}/5 fichier(s) chargé(s)</span> : ${ks.map(k=>LABELS[k]+' ('+fmt(S.stats[k].n)+' lignes)').join(' · ')}`
+                 :'<span class="warn">Aucun fichier chargé</span>';
+  if(miss.length)s+=` <span class="warn">· manquants : ${miss.map(k=>LABELS[k]).join(', ')}</span>`;
+  return s;
+}
+function loadStatusText(){
+  const ks=Object.keys(LABELS).filter(k=>S.files[k]);
+  return ks.length?ks.map(k=>LABELS[k]+' : '+S.stats[k].n+' lignes').join(' · '):'Aucun fichier chargé';
+}
+
 function renderHome(){
   const box=$('#home');
   const has=Object.keys(S.files).length>0;
@@ -854,17 +866,37 @@ function renderFiche(){
     <div class="ficheGrid">${cards}</div>`;
 }
 
-function renderTabs(){
+/* ===== BARRE DE MENU : toute la navigation + compteurs ===== */
+function renderMenu(){
   const n=k=>{
     if(k==='flux')return S.flux.length; if(k==='depart')return S.depart.length; if(k==='ref')return S.ref.length;
     if(k==='tampon')return S.raw.tampon.length; if(k==='empl')return S.empl.length; if(k==='excl')return S.exclRows.length;
     if(k==='arbre')return uniq(S.raw.depart.map(r=>r.zi)).length; if(k==='ecart')return S.controls.reduce((s,c)=>s+c.items.length,0);
     return null;};
-  const L={accueil:'🏠 Accueil',flux:'Flux enrichis',empl:'Emplacements · F5',arbre:'🌳 Arborescence',chemin:'🧭 Chemins',
-    depart:'Départ · F1',ref:'Référentiel · F3',tampon:'Tampon · F4',ecart:'⚠ Écarts',excl:'Exclus (≠NE1)'};
-  const groups=[['Démarrer',['accueil']],['Explorer',['flux','empl','arbre','chemin']],['Référentiels',['depart','ref','tampon']],['Qualité',['ecart','excl']]];
-  $('#tabs').innerHTML=groups.map(([g,ks])=>`<span class="grp">${g}</span>`+ks.map(k=>{
-    const c=n(k);return `<button data-go="${k}" class="${S.tab===k?'on':''}">${L[k]}${c!=null?` <small>${fmt(c)}</small>`:''}</button>`;}).join('')).join('');
+  const cnt=k=>{const c=n(k);return c!=null?` <small>${fmt(c)}</small>`:'';};
+  const mi=(k,lab)=>`<button data-go="${k}" class="${S.tab===k?'on':''}">${lab}${cnt(k)}</button>`;
+  const dd=(id,icon,lab,cur,items)=>`<div class="menu-item${cur?' cur':''}" data-menu="${id}" tabindex="0">${icon} ${lab} ▾<div class="menu-dropdown">${items}</div></div>`;
+  const has=Object.keys(S.files).length;
+  $('#menuBar').innerHTML=
+    `<button class="menu-item${S.tab==='accueil'?' active':''}" data-go="accueil">🏠 Accueil</button>`+
+    `<button class="menu-item" id="menuChargement" title="Afficher / masquer la zone de chargement — ${esc(loadStatusText())}">📂 Chargement <span class="mbadge ${has?'ok':'warn'}">${has}/5</span></button>`+
+    dd('explorer','📊','Explorer',['flux','empl','arbre','chemin'].includes(S.tab),
+       mi('flux','📦 Flux enrichis')+mi('empl','📍 Emplacements · F5')+mi('arbre','🌳 Arborescence')+mi('chemin','🧭 Chemins'))+
+    dd('refs','📚','Référentiels',['depart','ref','tampon'].includes(S.tab),
+       mi('depart','Départ · F1')+mi('ref','Référentiel · F3')+mi('tampon','Tampon · F4'))+
+    dd('qual','✅','Qualité',['ecart','excl'].includes(S.tab),
+       mi('ecart','⚠ Écarts')+mi('excl','Exclus (≠NE1)'))+
+    dd('autre','⚙️','Autre',false,
+       `<button data-act="export">📥 Exporter CSV</button>
+        <button data-act="reset">🔄 Réinitialiser les filtres</button>
+        <button data-act="clear">🗑 Vider les fichiers</button>
+        <button data-act="print">🖨 Imprimer / PDF</button>
+        <div class="menu-sep"></div>
+        <button data-act="theme">${S.theme==='light'?'🌙 Passer en sombre':'☀️ Passer en clair'}</button>
+        <button data-act="fsz">🔤 Taille du texte · ${FL[+S.fsz||0]}</button>
+        <button data-act="mode">${S.simple?'🛠 Passer en mode expert':'👓 Passer en mode débutant'}</button>
+        <div class="menu-sep"></div>
+        <button data-act="aide">❓ Aide</button>`);
 }
 function renderStats(){
   const ec=S.controls.reduce((s,c)=>s+c.items.length,0);
@@ -876,10 +908,7 @@ function renderStats(){
     ['Emplacements (F5)',fmt(S.empl.length)],
     ['Lignes exclues (≠NE1)',fmt(S.exclRows.length)],
     ['Écarts détectés',fmt(ec)]
-  ].map(([l,v])=>`<div class="kpi"><small>${l}</small><b>${v}</b></div>`).join('')
-  +Object.keys(LABELS).map(k=>`<div class="kpi"><small>${LABELS[k]}</small>
-    <b style="font-size:15px;color:${S.files[k]?'var(--ok)':'var(--warn)'}">${S.files[k]?fmt(S.stats[k].n)+' lignes':'non chargé'}</b>
-    <small>${S.files[k]?(fmt(S.stats[k].dup)+' doublon(s) · '+fmt(S.stats[k].excl)+' exclue(s)'):''}</small></div>`).join('');
+  ].map(([l,v])=>`<div class="kpi"><small>${l}</small><b>${v}</b></div>`).join('');
   const missing=Object.keys(LABELS).filter(k=>!S.files[k]);
   const empty=Object.keys(LABELS).filter(k=>S.files[k]&&S.stats[k].n===0&&S.stats[k].excl>0);
   const msgs=[];
@@ -951,7 +980,14 @@ function renderControls(){
 function render(){
   const valid=new Set(cols().filter(c=>c.dim).map(c=>c.k));
   Object.keys(S.filters).forEach(k=>{if(!valid.has(k))delete S.filters[k];});
-  renderTabs();renderStats();renderHome();renderFilters();renderControls();renderFiche();
+  /* Zone de chargement : pleine si aucun fichier, bandeau compact sinon */
+  const hasFiles=Object.keys(S.files).length>0;
+  const showFull=!hasFiles||S.showDrop;
+  $('#dropFull').hidden=!showFull;
+  $('#dropMini').hidden=showFull;
+  $('#dropHide').hidden=!hasFiles;
+  if(!showFull)$('#miniState').innerHTML=loadStatusHTML();
+  renderMenu();renderStats();renderHome();renderFilters();renderControls();renderFiche();
   const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',hideTable=isTree||isPath||isHome;
   $('#treeWrap').hidden=!isTree;
   $('#pathWrap').hidden=!isPath;
@@ -966,9 +1002,7 @@ function render(){
 const FS=['14.5px','16px','17.5px'],FL=['A','A+','A++'];
 function applyTheme(){
   document.body.classList.toggle('light',S.theme==='light');
-  $('#theme').textContent=S.theme==='light'?'☀️ Clair':'🌙 Sombre';
   document.documentElement.style.setProperty('--fs',FS[+S.fsz||0]);
-  $('#fsz').textContent=FL[+S.fsz||0];
 }
 
 function exportCSV(){
@@ -982,23 +1016,52 @@ function exportCSV(){
 }
 function clearAll(){
   S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[]};S.files={};S.stats={};S.exclRows=[];S.fiche=null;S.path=null;
-  S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';S.tab='accueil';
+  S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';S.tab='accueil';S.showDrop=true;
   $('#bulk').value='';$('#bulkState').textContent='Aucun fichier chargé';
   $('#explorer').hidden=true;
   buildModel();render();
 }
 function setMode(s){
   S.simple=s;localStorage.setItem('zgMode',s?'simple':'expert');
-  $('#mode').textContent=s?'👓 Mode débutant ✓':'🛠 Mode expert';
   render();
 }
+
+/* ===== Clics : menus déroulants + toutes les actions ===== */
 document.addEventListener('click',e=>{
+  /* ouverture / fermeture des menus déroulants */
+  const mi=e.target.closest('.menu-item');
+  if(mi&&mi.dataset.menu&&!e.target.closest('.menu-dropdown')){
+    const was=mi.classList.contains('open');closeMenus();if(!was)mi.classList.add('open');
+    return;
+  }
+  if(!e.target.closest('.menu-bar'))closeMenus();
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='closeExp'){$('#explorer').hidden=true;return;}
   if(b.dataset.ficheclose){S.fiche=null;renderFiche();return;}
   if(b.dataset.printfiche){window.print();return;}
   if(b.dataset.fiche){const [t,c]=b.dataset.fiche.split(':');S.fiche={type:t,code:c};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});return;}
   if(b.dataset.path){S.path={q:b.dataset.path,dir:(S.path&&S.path.dir)||'aller'};S.tab='chemin';render();return;}
+  if(b.id==='dropHide'){S.showDrop=false;render();return;}
+  if(b.id==='dropShow'){S.showDrop=true;render();$('#drop').scrollIntoView({behavior:'smooth',block:'nearest'});return;}
+  if(b.id==='menuChargement'){
+    const hasF=Object.keys(S.files).length>0;
+    if(!hasF){S.showDrop=true;render();$('#drop').scrollIntoView({behavior:'smooth',block:'center'});return;}
+    S.showDrop=!S.showDrop;render();
+    if(S.showDrop)$('#drop').scrollIntoView({behavior:'smooth',block:'nearest'});
+    return;
+  }
+  if(b.dataset.act){
+    const a=b.dataset.act;closeMenus();
+    if(a==='export')exportCSV();
+    else if(a==='reset'){S.filters={};S.q='';$('#q').value='';S.limit=200;render();}
+    else if(a==='clear'){if(confirm('Vider tous les fichiers chargés ?'))clearAll();}
+    else if(a==='print'){window.print();}
+    else if(a==='theme'){S.theme=S.theme==='light'?'dark':'light';localStorage.setItem('zgTheme',S.theme);applyTheme();renderMenu();}
+    else if(a==='fsz'){S.fsz=String(((+S.fsz||0)+1)%3);localStorage.setItem('zgFs',S.fsz);applyTheme();renderMenu();}
+    else if(a==='mode'){setMode(!S.simple);}
+    else if(a==='aide'){location.href='aide.html';}
+    return;
+  }
   if(b.dataset.home){
     const h=b.dataset.home;
     if(h==='load'){$('#bulk').click();return;}
@@ -1007,13 +1070,7 @@ document.addEventListener('click',e=>{
   }
   if(b.id==='pathGo'){S.path={q:$('#pathQ').value,dir:$('#pathDir').value};renderPath();return;}
   if(b.id==='pathView'){S.pathView=S.pathView==='simple'?'detail':'simple';localStorage.setItem('zgPathView',S.pathView);renderPath();return;}
-  if(b.id==='theme'){S.theme=S.theme==='light'?'dark':'light';localStorage.setItem('zgTheme',S.theme);applyTheme();return;}
-  if(b.id==='fsz'){S.fsz=String(((+S.fsz||0)+1)%3);localStorage.setItem('zgFs',S.fsz);applyTheme();return;}
-  if(b.id==='mode'){setMode(!S.simple);return;}
-  if(b.id==='reset'){S.filters={};S.q='';$('#q').value='';S.limit=200;render();return;}
-  if(b.id==='csv'){exportCSV();return;}
   if(b.id==='more'){S.limit+=200;renderGrid();return;}
-  if(b.id==='clear'){clearAll();return;}
   if(b.dataset.dim){
     const k=b.dataset.dim,v=b.dataset.val;
     if(S.filters[k]===v)delete S.filters[k];else S.filters[k]=v;
@@ -1024,7 +1081,7 @@ document.addEventListener('click',e=>{
     const k=b.dataset.sort;
     S.sort=S.sort&&S.sort.k===k?{k,dir:-S.sort.dir}:{k,dir:1};renderGrid();return;
   }
-  if(b.dataset.go){S.tab=b.dataset.go;S.filters={};S.sort=null;S.limit=200;$('#explorer').hidden=true;render();return;}
+  if(b.dataset.go){closeMenus();S.tab=b.dataset.go;S.filters={};S.sort=null;S.limit=200;$('#explorer').hidden=true;render();return;}
   if(b.dataset.ctrl){
     S.tab=b.dataset.tab;S.filters=JSON.parse(b.dataset.filters);S.q='';$('#q').value='';S.limit=200;render();
     $('#tableWrap').scrollIntoView({behavior:'smooth'});return;
@@ -1053,28 +1110,7 @@ dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');}
 dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');loadFiles([...e.dataTransfer.files]);});
 
-// ===== GESTION DE LA BARRE DE MENU =====
-$('#menu-accueil').addEventListener('click',()=>{S.tab='accueil';render();});
-$('#menu-chargement').addEventListener('click',()=>{
-  // Scroll vers la section de chargement et mise en avant
-  $('#drop').scrollIntoView({behavior:'smooth',block:'center'});
-  $('#drop').style.transition='all .3s';
-  $('#drop').style.borderColor='var(--acc)';
-  $('#drop').style.boxShadow='0 0 20px rgba(56,189,248,.4)';
-  setTimeout(()=>{
-    $('#drop').style.borderColor='var(--line)';
-    $('#drop').style.boxShadow='none';
-  },1500);
-});
-
-// Menu "Autre" - gestion des sous-menus
-$('#menu-export').addEventListener('click',(e)=>{e.stopPropagation();exportCSV();});
-$('#menu-reset').addEventListener('click',(e)=>{e.stopPropagation();S.filters={};S.q='';$('#q').value='';S.limit=200;render();});
-$('#menu-clear').addEventListener('click',(e)=>{e.stopPropagation();if(confirm('Vider tous les fichiers chargés ?'))clearAll();});
-$('#menu-theme').addEventListener('click',(e)=>{e.stopPropagation();S.theme=S.theme==='light'?'dark':'light';localStorage.setItem('zgTheme',S.theme);applyTheme();});
-$('#menu-fsz').addEventListener('click',(e)=>{e.stopPropagation();S.fsz=String(((+S.fsz||0)+1)%3);localStorage.setItem('zgFs',S.fsz);applyTheme();});
-$('#menu-mode').addEventListener('click',(e)=>{e.stopPropagation();setMode(!S.simple);});
-
+/* Démarrage */
 if(typeof XLSX==='undefined'){
   $('#notice').hidden=false;
   $('#notice').textContent='Librairie SheetJS non chargée : connexion Internet requise au premier affichage.';
