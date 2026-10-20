@@ -65,7 +65,6 @@ summary:hover{background:#172944}
 .fcard{background:#0b1220;border:1px solid var(--line);border-radius:10px;padding:10px}
 .fcard h4{margin:0 0 6px;font-size:13px;color:var(--acc)}
 .fcard ul{margin:0;padding-left:16px;font-size:12.5px;max-height:200px;overflow:auto}
-/* Écran d'attente pendant le chargement */
 #loading{position:fixed;inset:0;background:rgba(4,10,20,.78);display:flex;align-items:center;justify-content:center;z-index:60}
 #loading[hidden]{display:none}
 .loadBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 36px;text-align:center;max-width:600px;box-shadow:0 10px 40px rgba(0,0,0,.55)}
@@ -287,6 +286,8 @@ const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:ne
   tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map(),fluxDepZg:new Map()};
 const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map()};
 const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg};
+/* Renvoie le libellé connu d'une valeur, ou '' si aucun dictionnaire ne s'applique (évite tout crash). */
+const labOf=(c,v)=>{const m=c&&c.dict?DICT[c.dict]:null;return m?(m.get(v)||''):'';};
 
 function tamponLabel(r){
   const em=[r.empl1,r.empl2,r.empl3,r.empl4,r.empl5]
@@ -353,12 +354,15 @@ async function loadFiles(files){
   }
   showLoad('Calcul des recoupements…',done.length+' fichier(s) chargé(s) : '+done.map(k=>LABELS[k]).join(', '));
   await frame();
-  buildModel();render();
-  $('#bulkState').innerHTML=done.length
-    ?`<span class="ok">✓ ${done.length} fichier(s) chargé(s)</span> : ${done.map(k=>LABELS[k]).join(', ')}`
-    :'<span class="warn">Aucun fichier reconnu</span>';
-  hideLoad();
-  S.loading=false;
+  try{
+    buildModel();render();
+    $('#bulkState').innerHTML=done.length
+      ?`<span class="ok">✓ ${done.length} fichier(s) chargé(s)</span> : ${done.map(k=>LABELS[k]).join(', ')}`
+      :'<span class="warn">Aucun fichier reconnu</span>';
+  }finally{
+    hideLoad();
+    S.loading=false;
+  }
 }
 function buildModel(){
   Object.values(IDX).forEach(m=>m.clear());
@@ -591,7 +595,7 @@ function filtered(){
 function chipHTML(c,v){
   const on=S.filters[c.k]===String(v);
   let txt=esc(v),title=String(v);
-  if(S.simple&&c.dict&&DICT[c.dict]){const l=DICT[c.dict].get(v);if(l){txt=`${esc(l)} <small>(${esc(v)})</small>`;title=`${v} = ${l}`;}}
+  if(S.simple){const l=labOf(c,v);if(l){txt=`${esc(l)} <small>(${esc(v)})</small>`;title=`${v} = ${l}`;}}
   const kc=c.dict?(' k-'+c.dict):(c.k==='tamponList'?' k-tam':'');
   return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)} — double-clic : fiche">${txt}</button>`;
 }
@@ -803,7 +807,7 @@ function renderFilters(){
     const vals=sortU(pool.flatMap(r=>c.vals?c.vals(r):[c.get(r)]));
     const cur=S.filters[c.k]??'';
     html+=`<label>${esc(lbl(c))}<select data-filter="${c.k}"><option value="">Tous</option>${
-      vals.map(v=>`<option value="${esc(v)}" ${String(v)===cur?'selected':''}>${esc(S.simple&&c.dict?((DICT[c.dict].get(v)||'')+' ('+v+')'):v)}</option>`).join('')}</select></label>`;
+      vals.map(v=>{const l=S.simple?labOf(c,v):'';return `<option value="${esc(v)}" ${String(v)===cur?'selected':''}>${esc(l?l+' ('+v+')':v)}</option>`;}).join('')}</select></label>`;
   });
   $('#fselects').innerHTML=html||'<span class="mut">Filtres disponibles sur les onglets de données.</span>';
 }
@@ -837,7 +841,7 @@ function explorer(k){
   const list=[...m].sort((a,b)=>b[1]-a[1]),max=Math.max(1,...list.map(x=>x[1]));
   const box=$('#explorer');box.hidden=false;
   box.innerHTML=`<div class="expHead"><b>Explorateur · ${esc(lbl(c))}</b><small>${list.length} valeur(s) · cliquez pour filtrer toutes les colonnes liées</small><button id="closeExp">Fermer ×</button></div><div class="expList">`+
-    list.map(([v,n])=>`<button class="expItem" data-dim="${k}" data-val="${esc(v)}"><span>${esc(S.simple&&c.dict?((DICT[c.dict].get(v)||'')+' ('+v+')'):v)}</span><b>${n}</b><i style="width:${100*n/max}%"></i></button>`).join('')+'</div>';
+    list.map(([v,n])=>{const l=S.simple?labOf(c,v):'';return `<button class="expItem" data-dim="${k}" data-val="${esc(v)}"><span>${esc(l?l+' ('+v+')':v)}</span><b>${n}</b><i style="width:${100*n/max}%"></i></button>`;}).join('')+'</div>';
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function renderControls(){
