@@ -1,1 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aide — Explorateur ZI · ZE · ZG · Tampons</title>
+<style>
+:root{--bg:#0f172a;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.6 system-ui,Segoe UI,Roboto,sans-serif}
+header{padding:16px 22px;background:#0b1220;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:20px;margin:0}
+main{max-width:980px;margin:auto;padding:22px}
+h2{font-size:17px;margin:28px 0 8px;color:var(--acc);border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font-size:15px;margin:16px 0 6px}
+.mut{color:var(--mut)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:10px 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#0b1220}
+code,kbd{background:#0b1220;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.toc a{color:var(--acc);text-decoration:none;border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px}
+.toc a:hover{border-color:var(--acc)}
+.btn{background:#0b1220;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;font:inherit;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+ul,ol{padding-left:22px}
+.step{display:flex;gap:10px;align-items:flex-start;margin:10px 0}
+.step .n{background:var(--acc);color:#04121f;border-radius:50%;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.ok{color:var(--ok)} .warn{color:var(--warn)}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Aide — Explorateur ZI · ZE · Groupes ZG · Tampons</h1>
+  <small class="mut">Mode d'emploi complet · tout se passe dans votre navigateur</small></div>
+  <a class="btn" href="index.html">← Retour à l'explorateur</a>
+</header>
+<main>
 
+<div class="card">
+<b>En 30 secondes :</b> ouvrez l'explorateur, chargez vos 4 classeurs Excel, puis cliquez sur un
+intitulé de colonne (🔗) ou sur n'importe quelle valeur pour voir <b>tous les liens</b> entre les
+fichiers. Aucune donnée n'est envoyée sur Internet : ni sur GitHub, ni ailleurs.
+</div>
+
+<nav class="toc">
+<a href="#principe">Principe</a><a href="#demarrage">Démarrage</a><a href="#fichiers">Les 4 fichiers</a>
+<a href="#onglets">Onglets</a><a href="#interactions">Interactions</a><a href="#jointures">Jointures</a>
+<a href="#ecarts">Écarts</a><a href="#glossaire">Glossaire</a><a href="#faq">FAQ</a><a href="#exemple">Exemple guidé</a>
+</nav>
+
+<h2 id="principe">1. Principe</h2>
+<ul>
+<li>L'interface <b>recoupe 4 référentiels Excel</b> (zones, groupes de zones, flux, tampons) qui partagent des codes communs : Dépôt, ZI, ZE, groupes ZG, ZG.</li>
+<li><b>Traitement 100 % local</b> : les classeurs sont lus par votre navigateur (librairie SheetJS). Rien n'est téléversé.</li>
+<li><b>Mémoire volatile</b> : fermer l'onglet efface tout. À la prochaine visite, rechargez les 4 fichiers (quelques secondes).</li>
+<li><b>Objectif</b> : répondre instantanément à des questions du type « ce ZG dépend de quels groupes ? », « ce flux passe par quel tampon ? », « cette ZE existe-t-elle dans le référentiel ? ».</li>
+</ul>
+
+<h2 id="demarrage">2. Démarrage</h2>
+<div class="step"><span class="n">1</span><div>Ouvrez la page : URL GitHub Pages du dépôt, ou <code>index.html</code> en double-cliquant dessus (dans ce cas, <code>aide.html</code> doit être dans le même dossier).</div></div>
+<div class="step"><span class="n">2</span><div>Chargez les 4 classeurs avec les 4 boutons « Choisir un fichier », <b>ou</b> glissez-déposez-les dans la zone du haut. <b>L'ordre n'a aucune importance</b> : chaque fichier est reconnu par son contenu (ex. : présence des colonnes « EMPL 1…EMPL 5 » → fichier Tampon).</div></div>
+<div class="step"><span class="n">3</span><div>Dès qu'un fichier est lu, les KPI, filtres et tableaux se recalculent. Un bandeau orange liste les fichiers manquants et les doublons retirés.</div></div>
+<p class="mut">Une connexion Internet est nécessaire au premier affichage (chargement de la librairie SheetJS). Voir la FAQ pour un fonctionnement hors-ligne.</p>
+
+<h2 id="fichiers">3. Les 4 fichiers et leur rôle</h2>
+<table>
+<tr><th>Fichier</th><th>Contenu principal</th><th>Rôle dans le recoupement</th></tr>
+<tr><td><b>F1 · Départ</b><br><span class="mut">« …ZG du groupe de départ »</span></td><td>Dépôt, ZI, ZE, Groupe ZG départ, ZG affecté au groupe départ</td><td>Liste les ZG contenus dans chaque groupe de départ.</td></tr>
+<tr><td><b>F2 · Flux</b><br><span class="mut">« …groupe d'arrivée… »</span></td><td>Dépôt, ZI, ZE, Groupe départ, Groupe arrivée, ZG affectée à l'arrivée, Libellé ZG</td><td>Cœur du recoupement : qui va où, avec quelles ZG d'arrivée.</td></tr>
+<tr><td><b>F3 · Référentiel</b><br><span class="mut">« ZIZEZG »</span></td><td>Dépôt, ZI, ZE, ZG</td><td>Référentiel géographique : à quelles ZI/ZE appartient chaque ZG.</td></tr>
+<tr><td><b>F4 · Tampon</b><br><span class="mut">« …tampon »</span></td><td>Dépôt, ZI, ZE, Groupe départ, Groupe arrivée, Séquence, EMPL 1→5, Libellé, type emplacement</td><td>Chemin physique : tampons traversés par un flux groupe départ → groupe arrivée.</td></tr>
+</table>
+
+<h2 id="onglets">4. Les 5 onglets</h2>
+<ul>
+<li><b>Flux enrichis (F2)</b> : une ligne par flux, enrichie des ZG de départ (F1), des ZE du référentiel pour la ZG d'arrivée (F3), du chemin tampon (F4) et d'une colonne « Contrôle » (<span class="ok">✓</span> ou <span class="warn">⚠</span>).</li>
+<li><b>Départ · F1</b> : une ligne par ZG de départ, avec ses ZE dans le référentiel F3 et l'indication « groupe utilisé dans F2 ? ».</li>
+<li><b>Référentiel ZG · F3</b> : une ligne par ZG, avec son libellé (F2), ses groupes de départ (F1) et d'arrivée (F2), et « utilisé ? ».</li>
+<li><b>Tampon · F4</b> : les lignes tampon telles quelles (Séquence, EMPL 1-5, Libellé, type) + « flux F2 correspondant ? ».</li>
+<li><b>Écarts</b> : incohérences détectées entre fichiers (section 7). Chaque pastille est cliquable pour afficher les lignes concernées.</li>
+</ul>
+
+<h2 id="interactions">5. Interactions — le cœur de l'outil</h2>
+<h3>5.1 Cliquer sur un intitulé de colonne (🔗)</h3>
+<p>Ouvre l'<b>Explorateur</b> : toutes les valeurs distinctes de la colonne avec leur nombre d'occurrences, triées du plus fréquent au moins fréquent. Cliquer sur une valeur filtre <b>toute l'interface</b> (tableaux, KPI, autres colonnes).</p>
+<h3>5.2 Cliquer sur une valeur dans un tableau</h3>
+<p>Les valeurs affichées en <b>pastilles</b> sont cliquables : 1 clic = filtre ; <b>re-cliquer la même pastille = enlever le filtre</b>. Si une cellule contient plusieurs valeurs (ex. 15 ZG de départ), les 3 premières sont affichées plus un bouton « +N » qui ouvre l'Explorateur de la colonne.</p>
+<h3>5.3 Menus déroulants en cascade</h3>
+<p>Un menu par colonne filtrable, en haut. Leurs options sont recalculées en fonction des autres filtres actifs : impossible de choisir une combinaison qui ne donnerait aucune ligne.</p>
+<h3>5.4 Recherche libre</h3>
+<p>Le champ « Recherche libre » cherche dans <b>tous les champs</b> de l'onglet courant, codes et libellés : <code>ZGMAG3</code>, <code>HUBT</code>, <code>tampon</code>…</p>
+<h3>5.5 Tri et pagination</h3>
+<p><kbd>↕</kbd> à côté d'un intitulé : tri croissant / décroissant. Les tableaux affichent 200 lignes à la fois ; le bouton « Afficher 200 lignes de plus » en charge davantage.</p>
+<h3>5.6 Exporter et réinitialiser</h3>
+<ul>
+<li><b>Exporter CSV</b> : exporte les lignes <i>filtrées</i> de l'onglet courant (compatible Excel : point-virgule + UTF-8 BOM).</li>
+<li><b>Réinitialiser les filtres</b> : efface filtres et recherche, garde les fichiers chargés.</li>
+<li><b>Vider les fichiers</b> : retour à l'état initial, tout est effacé de la mémoire.</li>
+<li><b>Aide ❓</b> : la présente page.</li>
+</ul>
+
+<h2 id="jointures">6. Comment les recoupements sont calculés (règles de jointure)</h2>
+<ul>
+<li><b>F1 → Flux</b> : clé = <code>Dépôt + ZI + Groupe ZG départ</code>. La ZE n'est <b>pas</b> utilisée volontairement : certains groupes sont déclarés sur une ZE dans F1 (ex. GZGHUB sur ZEHUB) mais utilisés sur d'autres dans F2 (ZEHUBE, ZEHU24).</li>
+<li><b>F3 → Flux</b> : clé = <code>Dépôt + ZG</code>. Une ZG peut exister dans plusieurs ZI/ZE (ex. ZGEINF dans ZIHUB et ZITOT) : toutes ses affectations sont montrées.</li>
+<li><b>F4 → Flux</b> : clé prioritaire = <code>Dépôt + ZI + ZE + Groupe départ + Groupe arrivée</code> ; à défaut, repli = <code>Dépôt + Groupe départ + Groupe arrivée</code>. Le chemin s'affiche « Séquence · EMPL1/EMPL2/EMPL3 · Libellé ».</li>
+<li><b>Nettoyage automatique</b> : lignes d'en-tête répétées en milieu de fichier ignorées ; lignes strictement dupliquées retirées une fois (compteur visible dans les KPI).</li>
+</ul>
+
+<h2 id="ecarts">7. Onglet « Écarts » : ce qui est contrôlé</h2>
+<p>Chaque carte regroupe un type d'anomalie ; les pastilles indiquent le code concerné et le nombre de lignes. <b>Cliquer une pastille</b> bascule sur l'onglet concerné, filtré sur ce code.</p>
+<ul>
+<li><b>Flux F2 sans tampon défini (F4)</b> : aucun chemin tampon pour ce couple départ→arrivée.</li>
+<li><b>Tampon F4 sans flux correspondant (F2)</b> : ligne tampon orpheline.</li>
+<li><b>Groupe de départ présent dans F2, absent de F1</b> : aucune ZG de départ référencée.</li>
+<li><b>ZG d'arrivée sans affectation ZE dans F3</b> : ZG inconnue du référentiel ZIZEZG.</li>
+<li><b>ZE du flux différente des ZE du référentiel</b> : souvent volontaire (cf. §6), à valider par vous.</li>
+<li><b>ZG de départ F1 absent du référentiel F3</b>.</li>
+<li><b>ZG du référentiel jamais utilisée</b> : n'apparaît dans aucun groupe, ni départ ni arrivée.</li>
+<li><b>Libellés ZG incohérents</b> : plusieurs libellés différents pour un même code Dépôt+ZG dans F2.</li>
+<li><b>Codes « groupe arrivée » atypiques</b> : ne commençant pas par <code>GZG</code> (ZGPRO, PROD, GZES, GZOU). Ils existent tels quels dans F2 et F4 : les jointures fonctionnent, mais la carte vous rappelle de les normaliser si besoin.</li>
+</ul>
+
+<h2 id="glossaire">8. Glossaire</h2>
+<table>
+<tr><th>Terme</th><th>Signification</th></tr>
+<tr><td>Dépôt</td><td>Site logistique (ici NE1).</td></tr>
+<tr><td>ZI</td><td>Zone d'Intervention : périmètre organisationnel (ZIHUB, ZIBOG, ZICARI…).</td></tr>
+<tr><td>ZE</td><td>Zone d'Évolution : sous-zone d'une ZI (ZEHUB, ZEMAG2, ZEKIT…).</td></tr>
+<tr><td>ZG</td><td>Zone Géographique : zone élémentaire de localisation des stocks/mouvements (ZGMAG3, ZGZC01…).</td></tr>
+<tr><td>Groupe ZG (GZG…)</td><td>Regroupement logique de ZG servant de départ ou d'arrivée aux flux (GZGHUB, GZGPRO…).</td></tr>
+<tr><td>Tampon</td><td>Emplacement d'attente intermédiaire entre un groupe de départ et un groupe d'arrivée.</td></tr>
+<tr><td>EMPL 1…5</td><td>Niveaux de codification de l'emplacement tampon : EMPL 1 = code principal (HUBT, BOGT…), EMPL 2 = sens (S sortie, E entrée, T transit), EMPL 3 = sous-localisation…</td></tr>
+<tr><td>Séquence</td><td>Ordre / priorité du tampon dans un flux.</td></tr>
+<tr><td>Type d'emplacement</td><td>Type physique du lieu (ex. « Sol »).</td></tr>
+</table>
+
+<h2 id="faq">9. FAQ / dépannage</h2>
+<ul>
+<li><b>« Fichier non reconnu »</b> : la reconnaissance se fait par le contenu, pas par le nom. Vérifiez que le classeur contient bien les colonnes attendues (F4 doit avoir « EMPL 1 », F3 doit avoir « ZG », etc.).</li>
+<li><b>Page vide ou « Librairie SheetJS non chargée »</b> : connexion Internet requise au premier affichage. Pour un fonctionnement 100 % hors-ligne : téléchargez <code>xlsx.full.min.js</code> dans un dossier <code>vendor/</code> à côté de <code>index.html</code>, puis remplacez l'adresse de la librairie dans la première balise <code>&lt;script&gt;</code> du fichier par <code>vendor/xlsx.full.min.js</code>.</li>
+<li><b>Mes données partent-elles sur GitHub ?</b> Non. Seuls <code>index.html</code> et <code>aide.html</code> sont en ligne ; vos classeurs sont lus localement par votre navigateur.</li>
+<li><b>Tout a disparu quand j'ai fermé l'onglet</b> : normal, rien n'est stocké. Rechargez les 4 fichiers.</li>
+<li><b>Le CSV s'ouvre mal dans Excel</b> : il est en UTF-8 avec BOM et séparateur point-virgule ; ouvrez-le via Données → From Text/CSV si le double-clic ne suffit pas.</li>
+<li><b>Tableau trop long / lent</b> : l'affichage est limité à 200 lignes ; filtrez ou cherchez d'abord, puis utilisez « Afficher plus ».</li>
+</ul>
+
+<h2 id="exemple">10. Exemple guidé : suivre « ZGMAG3 »</h2>
+<ol>
+<li>Dans « Recherche libre », tapez <code>ZGMAG3</code> : l'onglet Flux montre les flux où cette ZG intervient.</li>
+<li>Cliquez la pastille <code>ZGMAG3</code> de la colonne « ZG arrivée » : le filtre devient persistant (pastille colorée).</li>
+<li>Lisez la ligne : groupe de départ (ex. GZGREC), ZG du groupe de départ (F1), ZE du référentiel (F3), chemin tampon (ex. « S1 · DZEC/T · Départ ZEC Tampon »).</li>
+<li>Cliquez l'intitulé 🔗 « Tampon · F4 » pour voir tous les tampons des flux filtrés, avec leurs occurrences.</li>
+<li>Terminez par « Exporter CSV » pour conserver le résultat filtré.</li>
+</ol>
+
+<p class="mut" style="margin:34px 0 10px;font-size:12.5px">
+Page d'aide 100 % statique : modifiez-la librement, c'est un simple fichier HTML placé à côté de <code>index.html</code>.
+</p>
+</main>
+</body>
+</html>
