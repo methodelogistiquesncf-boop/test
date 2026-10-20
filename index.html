@@ -10,8 +10,20 @@
 body.light{--bg:#eef1f6;--bg2:#ffffff;--panel:#ffffff;--line:#d8dee9;--txt:#1c2b3a;--mut:#5c6b7a;--acc:#0284c7;--ok:#059669;--warn:#b45309;--zebra:#f2f5f9;--hover:#e8eef7;--overlay:rgba(255,255,255,.75)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.55 system-ui,Segoe UI,Roboto,sans-serif}
-header{padding:16px 22px;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-h1{font-size:19px;margin:0}
+
+/* ===== BARRE DE MENU PRINCIPALE ===== */
+.menu-bar{display:flex;background:var(--bg2);border-bottom:2px solid var(--line);padding:0;position:sticky;top:0;z-index:50}
+.menu-item{position:relative;padding:14px 22px;cursor:pointer;font-size:15px;font-weight:600;border-right:1px solid var(--line);transition:all .2s;display:flex;align-items:center;gap:8px}
+.menu-item:hover{background:var(--hover);color:var(--acc)}
+.menu-item.active{background:var(--acc);color:#04121f;border-color:var(--acc)}
+.menu-dropdown{position:absolute;top:100%;left:0;background:var(--panel);border:1px solid var(--line);border-radius:0 0 10px 10px;min-width:220px;display:none;box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:60}
+.menu-item:hover .menu-dropdown{display:block}
+.menu-dropdown button{display:block;width:100%;text-align:left;padding:10px 18px;background:none;border:none;color:var(--txt);font:inherit;cursor:pointer}
+.menu-dropdown button:hover{background:var(--hover);color:var(--acc)}
+.menu-sep{height:1px;background:var(--line);margin:4px 0}
+
+header{padding:12px 22px;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+h1{font-size:17px;margin:0;font-weight:500;color:var(--mut)}
 h3{margin:0 0 6px}
 main{padding:18px 22px;max-width:1900px;margin:auto}
 .mut,small{color:var(--mut)}
@@ -87,7 +99,7 @@ summary:hover{background:var(--hover)}
 @media print{
   body{background:#fff!important;color:#000!important}
   body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
-  header .row,#drop,#fselects,nav,#explorer,#controls,#more,.panel.mut,#loading,#home{display:none!important}
+  header .row,#drop,#fselects,nav,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar{display:none!important}
   .panel,.card,.fcard,.fbox,.chip{background:#fff!important;border-color:#999!important;color:#000!important}
   th{background:#eee!important;color:#000!important}
   tbody tr:nth-child(even){background:#f5f5f5!important}
@@ -105,18 +117,28 @@ summary:hover{background:var(--hover)}
   </div>
 </div>
 
+<!-- BARRE DE MENU PRINCIPALE -->
+<div class="menu-bar">
+  <div class="menu-item" id="menu-accueil">🏠 Accueil</div>
+  <div class="menu-item" id="menu-chargement">📂 Chargement</div>
+  <div class="menu-item">⚙️ Autre
+    <div class="menu-dropdown">
+      <button id="menu-export">📥 Exporter CSV</button>
+      <button id="menu-reset">🔄 Réinitialiser filtres</button>
+      <button id="menu-clear">🗑️ Vider les fichiers</button>
+      <div class="menu-sep"></div>
+      <button id="menu-theme">🌙 Thème clair/sombre</button>
+      <button id="menu-fsz">🔤 Taille du texte</button>
+      <button id="menu-mode">👓 Mode débutant</button>
+      <div class="menu-sep"></div>
+      <button onclick="location.href='aide.html'">❓ Aide</button>
+    </div>
+  </div>
+</div>
+
 <header>
   <div><h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements</h1>
   <small>5 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small></div>
-  <div class="row">
-    <button id="theme" title="Basculer thème clair / sombre">🌙 Sombre</button>
-    <button id="fsz" title="Taille du texte">A</button>
-    <button id="mode">👓 Mode débutant</button>
-    <button id="reset">Réinitialiser les filtres</button>
-    <button id="csv">Exporter CSV</button>
-    <button id="clear">Vider les fichiers</button>
-    <button onclick="location.href='aide.html'">Aide ❓</button>
-  </div>
 </header>
 
 <main>
@@ -306,7 +328,6 @@ const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map()};
 const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg};
 const labOf=(c,v)=>{const m=c&&c.dict?DICT[c.dict]:null;return m?(m.get(v)||''):'';};
 
-/* Définitions courtes affichées dans les bulles ⓘ */
 const INFO={depot:'Site physique (ici NE1).',zi:'Zone d’Intervention : périmètre organisationnel.',ze:'Zone d’Évolution : sous-zone où circule le stock.',
 gdep:'Groupe de ZG d’où part le flux.',garr:'Groupe de ZG où arrive le flux.',zgArr:'Zone géographique de destination.',zgDep:'Zone géographique contenue dans le groupe de départ.',
 zg:'Zone géographique : plus petite zone de stock.',tamponList:'Tampon(s) traversé(s) entre départ et arrivée (F4).',depZGs:'ZG contenues dans le groupe de départ (F1).',
@@ -469,7 +490,6 @@ function buildModel(){
 }
 const emplCount=(depot,zg)=>{const a=IDX.empl.get(K(depot,zg));return a?a.length:0;};
 
-/* ================= Contrôles / écarts ================= */
 function makeControls(){
   const out=[];
   const grp=(rows,fn,tab)=>{
@@ -505,7 +525,6 @@ function makeControls(){
   return out;
 }
 
-/* ================= Colonnes / vues ================= */
 const C=(k,l,ex={})=>({k,l,dim:false,get:r=>r[k]??'',...ex});
 const MULTI=(k,l,ex={})=>C(k,l,{dim:true,vals:r=>r[k]||[],has:(r,v)=>(r[k]||[]).some(t=>String(t).includes(v)),get:r=>(r[k]||[]).join(', '),...ex});
 const FICHE=(k,getCode)=>C(k,'📄',{btn:r=>{const v=getCode(r);return v?`<button class="fbtn" data-fiche="zg:${esc(v)}" title="Fiche détaillée de ${esc(v)}">📄</button>`:'';}});
@@ -646,7 +665,6 @@ function chipHTML(c,v){
   return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)} — double-clic : fiche">${txt}</button>`;
 }
 
-/* ================= Accueil / tableau de bord ================= */
 function renderHome(){
   const box=$('#home');
   const has=Object.keys(S.files).length>0;
@@ -672,7 +690,6 @@ function renderHome(){
   }
 }
 
-/* ================= Arborescence ================= */
 function renderTree(){
   const D=DEPOT_KEEP,byZI={};
   S.raw.depart.forEach(r=>{
@@ -709,7 +726,6 @@ function renderTree(){
     <span class="mut">— construite depuis F1 · dépliez avec les flèches · cliquez 📄 pour la fiche détaillée</span>`+h;
 }
 
-/* ================= Chemins ================= */
 function fillPathList(){
   const q=N($('#pathQ').value);
   const out=[];
@@ -784,7 +800,6 @@ function renderPath(){
   box.innerHTML=html;
 }
 
-/* ================= Fiche détaillée ================= */
 function fcard(t,items){return `<div class="fcard"><h4>${esc(t)}</h4><ul>${items.length?items.map(x=>`<li>${x}</li>`).join(''):'<li class="mut">aucun</li>'}</ul></div>`;}
 function renderFiche(){
   const box=$('#fiche');
@@ -839,7 +854,6 @@ function renderFiche(){
     <div class="ficheGrid">${cards}</div>`;
 }
 
-/* ================= Rendu ================= */
 function renderTabs(){
   const n=k=>{
     if(k==='flux')return S.flux.length; if(k==='depart')return S.depart.length; if(k==='ref')return S.ref.length;
@@ -949,7 +963,6 @@ function render(){
   else if(!isHome)renderGrid();
 }
 
-/* ================= Thème & taille ================= */
 const FS=['14.5px','16px','17.5px'],FL=['A','A+','A++'];
 function applyTheme(){
   document.body.classList.toggle('light',S.theme==='light');
@@ -958,7 +971,6 @@ function applyTheme(){
   $('#fsz').textContent=FL[+S.fsz||0];
 }
 
-/* ================= Actions ================= */
 function exportCSV(){
   const cs=cols().filter(c=>!c.btn),rows=filtered();
   const cell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
@@ -1041,7 +1053,28 @@ dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');}
 dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');loadFiles([...e.dataTransfer.files]);});
 
-/* Démarrage */
+// ===== GESTION DE LA BARRE DE MENU =====
+$('#menu-accueil').addEventListener('click',()=>{S.tab='accueil';render();});
+$('#menu-chargement').addEventListener('click',()=>{
+  // Scroll vers la section de chargement et mise en avant
+  $('#drop').scrollIntoView({behavior:'smooth',block:'center'});
+  $('#drop').style.transition='all .3s';
+  $('#drop').style.borderColor='var(--acc)';
+  $('#drop').style.boxShadow='0 0 20px rgba(56,189,248,.4)';
+  setTimeout(()=>{
+    $('#drop').style.borderColor='var(--line)';
+    $('#drop').style.boxShadow='none';
+  },1500);
+});
+
+// Menu "Autre" - gestion des sous-menus
+$('#menu-export').addEventListener('click',(e)=>{e.stopPropagation();exportCSV();});
+$('#menu-reset').addEventListener('click',(e)=>{e.stopPropagation();S.filters={};S.q='';$('#q').value='';S.limit=200;render();});
+$('#menu-clear').addEventListener('click',(e)=>{e.stopPropagation();if(confirm('Vider tous les fichiers chargés ?'))clearAll();});
+$('#menu-theme').addEventListener('click',(e)=>{e.stopPropagation();S.theme=S.theme==='light'?'dark':'light';localStorage.setItem('zgTheme',S.theme);applyTheme();});
+$('#menu-fsz').addEventListener('click',(e)=>{e.stopPropagation();S.fsz=String(((+S.fsz||0)+1)%3);localStorage.setItem('zgFs',S.fsz);applyTheme();});
+$('#menu-mode').addEventListener('click',(e)=>{e.stopPropagation();setMode(!S.simple);});
+
 if(typeof XLSX==='undefined'){
   $('#notice').hidden=false;
   $('#notice').textContent='Librairie SheetJS non chargée : connexion Internet requise au premier affichage.';
