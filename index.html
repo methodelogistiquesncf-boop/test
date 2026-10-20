@@ -36,7 +36,7 @@ nav button.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-w
 .expItem{display:flex;gap:8px;align-items:center;justify-content:space-between;position:relative;overflow:hidden;text-align:left}
 .expItem i{position:absolute;left:0;bottom:0;height:3px;background:var(--acc);opacity:.5}
 .tableWrap{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:12px}
-table{border-collapse:collapse;width:100%;font-size:13.5px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
 th{position:sticky;top:0;background:#0b1220;z-index:2;text-align:left;border-bottom:1px solid var(--line)}
 .th{border:0;background:none;border-radius:0;padding:10px 8px;font-weight:600}
 .th span{color:var(--acc);font-size:11px}
@@ -94,7 +94,7 @@ summary:hover{background:#172944}
   <b>Vos fichiers</b> <span class="mut">— cliquez sur « Choisir un fichier » ou glissez-déposez les classeurs ici (reconnaissance automatique par contenu).</span>
   <div class="row" style="margin-top:10px">
     <label>F1 · ZG du groupe de départ<input type="file" accept=".xlsx,.xls" data-kind="depart"></label>
-    <label>F2 · Groupe d’arrivée<input type="file" accept=".xlsx,.xls" data-kind="flux"></label>
+    <label>F2 · Groupe d'arrivée<input type="file" accept=".xlsx,.xls" data-kind="flux"></label>
     <label>F3 · ZIZEZG<input type="file" accept=".xlsx,.xls" data-kind="ref"></label>
     <label>F4 · Tampon<input type="file" accept=".xlsx,.xls" data-kind="tampon"></label>
     <label>F5 · Emplacements<input type="file" accept=".xlsx,.xls" data-kind="empl"></label>
@@ -110,7 +110,7 @@ summary:hover{background:#172944}
 </section>
 
 <div class="panel mut" style="font-size:12.5px">
-  Légende :<span class="dot k-zi"></span>ZI (zone d’intervention)<span class="dot k-ze"></span>ZE (zone d’évolution)<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG (zone géographique)<span class="dot k-tam"></span>Tampon
+  Légende :<span class="dot k-zi"></span>ZI (zone d'intervention)<span class="dot k-ze"></span>ZE (zone d'évolution)<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG (zone géographique)<span class="dot k-tam"></span>Tampon
   — 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins.
 </div>
 
@@ -121,14 +121,15 @@ summary:hover{background:#172944}
 
 <section id="pathWrap" class="panel" hidden>
   <b>🧭 Chemins entre emplacements</b>
-  <span class="mut">— choisissez un emplacement (ou une ZG), le sens, et dépliez l’arbre : chaque branche indique le ou les tampons traversés (F4).</span>
+  <span class="mut">— choisissez un emplacement (ou une ZG) et le sens : la vue simplifiée liste chaque chemin sur une ligne ; basculez vers l'arbre pour le détail.</span>
   <div class="row" style="margin-top:10px">
     <label>Emplacement ou ZG<input id="pathQ" list="pathList" placeholder="Ex. M2_LC006N4E1, 2 416, ZGMAG3…"><datalist id="pathList"></datalist></label>
     <label>Sens du chemin<select id="pathDir">
       <option value="aller">Aller : ce que je peux atteindre depuis ici</option>
-      <option value="retour">Retour : ce qui peut arriver jusqu’ici</option>
+      <option value="retour">Retour : ce qui peut arriver jusqu'ici</option>
     </select></label>
     <button id="pathGo">Calculer les chemins</button>
+    <button id="pathView">🌳 Version détaillée (arbre)</button>
   </div>
   <div id="pathTree" style="margin-top:12px"></div>
 </section>
@@ -142,11 +143,11 @@ summary:hover{background:#172944}
 <summary>📖 Glossaire pour les non-initiés (exemples tirés de vos fichiers)</summary>
 <ul>
 <li><b>Dépôt (NE1)</b> : le site physique. Tous les fichiers sont filtrés sur NE1.</li>
-<li><b>ZI — Zone d’Intervention</b> : périmètre organisationnel, « qui intervient où ». Ex. <code>ZIHUB</code> = « Zone Intervention HUB ».</li>
-<li><b>ZE — Zone d’Évolution</b> : sous-zone d’une ZI, « où ça circule ». Ex. <code>ZEHUB</code> = « Zone Evolution HUB ».</li>
+<li><b>ZI — Zone d'Intervention</b> : périmètre organisationnel, « qui intervient où ». Ex. <code>ZIHUB</code> = « Zone Intervention HUB ».</li>
+<li><b>ZE — Zone d'Évolution</b> : sous-zone d'une ZI, « où ça circule ». Ex. <code>ZEHUB</code> = « Zone Evolution HUB ».</li>
 <li><b>ZG — Zone Géographique</b> : plus petite zone de localisation du stock. Ex. <code>ZGMAG3</code> = « LI-MAG3 ».</li>
-<li><b>Groupe ZG (GZG…)</b> : paquet de ZG utilisé comme point de départ ou d’arrivée des flux. Ex. <code>GZGHUB</code> = « Groupe ZG HUB ».</li>
-<li><b>Tampon</b> : zone d’attente traversée entre un groupe de départ et un groupe d’arrivée. Ex. <code>HUBT/S</code> = « HUB Tampon Sortie ».</li>
+<li><b>Groupe ZG (GZG…)</b> : paquet de ZG utilisé comme point de départ ou d'arrivée des flux. Ex. <code>GZGHUB</code> = « Groupe ZG HUB ».</li>
+<li><b>Tampon</b> : zone d'attente traversée entre un groupe de départ et un groupe d'arrivée. Ex. <code>HUBT/S</code> = « HUB Tampon Sortie ».</li>
 <li><b>Emplacement (F5)</b> : adresse physique exacte = Allée + Face + Colonne + Niveau + Emplacement. Ex. <code>M2_LC006N4E1</code>.</li>
 <li><b>Séquence (F4)</b> : ordre de priorité du tampon dans un flux.</li>
 </ul>
@@ -155,13 +156,13 @@ summary:hover{background:#172944}
 <details class="panel" style="margin-top:12px">
 <summary>Règles de jointure appliquées</summary>
 <ul>
-<li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées ; les autres sont listées dans l’onglet « Exclus (≠NE1) ».</li>
-<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ (la ZE n’est pas utilisée comme clé).</li>
+<li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées ; les autres sont listées dans l'onglet « Exclus (≠NE1) ».</li>
+<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ (la ZE n'est pas utilisée comme clé).</li>
 <li><b>F2</b> : grain = Dépôt + ZI + ZE flux + Groupe départ + Groupe arrivée + ZG arrivée.</li>
 <li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE de rattachement.</li>
 <li><b>F4 (tampon)</b> : Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
-<li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom d’emplacement = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
-<li><b>Chemins (🧭)</b> : emplacement → ZG (F5) → groupes (F1 départ / F2 arrivée) → flux (F2) → tampon (F4) → ZG cible (F2/F1) → emplacements (F5). Sens retour = parcours inverse.</li>
+<li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom d'emplacement = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
+<li><b>Chemins (🧭)</b> : emplacement → ZG (F5) → groupes (F1 départ / F2 arrivée) → flux (F2) → tampon (F4) → ZG cible → emplacements (F5). Sens retour = parcours inverse.</li>
 </ul>
 </details>
 </main>
@@ -255,6 +256,7 @@ function detectKind(rows){
 const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements'};
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
   flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[],fiche:null,path:null,
+  pathView:localStorage.getItem('zgPathView')||'simple',
   simple:localStorage.getItem('zgMode')!=='expert'};
 const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),
   tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map(),fluxDepZg:new Map()};
@@ -382,19 +384,19 @@ function makeControls(){
     grp(S.raw.tampon.filter(r=>!r.hasFlux),r=>r.gdep&&r.garr?{gdep:r.gdep,garr:r.garr}:null,'tampon'));
   add('Groupe de départ présent dans F2, absent de F1','Clé : Dépôt + ZI + Groupe ZG départ.',
     grp(S.flux.filter(r=>!r.hasDep),r=>r.gdep?{gdep:r.gdep}:null,'flux'));
-  add('ZG d’arrivée sans affectation ZE dans F3','Clé : Dépôt + ZG.',
+  add('ZG d'arrivée sans affectation ZE dans F3','Clé : Dépôt + ZG.',
     grp(S.flux.filter(r=>!r.hasRef),r=>r.zgArr?{zgArr:r.zgArr}:null,'flux'));
   add('ZE du flux différente des ZE du référentiel','Peut être volontaire (ex. GZGHUB déclaré ZEHUB dans F1, utilisé ZEHUBE/ZEHU24 dans F2).',
     grp(S.flux.filter(r=>r.hasRef&&!r.refZEs.includes(r.ze)),r=>r.ze?{ze:r.ze}:null,'flux'));
   add('ZG de départ F1 absent du référentiel F3','Ces ZG de départ ne sont rattachés à aucune ZE.',
     grp(S.depart.filter(r=>!r.refZEs.length),r=>r.zgDep?{zgDep:r.zgDep}:null,'depart'));
-  add('ZG du référentiel jamais utilisé','Ni dans un groupe de départ (F1), ni d’arrivée (F2).',
+  add('ZG du référentiel jamais utilisé','Ni dans un groupe de départ (F1), ni d'arrivée (F2).',
     grp(S.ref.filter(r=>!r.depGroups&&!r.arrGroups),r=>r.zg?{zg:r.zg}:null,'ref'));
   add('Libellés ZG incohérents pour un même code','Plusieurs libellés déclarés pour le même Dépôt + ZG dans F2.',
     grp(S.flux.filter(r=>(IDX.lib.get(K(r.depot,r.zgArr))||new Set()).size>1),r=>r.zgArr?{zgArr:r.zgArr}:null,'flux'));
   add('Codes « groupe arrivée » atypiques','Ne commencent pas par GZG (ex. ZGPRO, PROD, GZES, GZOU).',
     grp(S.flux.filter(r=>r.garr&&!/^GZG/.test(r.garr)),r=>({garr:r.garr}),'flux'));
-  add('ZG d’emplacements (F5) absentes du référentiel F3','Ces ZG portent des emplacements NE1 mais n’existent pas dans ZIZEZG.',
+  add('ZG d'emplacements (F5) absentes du référentiel F3','Ces ZG portent des emplacements NE1 mais n'existent pas dans ZIZEZG.',
     grp(S.empl.filter(r=>!r.refVia.length),r=>r.zg?{zg:r.zg}:null,'empl'));
   add('ZG du référentiel F3 sans aucun emplacement F5','Aucune ligne emplacement NE1 ne pointe vers ces ZG.',
     grp(S.ref.filter(r=>r.zg&&!emplCount(r.depot,r.zg)),r=>({zg:r.zg}),'ref'));
@@ -412,14 +414,14 @@ const COLS={
   C('ze','ZE du flux',{dim:true,dict:'ze',lSimple:'ZE'}),
   C('gdep','Groupe ZG départ',{dim:true,dict:'g',lSimple:'Groupe de départ'}),
   C('libGdep','Libellé groupe départ',{expertOnly:true}),
-  C('garr','Groupe ZG arrivée',{dim:true,dict:'g',lSimple:'Groupe d’arrivée'}),
+  C('garr','Groupe ZG arrivée',{dim:true,dict:'g',lSimple:'Groupe d'arrivée'}),
   C('libGarr','Libellé groupe arrivée',{expertOnly:true}),
-  C('zgArr','ZG arrivée',{dim:true,dict:'zg',lSimple:'ZG d’arrivée'}),
+  C('zgArr','ZG arrivée',{dim:true,dict:'zg',lSimple:'ZG d'arrivée'}),
   C('libZg','Libellé ZG arrivée',{expertOnly:true}),
   FICHE('_fiche',r=>r.zgArr),
   MULTI('depZGs','ZG du groupe de départ · F1',{dict:'zg',lSimple:'ZG contenues dans le groupe de départ'}),
   C('refZEs','ZE du ZG arrivée · F3',{get:r=>(r.refZEs||[]).join(', '),expertOnly:true}),
-  C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':n;},lSimple:'Nb d’emplacements (F5)'}),
+  C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':n;},lSimple:'Nb d'emplacements (F5)'}),
   MULTI('tamponList','Tampon · F4',{dict:'tam',lSimple:'Tampon traversé'}),
   C('_ctl','Contrôle',{get:r=>{
     const w=[];
@@ -432,7 +434,7 @@ const COLS={
     const tam=(r.tamponList||[])[0]||'aucun tampon défini';
     const zg=r.zgArr?((LAB.zg.get(r.zgArr)||'')+' ('+r.zgArr+')'):'';
     const n=r.depZGs.length?(' Le groupe de départ contient '+r.depZGs.length+' ZG.'):'';
-    return `Le groupe « ${g1} » envoie vers le groupe « ${g2} » en passant par ${tam}. ZG d’arrivée : ${zg}.${n}`;}})
+    return `Le groupe « ${g1} » envoie vers le groupe « ${g2} » en passant par ${tam}. ZG d'arrivée : ${zg}.${n}`;}})
  ],
  depart:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
@@ -451,8 +453,8 @@ const COLS={
   FICHE('_fiche',r=>r.zg),
   C('libZg','Libellé (F2)',{expertOnly:true}),
   C('depGroups','Groupes de départ (F1)',{expertOnly:true}),
-  C('arrGroups','Groupes d’arrivée (F2)',{expertOnly:true}),
-  C('nbEmpl','Empl. F5',{get:r=>{const n=emplCount(r.depot,r.zg);return n===0?'—':n;},lSimple:'Nb d’emplacements (F5)'}),
+  C('arrGroups','Groupes d'arrivée (F2)',{expertOnly:true}),
+  C('nbEmpl','Empl. F5',{get:r=>{const n=emplCount(r.depot,r.zg);return n===0?'—':n;},lSimple:'Nb d'emplacements (F5)'}),
   C('usage','Utilisé ?',{get:r=>(r.depGroups||r.arrGroups)?'oui':'non',lSimple:'Utilisée ?'})
  ],
  tampon:[
@@ -470,8 +472,8 @@ const COLS={
  ],
  empl:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
-  C('numEmpl','N° emplacement',{dim:true,lSimple:'N° d’emplacement'}),
-  C('nomEmpl','Nom emplacement (concaténé)',{dim:true,lSimple:'Nom de l’emplacement'}),
+  C('numEmpl','N° emplacement',{dim:true,lSimple:'N° d'emplacement'}),
+  C('nomEmpl','Nom emplacement (concaténé)',{dim:true,lSimple:'Nom de l'emplacement'}),
   C('zg','Zone géo (ZG)',{dim:true,dict:'zg',lSimple:'ZG'}),
   FICHE('_fiche',r=>r.zg),
   C('_path','🧭',{btn:r=>`<button class="fbtn" data-path="${esc(r.nomEmpl)}" title="Chemins depuis cet emplacement">🧭</button>`}),
@@ -495,7 +497,7 @@ const COLS={
   C('posX','POSITION_X',{expertOnly:true}),C('posY','POSITION_Y',{expertOnly:true})
  ],
  excl:[
-  C('_file','Fichier d’origine'),C('depot','Dépôt',{dim:true}),
+  C('_file','Fichier d'origine'),C('depot','Dépôt',{dim:true}),
   C('zg','Zone géo / ZG',{dim:true,dict:'zg'}),C('numEmpl','N° emplacement'),
   C('nomEmpl','Nom emplacement'),
   C('zoneInv','Zone inventaire'),C('allee','Allée'),C('face','Face'),C('colonne','Colonne'),C('niveau','Niveau'),
@@ -581,8 +583,9 @@ function renderPath(){
   const q=(S.path&&S.path.q||'').trim();
   const dir=(S.path&&S.path.dir)||'aller';
   $('#pathQ').value=q;$('#pathDir').value=dir;
+  $('#pathView').textContent=S.pathView==='simple'?'🌳 Version détaillée (arbre)':'📄 Version simplifiée (tableau)';
   fillPathList();
-  if(!q){box.innerHTML='<span class="mut">Saisissez un nom d’emplacement (ex. <code>M2_LC006N4E1</code>), un numéro (ex. <code>2 416</code>) ou un code ZG (ex. <code>ZGMAG3</code>), choisissez le sens, puis « Calculer les chemins ». Le bouton 🧭 de l’onglet Emplacements remplit aussi cette recherche.</span>';return;}
+  if(!q){box.innerHTML='<span class="mut">Saisissez un nom d\'emplacement (ex. <code>M2_LC006N4E1</code>), un numéro (ex. <code>2 416</code>) ou un code ZG (ex. <code>ZGMAG3</code>), choisissez le sens, puis « Calculer les chemins ». Le bouton 🧭 de l\'onglet Emplacements remplit aussi cette recherche.</span>';return;}
   let startZg=null,startLabel='';
   const nq=N(q);
   const em=S.empl.find(r=>N(r.nomEmpl)===nq)||S.empl.find(r=>N(String(r.numEmpl||''))===nq);
@@ -591,37 +594,54 @@ function renderPath(){
   else{box.innerHTML=`<span class="warn">⚠ Introuvable : « ${esc(q)} » (ni emplacement NE1, ni ZG connue).</span>`;return;}
   const forward=dir==='aller';
   const groups=forward?[...(IDX.byDepZg.get(K(D,startZg))||[])]:[...(IDX.byArrZg.get(K(D,startZg))||[])];
-  if(!groups.length){box.innerHTML=`<b>${esc(startLabel)}</b> : aucun groupe ${forward?'de départ (F1)':'d’arrivée (F2)'} ne contient cette ZG → aucun chemin possible.`;return;}
-  let html=`<b>${forward?'🚚 Depuis':'🛬 Vers'} ${esc(startLabel)}</b>
-    <span class="mut">· ${groups.length} groupe(s) ${forward?'de départ':'d’arrivée'} · dépliez pour voir les tampons et les emplacements</span>`;
-  let totFlux=0,totZg=0,totEm=0,noTam=0;
+  if(!groups.length){box.innerHTML=`<b>${esc(startLabel)}</b> : aucun groupe ${forward?'de départ (F1)':'d\'arrivée (F2)'} ne contient cette ZG → aucun chemin possible.`;return;}
+  const paths=[];
   groups.sort().forEach(g=>{
     const targets=forward?[...(IDX.fluxDep.get(K(D,g))||[])]:[...(IDX.fluxArr.get(K(D,g))||[])];
-    html+=`<div class="trow"><span class="dot k-g"></span><details><summary><b>${esc(LAB.g.get(g)||g)}</b> <span class="mut">(${esc(g)}) · ${targets.length} flux ${forward?'sortant(s)':'entrant(s)'}</span></summary><div class="tin">`;
     targets.sort().forEach(t=>{
       const pairKey=forward?K(D,g,t):K(D,t,g);
       const tams=IDX.tam4.get(pairKey)||[];
-      totFlux++;if(!tams.length)noTam++;
       const zgs=forward?[...((IDX.fluxDepZg.get(K(D,g))||new Map()).get(t)||[])]:[...(IDX.depByG.get(K(D,t))?.zgs||[])];
       const emCount=zgs.reduce((s,z)=>s+emplCount(D,z),0);
-      totZg+=zgs.length;totEm+=emCount;
-      html+=`<div class="trow">${tams.length?`<span class="chip k-tam" title="Tampon(s) défini(s) dans F4">⏳ ${tams.map(esc).join(' · ')}</span>`:'<span class="chip warn">⚠ sans tampon F4</span>'}
+      paths.push({g,t,tams,zgs,emCount});
+    });
+  });
+  const noTam=paths.filter(p=>!p.tams.length).length;
+  const totEm=paths.reduce((s,p)=>s+p.emCount,0);
+  const head=`<b>${forward?'🚚 Depuis':'🛬 Vers'} ${esc(startLabel)}</b>
+    <span class="mut">· ${paths.length} chemin(s) · ${totEm} emplacements ${forward?'accessibles':'pouvant arriver ici'} · ${noTam?`<span class="warn">${noTam} sans tampon défini</span>`:'tous avec tampon'}</span>`;
+  if(S.pathView==='simple'){
+    box.innerHTML=head+`<div style="overflow:auto;margin-top:10px"><table><thead><tr>
+      <th>Groupe de départ</th><th>Tampon traversé (F4)</th><th>Groupe d'arrivée</th><th>ZG</th><th>Emplacements</th>
+      </tr></thead><tbody>`+
+      paths.map(p=>`<tr>
+        <td>${esc(LAB.g.get(p.g)||p.g)} <span class="mut">(${esc(p.g)})</span></td>
+        <td>${p.tams.length?`<span class="chip k-tam">⏳ ${p.tams.map(esc).join(' · ')}</span>`:'<span class="chip warn">⚠ sans tampon</span>'}</td>
+        <td>${esc(LAB.g.get(p.t)||p.t)} <span class="mut">(${esc(p.t)})</span></td>
+        <td>${p.zgs.length}</td><td>${p.emCount}</td></tr>`).join('')+
+      `</tbody></table></div>`;
+    return;
+  }
+  let html=head;
+  groups.forEach(g=>{
+    const ps=paths.filter(p=>p.g===g);
+    html+=`<div class="trow"><span class="dot k-g"></span><details><summary><b>${esc(LAB.g.get(g)||g)}</b> <span class="mut">(${esc(g)}) · ${ps.length} flux ${forward?'sortant(s)':'entrant(s)'}</span></summary><div class="tin">`;
+    ps.forEach(p=>{
+      html+=`<div class="trow">${p.tams.length?`<span class="chip k-tam" title="Tampon(s) défini(s) dans F4">⏳ ${p.tams.map(esc).join(' · ')}</span>`:'<span class="chip warn">⚠ sans tampon F4</span>'}
         <span class="mut">${forward?'→':'←'}</span><span class="dot k-g"></span>
-        <details><summary><b>${esc(LAB.g.get(t)||t)}</b> <span class="mut">(${esc(t)}) · ${zgs.length} ZG · ${emCount} empl.</span></summary><div class="tin">`;
-      zgs.sort().slice(0,40).forEach(z=>{
-        const els=IDX.empl.get(K(D,z))||[];
-        const isTam=/tampon/i.test(LAB.zg.get(z)||'');
-        html+=`<div class="trow"><span class="dot k-zg"></span><details><summary>${esc(LAB.zg.get(z)||z)} <span class="mut">(${esc(z)}) · ${els.length} empl.</span>${isTam?' <span class="chip k-tam">zone tampon</span>':''}</summary><div class="tin">`+
-          (els.length?els.slice(0,15).map(e=>`<div class="trow mut">${esc(e.nomEmpl)}</div>`).join(''):'<div class="trow mut">aucun emplacement F5</div>')+
-          (els.length>15?`<div class="trow mut">… +${els.length-15} autres</div>`:'')+
-          `</div></details></div>`;
-      });
-      if(zgs.length>40)html+=`<div class="trow mut">… +${zgs.length-40} autres ZG</div>`;
-      html+=`</div></details></div>`;
+        <details><summary><b>${esc(LAB.g.get(p.t)||p.t)}</b> <span class="mut">(${esc(p.t)}) · ${p.zgs.length} ZG · ${p.emCount} empl.</span></summary><div class="tin">`+
+        p.zgs.sort().slice(0,40).map(z=>{
+          const els=IDX.empl.get(K(D,z))||[];
+          const isTam=/tampon/i.test(LAB.zg.get(z)||'');
+          return `<div class="trow"><span class="dot k-zg"></span><details><summary>${esc(LAB.zg.get(z)||z)} <span class="mut">(${esc(z)}) · ${els.length} empl.</span>${isTam?' <span class="chip k-tam">zone tampon</span>':''}</summary><div class="tin">`+
+            (els.length?els.slice(0,15).map(e=>`<div class="trow mut">${esc(e.nomEmpl)}</div>`).join(''):'<div class="trow mut">aucun emplacement F5</div>')+
+            (els.length>15?`<div class="trow mut">… +${els.length-15} autres</div>`:'')+`</div></details></div>`;
+        }).join('')+
+        (p.zgs.length>40?`<div class="trow mut">… +${p.zgs.length-40} autres ZG</div>`:'')+
+        `</div></details></div>`;
     });
     html+=`</div></details></div>`;
   });
-  html+=`<p class="mut" style="margin-top:8px">Total : <b>${totFlux}</b> flux · <b>${totZg}</b> ZG ${forward?'destinataires':'sources'} · <b>${totEm}</b> emplacements ${forward?'accessibles':'pouvant envoyer vers ici'} · dont <b class="${noTam?'warn':'ok'}">${noTam}</b> flux sans tampon défini.</p>`;
   box.innerHTML=html;
 }
 
@@ -645,7 +665,7 @@ function renderFiche(){
     if(!gD.length&&!gA.length)w.push('<span class="warn">⚠ utilisée dans aucun groupe</span>');
     cards=fcard('Rattachement géographique (F3)',uniq(ref.map(r=>gl(LAB.zi,r.zi)+' / '+gl(LAB.ze,r.ze))))
       +fcard('Groupes de départ (F1)',gD.map(g=>gl(LAB.g,g)))
-      +fcard('Groupes d’arrivée (F2)',gA.map(g=>gl(LAB.g,g)))
+      +fcard('Groupes d'arrivée (F2)',gA.map(g=>gl(LAB.g,g)))
       +fcard('Flux entrants (F2 → cette ZG)',uniq(fl.map(r=>gl(LAB.g,r.gdep)+' → '+gl(LAB.g,r.garr)+' · tampon : '+esc((r.tamponList||[])[0]||'—'))))
       +fcard('Emplacements physiques (F5)',em.length?[`<b>${em.length}</b> emplacement(s)`,...em.slice(0,8).map(e=>esc(e.nomEmpl||''))]:[])
       +fcard('État',w.length?w:['<span class="ok">✓ aucun écart détecté</span>']);
@@ -812,6 +832,7 @@ document.addEventListener('click',e=>{
   if(b.dataset.fiche){const [t,c]=b.dataset.fiche.split(':');S.fiche={type:t,code:c};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});return;}
   if(b.dataset.path){S.path={q:b.dataset.path,dir:(S.path&&S.path.dir)||'aller'};S.tab='chemin';render();return;}
   if(b.id==='pathGo'){S.path={q:$('#pathQ').value,dir:$('#pathDir').value};renderPath();return;}
+  if(b.id==='pathView'){S.pathView=S.pathView==='simple'?'detail':'simple';localStorage.setItem('zgPathView',S.pathView);renderPath();return;}
   if(b.id==='mode'){setMode(!S.simple);return;}
   if(b.id==='reset'){S.filters={};S.q='';$('#q').value='';S.limit=200;render();return;}
   if(b.id==='csv'){exportCSV();return;}
@@ -833,7 +854,6 @@ document.addEventListener('click',e=>{
     $('.tableWrap').scrollIntoView({behavior:'smooth'});return;
   }
 });
-/* Double-clic sur une pastille / valeur d'explorateur = fiche détaillée */
 document.addEventListener('dblclick',e=>{
   const b=e.target.closest('button[data-dim]');if(!b)return;
   const k=b.dataset.dim,v=b.dataset.val;
