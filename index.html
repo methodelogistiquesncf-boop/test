@@ -14,6 +14,7 @@ h1{font-size:19px;margin:0}
 h3{margin:0 0 6px}
 main{padding:18px 22px;max-width:1900px;margin:auto}
 .mut,small{color:var(--mut)}
+.warn{color:var(--warn)} .ok{color:var(--ok)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
 label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
@@ -29,7 +30,7 @@ nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 nav button.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
 #fselects{display:flex;flex-wrap:wrap;gap:10px}
 #fselects select{min-width:170px;max-width:300px}
-#explorer{margin-bottom:14px;max-height:280px;overflow:auto}
+#explorer,#treeWrap{margin-bottom:14px;max-height:60vh;overflow:auto}
 .expHead{display:flex;gap:12px;align-items:center;position:sticky;top:0;background:var(--panel);padding-bottom:8px;z-index:1}
 .expList{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px}
 .expItem{display:flex;gap:8px;align-items:center;justify-content:space-between;position:relative;overflow:hidden;text-align:left}
@@ -54,6 +55,18 @@ tbody tr:hover{background:#172944}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
 details{font-size:13.5px;color:var(--mut)}
 #tableInfo{margin:10px 0;color:var(--mut);font-size:12.5px}
+/* Arborescence */
+summary{cursor:pointer;padding:3px 6px;border-radius:6px;color:var(--txt)}
+summary:hover{background:#172944}
+.tin{margin-left:20px;border-left:1px solid var(--line);padding-left:10px}
+.trow{margin:2px 0;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.trow>details{flex:1;min-width:260px}
+.fbtn{padding:1px 7px;font-size:11px;border-radius:6px}
+/* Fiche */
+.ficheGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-top:10px}
+.fcard{background:#0b1220;border:1px solid var(--line);border-radius:10px;padding:10px}
+.fcard h4{margin:0 0 6px;font-size:13px;color:var(--acc)}
+.fcard ul{margin:0;padding-left:16px;font-size:12.5px;max-height:200px;overflow:auto}
 </style>
 </head>
 <body>
@@ -91,11 +104,13 @@ details{font-size:13.5px;color:var(--mut)}
 
 <div class="panel mut" style="font-size:12.5px">
   Légende :<span class="dot k-zi"></span>ZI (zone d’intervention)<span class="dot k-ze"></span>ZE (zone d’évolution)<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG (zone géographique)<span class="dot k-tam"></span>Tampon
-  — survolez un code pour voir sa signification, cliquez pour filtrer.
+  — survolez un code pour sa signification, cliquez pour filtrer, 📄 = fiche détaillée.
 </div>
 
 <nav id="tabs"></nav>
+<section id="fiche" class="panel" hidden></section>
 <section id="explorer" class="panel" hidden></section>
+<div id="treeWrap" class="panel" hidden></div>
 <div class="tableWrap"><table id="grid"></table></div>
 <div id="tableInfo"></div>
 <button id="more" hidden>Afficher 200 lignes de plus</button>
@@ -119,7 +134,7 @@ details{font-size:13.5px;color:var(--mut)}
 <summary>Règles de jointure appliquées</summary>
 <ul>
 <li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées ; les autres sont listées dans l’onglet « Exclus (≠NE1) ».</li>
-<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ.</li>
+<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ (la ZE n’est pas utilisée comme clé).</li>
 <li><b>F2</b> : grain = Dépôt + ZI + ZE flux + Groupe départ + Groupe arrivée + ZG arrivée.</li>
 <li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE de rattachement.</li>
 <li><b>F4 (tampon)</b> : Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
@@ -216,9 +231,10 @@ function detectKind(rows){
 /* ================= État ================= */
 const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements'};
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
-  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[],
+  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[],fiche:null,
   simple:localStorage.getItem('zgMode')!=='expert'};
-const IDX={dep:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),tam5:new Map(),tam4:new Map(),empl:new Map()};
+const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),
+  tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map()};
 const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map()};
 const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg};
 
@@ -237,6 +253,7 @@ function buildLabels(){
     if(r.zgArr&&r.libZg&&!LAB.zg.has(r.zgArr))LAB.zg.set(r.zgArr,r.libZg);
   }));
 }
+const gl=(d,v)=>{const l=d.get(v);return l?`${esc(l)} (<b>${esc(v)}</b>)`:`<b>${esc(v)}</b>`;};
 function store(kind,rows,name){
   if(kind==='empl')rows.forEach(r=>{
     if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}
@@ -263,6 +280,10 @@ function buildModel(){
     if(r.zgDep){o.zgs.add(r.zgDep);const zk=K(r.depot,r.zgDep);
       if(!IDX.byDepZg.has(zk))IDX.byDepZg.set(zk,new Set());IDX.byDepZg.get(zk).add(r.gdep);}
     if(r.ze)o.zes.add(r.ze);
+    const kg=K(r.depot,r.gdep);
+    if(!IDX.depByG.has(kg))IDX.depByG.set(kg,{zis:new Set(),zes:new Set(),zgs:new Set()});
+    const og=IDX.depByG.get(kg);
+    if(r.zi)og.zis.add(r.zi);if(r.ze)og.zes.add(r.ze);if(r.zgDep)og.zgs.add(r.zgDep);
   });
   S.raw.ref.forEach(r=>{const k=K(r.depot,r.zg);if(!IDX.ref.has(k))IDX.ref.set(k,[]);IDX.ref.get(k).push(r);});
   const fk5=new Set(),fk4=new Set(),dk4=new Set();
@@ -274,6 +295,8 @@ function buildModel(){
     fk5.add(K(r.depot,r.zi,r.ze,r.gdep,r.garr));
     fk4.add(K(r.depot,r.gdep,r.garr));
     dk4.add(K(r.depot,r.gdep));
+    const a=K(r.depot,r.gdep);if(!IDX.fluxDep.has(a))IDX.fluxDep.set(a,new Set());IDX.fluxDep.get(a).add(r.garr);
+    const b=K(r.depot,r.garr);if(!IDX.fluxArr.has(b))IDX.fluxArr.set(b,new Set());IDX.fluxArr.get(b).add(r.gdep);
   });
   S.fluxKeys4=fk4;S.depKeys4=dk4;
   S.raw.tampon.forEach(r=>{
@@ -353,6 +376,7 @@ function makeControls(){
 /* ================= Colonnes / vues ================= */
 const C=(k,l,ex={})=>({k,l,dim:false,get:r=>r[k]??'',...ex});
 const MULTI=(k,l,ex={})=>C(k,l,{dim:true,vals:r=>r[k]||[],has:(r,v)=>(r[k]||[]).some(t=>String(t).includes(v)),get:r=>(r[k]||[]).join(', '),...ex});
+const FICHE=(k,getCode)=>C(k,'📄',{btn:r=>{const v=getCode(r);return v?`<button class="fbtn" data-fiche="zg:${esc(v)}" title="Fiche détaillée de ${esc(v)}">📄</button>`:'';}});
 const COLS={
  flux:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
@@ -364,6 +388,7 @@ const COLS={
   C('libGarr','Libellé groupe arrivée',{expertOnly:true}),
   C('zgArr','ZG arrivée',{dim:true,dict:'zg',lSimple:'ZG d’arrivée'}),
   C('libZg','Libellé ZG arrivée',{expertOnly:true}),
+  FICHE('_fiche',r=>r.zgArr),
   MULTI('depZGs','ZG du groupe de départ · F1',{dict:'zg',lSimple:'ZG contenues dans le groupe de départ'}),
   C('refZEs','ZE du ZG arrivée · F3',{get:r=>(r.refZEs||[]).join(', '),expertOnly:true}),
   C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':n;},lSimple:'Nb d’emplacements (F5)'}),
@@ -387,6 +412,7 @@ const COLS={
   C('gdep','Groupe ZG départ',{dim:true,dict:'g',lSimple:'Groupe de départ'}),
   C('libGdep','Libellé groupe départ',{expertOnly:true}),
   C('zgDep','ZG du groupe de départ',{dim:true,dict:'zg',lSimple:'ZG de départ'}),
+  FICHE('_fiche',r=>r.zgDep),
   C('refZEs','ZE du ZG dans F3',{get:r=>(r.refZEs||[]).join(', '),expertOnly:true}),
   C('inFlux','Groupe utilisé dans F2 ?',{lSimple:'Flux existant ?'})
  ],
@@ -394,6 +420,7 @@ const COLS={
   C('depot','Dépôt',{dim:true,expertOnly:true}),
   C('zi','ZI',{dim:true,dict:'zi'}),C('ze','ZE',{dim:true,dict:'ze'}),
   C('zg','ZG',{dim:true,dict:'zg'}),
+  FICHE('_fiche',r=>r.zg),
   C('libZg','Libellé (F2)',{expertOnly:true}),
   C('depGroups','Groupes de départ (F1)',{expertOnly:true}),
   C('arrGroups','Groupes d’arrivée (F2)',{expertOnly:true}),
@@ -418,6 +445,7 @@ const COLS={
   C('numEmpl','N° emplacement',{dim:true,lSimple:'N° d’emplacement'}),
   C('nomEmpl','Nom emplacement (concaténé)',{dim:true,lSimple:'Nom de l’emplacement'}),
   C('zg','Zone géo (ZG)',{dim:true,dict:'zg',lSimple:'ZG'}),
+  FICHE('_fiche',r=>r.zg),
   C('refVia','ZI / ZE via F3',{get:r=>(r.refVia||[]).join(', '),expertOnly:true}),
   C('depGroups','Groupes départ (F1)',{expertOnly:true}),
   C('arrGroups','Groupes arrivée (F2)',{expertOnly:true}),
@@ -445,7 +473,7 @@ const COLS={
   C('empl','Emplacement'),C('libEmpl','Libellé'),
   C('nbStock','Nb supports stockables'),C('nbDispo','Nb supports dispo')
  ],
- ecart:[]
+ arbre:[],ecart:[]
 };
 function cols(){
   let cs=COLS[S.tab]||[];
@@ -455,7 +483,7 @@ function cols(){
 }
 const lbl=c=>(S.simple&&c.lSimple)?c.lSimple:c.l;
 function colDef(k){return cols().find(c=>c.k===k);}
-function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,excl:S.exclRows,ecart:[]})[S.tab]||[];}
+function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,excl:S.exclRows,ecart:[],arbre:[]})[S.tab]||[];}
 function withSearch(rows){if(!S.q)return rows;const q=N(S.q);return rows.filter(r=>N(JSON.stringify(r)).includes(q));}
 function matchRow(c,r,v){return c.has?c.has(r,v):String(c.get(r))===v;}
 function filtered(){
@@ -465,7 +493,6 @@ function filtered(){
     if(c)rows=[...rows].sort((a,b)=>String(c.get(a)).localeCompare(String(c.get(b)),'fr',{numeric:true})*S.sort.dir);}
   return rows;
 }
-function labText(dict,v){const l=dict?dict.get(v):'';return l?`${l} (${v})`:String(v);}
 function chipHTML(c,v){
   const on=S.filters[c.k]===String(v);
   let txt=esc(v),title=String(v);
@@ -474,11 +501,100 @@ function chipHTML(c,v){
   return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)}">${txt}</button>`;
 }
 
+/* ================= Arborescence ================= */
+function renderTree(){
+  const D=DEPOT_KEEP,byZI={};
+  S.raw.depart.forEach(r=>{
+    byZI[r.zi]=byZI[r.zi]||{};byZI[r.zi][r.ze]=byZI[r.zi][r.ze]||{};
+    byZI[r.zi][r.ze][r.gdep]=byZI[r.zi][r.ze][r.gdep]||new Set();
+    if(r.zgDep)byZI[r.zi][r.ze][r.gdep].add(r.zgDep);
+  });
+  let h='';
+  Object.keys(byZI).sort().forEach(zi=>{
+    const zes=byZI[zi];
+    const nG=Object.values(zes).reduce((s,o)=>s+Object.keys(o).length,0);
+    h+=`<div class="trow"><button class="fbtn" data-fiche="zi:${esc(zi)}" title="Fiche de ${esc(zi)}">📄</button>
+      <details><summary><span class="dot k-zi"></span><b>${esc(LAB.zi.get(zi)||zi)}</b> <span class="mut">(${esc(zi)}) · ${Object.keys(zes).length} ZE · ${nG} groupes</span></summary><div class="tin">`;
+    Object.keys(zes).sort().forEach(ze=>{
+      const gs=zes[ze];
+      h+=`<div class="trow"><button class="fbtn" data-fiche="ze:${esc(ze)}" title="Fiche de ${esc(ze)}">📄</button>
+        <details><summary><span class="dot k-ze"></span><b>${esc(LAB.ze.get(ze)||ze)}</b> <span class="mut">(${esc(ze)}) · ${Object.keys(gs).length} groupes</span></summary><div class="tin">`;
+      Object.keys(gs).sort().forEach(g=>{
+        const zgs=[...gs[g]].sort();
+        h+=`<div class="trow"><button class="fbtn" data-fiche="g:${esc(g)}" title="Fiche du groupe ${esc(g)}">📄</button>
+          <details><summary><span class="dot k-g"></span><b>${esc(LAB.g.get(g)||g)}</b> <span class="mut">(${esc(g)}) · ${zgs.length} ZG</span></summary><div class="tin">`;
+        zgs.forEach(z=>{
+          const n=emplCount(D,z);
+          h+=`<div class="trow"><button class="fbtn" data-fiche="zg:${esc(z)}" title="Fiche de ${esc(z)}">📄</button>
+            <span class="dot k-zg"></span>${esc(LAB.zg.get(z)||z)} <span class="mut">(${esc(z)})${n?` · ${n} empl.`:''}</span></div>`;
+        });
+        h+=`</div></details></div>`;
+      });
+      h+=`</div></details></div>`;
+    });
+    h+=`</div></details></div>`;
+  });
+  $('#treeWrap').innerHTML=`<b>🌳 Arborescence ZI → ZE → Groupe de départ → ZG</b>
+    <span class="mut">— construite depuis F1 · dépliez avec les flèches · cliquez 📄 pour la fiche détaillée</span>`+h;
+}
+
+/* ================= Fiche détaillée ================= */
+function fcard(t,items){return `<div class="fcard"><h4>${esc(t)}</h4><ul>${items.length?items.map(x=>`<li>${x}</li>`).join(''):'<li class="mut">aucun</li>'}</ul></div>`;}
+function renderFiche(){
+  const box=$('#fiche');
+  if(!S.fiche){box.hidden=true;box.innerHTML='';return;}
+  const {type,code}=S.fiche,D=DEPOT_KEEP;
+  let head='',cards='';
+  if(type==='zg'){
+    head=`Fiche ZG — <b>${esc(code)}</b>${LAB.zg.get(code)?` · ${esc(LAB.zg.get(code))}`:''}`;
+    const ref=IDX.ref.get(K(D,code))||[];
+    const gD=[...(IDX.byDepZg.get(K(D,code))||[])].sort();
+    const gA=[...(IDX.byArrZg.get(K(D,code))||[])].sort();
+    const fl=S.flux.filter(r=>r.zgArr===code);
+    const em=IDX.empl.get(K(D,code))||[];
+    const w=[];
+    if(!ref.length)w.push('<span class="warn">⚠ absente du référentiel F3</span>');
+    if(!em.length)w.push('<span class="warn">⚠ aucun emplacement F5</span>');
+    if(!gD.length&&!gA.length)w.push('<span class="warn">⚠ utilisée dans aucun groupe</span>');
+    cards=fcard('Rattachement géographique (F3)',uniq(ref.map(r=>gl(LAB.zi,r.zi)+' / '+gl(LAB.ze,r.ze))))
+      +fcard('Groupes de départ (F1)',gD.map(g=>gl(LAB.g,g)))
+      +fcard('Groupes d’arrivée (F2)',gA.map(g=>gl(LAB.g,g)))
+      +fcard('Flux entrants (F2 → cette ZG)',uniq(fl.map(r=>gl(LAB.g,r.gdep)+' → '+gl(LAB.g,r.garr)+' · tampon : '+esc((r.tamponList||[])[0]||'—'))))
+      +fcard('Emplacements physiques (F5)',em.length?[`<b>${em.length}</b> emplacement(s)`,...em.slice(0,8).map(e=>esc(e.nomEmpl||''))]:[])
+      +fcard('État',w.length?w:['<span class="ok">✓ aucun écart détecté</span>']);
+  }else if(type==='g'){
+    head=`Fiche groupe — <b>${esc(code)}</b>${LAB.g.get(code)?` · ${esc(LAB.g.get(code))}`:''}`;
+    const dG=IDX.depByG.get(K(D,code));
+    const out=[...(IDX.fluxDep.get(K(D,code))||[])].sort();
+    const inn=[...(IDX.fluxArr.get(K(D,code))||[])].sort();
+    const w=[];
+    if(!dG||!dG.zgs.size)w.push('<span class="warn">⚠ aucune ZG de départ déclarée (F1)</span>');
+    if(!out.length&&!inn.length)w.push('<span class="warn">⚠ aucun flux (F2)</span>');
+    cards=fcard('ZI / ZE déclarées (F1)',dG?[...dG.zes].sort().map(z=>gl(LAB.ze,z)):[])
+      +fcard('ZG contenues (F1)',dG?[...dG.zgs].sort().map(z=>gl(LAB.zg,z)):[])
+      +fcard('Flux sortants (vers)',out.map(g=>{const t=(IDX.tam4.get(K(D,code,g))||[])[0]||'';return gl(LAB.g,g)+(t?` · tampon : ${esc(t)}`:'');}))
+      +fcard('Flux entrants (depuis)',inn.map(g=>{const t=(IDX.tam4.get(K(D,g,code))||[])[0]||'';return gl(LAB.g,g)+(t?` · tampon : ${esc(t)}`:'');}))
+      +fcard('État',w.length?w:['<span class="ok">✓ aucun écart détecté</span>']);
+  }else{
+    const isZI=type==='zi';
+    head=`Fiche ${isZI?'ZI':'ZE'} — <b>${esc(code)}</b>${(isZI?LAB.zi.get(code):LAB.ze.get(code))?` · ${esc(isZI?LAB.zi.get(code):LAB.ze.get(code))}`:''}`;
+    const ref=S.raw.ref.filter(r=>isZI?r.zi===code:r.ze===code);
+    const zgs=uniq(ref.map(r=>r.zg)).sort();
+    const groups=uniq(S.raw.depart.filter(r=>isZI?r.zi===code:r.ze===code).map(r=>r.gdep)).sort();
+    cards=fcard(isZI?'ZE contenues (F3)':'ZI parente (F3)',isZI?uniq(ref.map(r=>r.ze)).sort().map(z=>gl(LAB.ze,z)):uniq(ref.map(r=>r.zi)).map(z=>gl(LAB.zi,z)))
+      +fcard('Groupes de départ (F1)',groups.map(g=>gl(LAB.g,g)))
+      +fcard('ZG du référentiel (F3)',zgs.slice(0,60).map(z=>gl(LAB.zg,z)).concat(zgs.length>60?[`… +${zgs.length-60} autres`]:[]));
+  }
+  box.hidden=false;
+  box.innerHTML=`<div class="expHead"><b>📄 ${head}</b><button data-ficheclose>Fermer ×</button></div><div class="ficheGrid">${cards}</div>`;
+}
+
 /* ================= Rendu ================= */
 function renderTabs(){
   const defs=[['flux','Flux enrichis',S.flux.length],['depart','Départ · F1',S.depart.length],
     ['ref','Référentiel ZG · F3',S.ref.length],['tampon','Tampon · F4',S.raw.tampon.length],
-    ['empl','Emplacements · F5',S.empl.length],['excl','Exclus (≠NE1)',S.exclRows.length],
+    ['empl','Emplacements · F5',S.empl.length],['arbre',' Arborescence',uniq(S.raw.depart.map(r=>r.zi)).length],
+    ['excl','Exclus (≠NE1)',S.exclRows.length],
     ['ecart','Écarts',S.controls.reduce((s,c)=>s+c.items.length,0)]];
   $('#tabs').innerHTML=defs.map(([k,l,n])=>
     `<button data-go="${k}" class="${S.tab===k?'on':''}">${l} <small>${n}</small></button>`).join('');
@@ -514,9 +630,9 @@ function renderFilters(){
     const vals=sortU(pool.flatMap(r=>c.vals?c.vals(r):[c.get(r)]));
     const cur=S.filters[c.k]??'';
     html+=`<label>${esc(lbl(c))}<select data-filter="${c.k}"><option value="">Tous</option>${
-      vals.map(v=>`<option value="${esc(v)}" ${String(v)===cur?'selected':''}>${esc(S.simple&&c.dict?labText(DICT[c.dict],v):v)}</option>`).join('')}</select></label>`;
+      vals.map(v=>`<option value="${esc(v)}" ${String(v)===cur?'selected':''}>${esc(S.simple&&c.dict?((DICT[c.dict].get(v)||'')+' ('+v+')'):v)}</option>`).join('')}</select></label>`;
   });
-  $('#fselects').innerHTML=html||'<span class="mut">Filtres disponibles sur les onglets Flux / Départ / Référentiel / Tampon / Emplacements / Exclus.</span>';
+  $('#fselects').innerHTML=html||'<span class="mut">Filtres disponibles sur les onglets de données.</span>';
 }
 function renderGrid(){
   const cs=cols(),rows=filtered(),grid=$('#grid');
@@ -526,6 +642,7 @@ function renderGrid(){
     <button class="sort" data-sort="${c.k}" title="Trier">${S.sort&&S.sort.k===c.k?(S.sort.dir>0?'↑':'↓'):'↕'}</button></th>`).join('')+'</tr></thead><tbody>';
   rows.slice(0,S.limit).forEach(r=>{
     html+='<tr>'+cs.map(c=>{
+      if(c.btn)return `<td>${c.btn(r)}</td>`;
       const vals=(c.vals?c.vals(r):[c.get(r)]).filter(v=>v!==''&&v!=null);
       if(c.dim&&vals.length){
         const shown=vals.slice(0,3).map(v=>chipHTML(c,v)).join('');
@@ -536,18 +653,18 @@ function renderGrid(){
   });
   html+='</tbody>';
   grid.innerHTML=rows.length?html:`<thead><tr>${cs.map(c=>`<th>${esc(lbl(c))}</th>`).join('')}</tr></thead><tbody><tr><td colspan="${cs.length}" class="mut">Aucune ligne ne correspond aux filtres.</td></tr></tbody>`;
-  $('#tableInfo').textContent=`${Math.min(rows.length,S.limit)} ligne(s) affichée(s) sur ${rows.length} · cliquez une valeur pour filtrer, re-cliquez pour enlever le filtre · cliquez un intitulé 🔗 pour explorer la colonne.`;
+  $('#tableInfo').textContent=`${Math.min(rows.length,S.limit)} ligne(s) affichée(s) sur ${rows.length} · cliquez une valeur pour filtrer · 📄 = fiche détaillée · 🔗 = explorateur.`;
   $('#more').hidden=rows.length<=S.limit;
 }
 function explorer(k){
-  const c=colDef(k);if(!c)return;
+  const c=colDef(k);if(!c||c.btn)return;
   const m=new Map();
   baseRows().forEach(r=>(c.vals?c.vals(r):[c.get(r)]).filter(v=>v!==''&&v!=null)
     .forEach(v=>{const s=String(v);m.set(s,(m.get(s)||0)+1);}));
   const list=[...m].sort((a,b)=>b[1]-a[1]),max=Math.max(1,...list.map(x=>x[1]));
   const box=$('#explorer');box.hidden=false;
   box.innerHTML=`<div class="expHead"><b>Explorateur · ${esc(lbl(c))}</b><small>${list.length} valeur(s) · cliquez pour filtrer toutes les colonnes liées</small><button id="closeExp">Fermer ×</button></div><div class="expList">`+
-    list.map(([v,n])=>`<button class="expItem" data-dim="${k}" data-val="${esc(v)}"><span>${esc(S.simple&&c.dict?labText(DICT[c.dict],v):v)}</span><b>${n}</b><i style="width:${100*n/max}%"></i></button>`).join('')+'</div>';
+    list.map(([v,n])=>`<button class="expItem" data-dim="${k}" data-val="${esc(v)}"><span>${esc(S.simple&&c.dict?((DICT[c.dict].get(v)||'')+' ('+v+')'):v)}</span><b>${n}</b><i style="width:${100*n/max}%"></i></button>`).join('')+'</div>';
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function renderControls(){
@@ -558,19 +675,24 @@ function renderControls(){
     c.items.map(i=>{
       const d=Object.keys(i.filters)[0],v=i.filters[d];
       const dict=d==='zi'?LAB.zi:d==='ze'?LAB.ze:(d==='gdep'||d==='garr')?LAB.g:(d==='zg'||d==='zgArr'||d==='zgDep')?LAB.zg:null;
-      return `<button class="chip" data-ctrl="1" data-tab="${i.tab}" data-filters='${esc(JSON.stringify(i.filters))}' title="${esc(v)}">${esc(S.simple&&dict?labText(dict,v):v)} · ${i.n}</button>`;
+      return `<button class="chip" data-ctrl="1" data-tab="${i.tab}" data-filters='${esc(JSON.stringify(i.filters))}' title="${esc(v)}">${esc(S.simple&&dict?((dict.get(v)||'')+' ('+v+')'):v)} · ${i.n}</button>`;
     }).join('')+'</div>').join('')
     :'<div class="card">Aucun écart détecté sur les fichiers chargés. 🎉</div>';
 }
 function render(){
   const valid=new Set(cols().filter(c=>c.dim).map(c=>c.k));
   Object.keys(S.filters).forEach(k=>{if(!valid.has(k))delete S.filters[k];});
-  renderTabs();renderStats();renderFilters();renderGrid();renderControls();
+  renderTabs();renderStats();renderFilters();renderControls();renderFiche();
+  const isTree=S.tab==='arbre';
+  $('#treeWrap').hidden=!isTree;
+  $('.tableWrap').style.display=isTree?'none':'';
+  $('#tableInfo').style.display=isTree?'none':'';
+  if(isTree){renderTree();$('#more').hidden=true;}else renderGrid();
 }
 
 /* ================= Actions ================= */
 function exportCSV(){
-  const cs=cols(),rows=filtered();
+  const cs=cols().filter(c=>!c.btn),rows=filtered();
   const cell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   const csv='\uFEFF'+[cs.map(c=>cell(lbl(c))).join(';'),
     ...rows.map(r=>cs.map(c=>cell(c.vals?c.vals(r).join(' | '):c.get(r))).join(';'))].join('\r\n');
@@ -579,7 +701,7 @@ function exportCSV(){
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function clearAll(){
-  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[]};S.files={};S.stats={};S.exclRows=[];
+  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[]};S.files={};S.stats={};S.exclRows=[];S.fiche=null;
   S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';
   $$('#drop input[type=file]').forEach(i=>i.value='');
   $('#explorer').hidden=true;
@@ -593,6 +715,8 @@ function setMode(s){
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='closeExp'){$('#explorer').hidden=true;return;}
+  if(b.dataset.ficheclose){S.fiche=null;renderFiche();return;}
+  if(b.dataset.fiche){const [t,c]=b.dataset.fiche.split(':');S.fiche={type:t,code:c};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});return;}
   if(b.id==='mode'){setMode(!S.simple);return;}
   if(b.id==='reset'){S.filters={};S.q='';$('#q').value='';S.limit=200;render();return;}
   if(b.id==='csv'){exportCSV();return;}
