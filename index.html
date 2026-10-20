@@ -6,17 +6,17 @@
 <title>Explorateur ZI · ZE · ZG · Tampons · Emplacements</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#0f172a;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24}
+:root{--bg:#0f172a;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;--fs:14.5px}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.55 system-ui,Segoe UI,Roboto,sans-serif}
 header{padding:16px 22px;background:#0b1220;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-h1{font-size:18px;margin:0}
+h1{font-size:19px;margin:0}
 h3{margin:0 0 6px}
 main{padding:18px 22px;max-width:1900px;margin:auto}
 .mut,small{color:var(--mut)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
-label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mut)}
+label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
 select,input[type=search],input[type=file]{background:#0b1220;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
 button{background:#0b1220;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer;font:inherit}
 button:hover{border-color:var(--acc);color:var(--acc)}
@@ -28,14 +28,14 @@ button:hover{border-color:var(--acc);color:var(--acc)}
 nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 nav button.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
 #fselects{display:flex;flex-wrap:wrap;gap:10px}
-#fselects select{min-width:150px;max-width:260px}
+#fselects select{min-width:170px;max-width:300px}
 #explorer{margin-bottom:14px;max-height:280px;overflow:auto}
 .expHead{display:flex;gap:12px;align-items:center;position:sticky;top:0;background:var(--panel);padding-bottom:8px;z-index:1}
-.expList{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px}
+.expList{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px}
 .expItem{display:flex;gap:8px;align-items:center;justify-content:space-between;position:relative;overflow:hidden;text-align:left}
 .expItem i{position:absolute;left:0;bottom:0;height:3px;background:var(--acc);opacity:.5}
 .tableWrap{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:12px}
-table{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:13.5px;white-space:nowrap}
 th{position:sticky;top:0;background:#0b1220;z-index:2;text-align:left;border-bottom:1px solid var(--line)}
 .th{border:0;background:none;border-radius:0;padding:10px 8px;font-weight:600}
 .th span{color:var(--acc);font-size:11px}
@@ -43,13 +43,17 @@ th{position:sticky;top:0;background:#0b1220;z-index:2;text-align:left;border-bot
 td{padding:6px 8px;border-bottom:1px solid #1e2b43;vertical-align:top}
 tbody tr:nth-child(even){background:#131e33}
 tbody tr:hover{background:#172944}
-.chip{padding:2px 7px;margin:1px;border-radius:20px;font-size:12px;white-space:normal;text-align:left;max-width:260px}
+.chip{padding:2px 8px;margin:1px;border-radius:20px;font-size:12.5px;white-space:normal;text-align:left;max-width:300px;border-left-width:3px;border-left-style:solid}
 .chip.on{background:var(--acc);color:#04121f;border-color:var(--acc)}
+.chip small{opacity:.75}
+.k-zi{border-left-color:#38bdf8}.k-ze{border-left-color:#34d399}.k-g{border-left-color:#fbbf24}.k-zg{border-left-color:#c084fc}.k-tam{border-left-color:#f472b6}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 5px -1px 10px}
 .plain{color:var(--mut)}
+.phrase{white-space:normal;max-width:560px;color:var(--txt)}
 #notice{border-color:#7a5b17;color:var(--warn)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
-details{font-size:13px;color:var(--mut)}
-#tableInfo{margin:10px 0;color:var(--mut);font-size:12px}
+details{font-size:13.5px;color:var(--mut)}
+#tableInfo{margin:10px 0;color:var(--mut);font-size:12.5px}
 </style>
 </head>
 <body>
@@ -57,6 +61,7 @@ details{font-size:13px;color:var(--mut)}
   <div><h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements</h1>
   <small>5 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small></div>
   <div class="row">
+    <button id="mode">👓 Mode débutant</button>
     <button id="reset">Réinitialiser les filtres</button>
     <button id="csv">Exporter CSV</button>
     <button id="clear">Vider les fichiers</button>
@@ -66,7 +71,7 @@ details{font-size:13px;color:var(--mut)}
 
 <main>
 <section id="drop" class="panel">
-  <b>Vos fichiers</b> <span class="mut">— cliquez sur « Choisir un fichier » ou glissez-déposez les classeurs ici (reconnaissance automatique par contenu). Les lignes dont le dépôt n'est pas NE1 sont écartées automatiquement.</span>
+  <b>Vos fichiers</b> <span class="mut">— cliquez sur « Choisir un fichier » ou glissez-déposez les classeurs ici (reconnaissance automatique par contenu).</span>
   <div class="row" style="margin-top:10px">
     <label>F1 · ZG du groupe de départ<input type="file" accept=".xlsx,.xls" data-kind="depart"></label>
     <label>F2 · Groupe d’arrivée<input type="file" accept=".xlsx,.xls" data-kind="flux"></label>
@@ -81,8 +86,13 @@ details{font-size:13px;color:var(--mut)}
 
 <section class="panel">
   <div id="fselects"></div>
-  <div style="margin-top:10px"><label>Recherche libre (code, libellé, n° emplacement…)<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, M2_LC006N4E1…"></label></div>
+  <div style="margin-top:10px"><label>Recherche libre (code, libellé, n° emplacement…)<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, LAVAGE, M2_LC006…"></label></div>
 </section>
+
+<div class="panel mut" style="font-size:12.5px">
+  Légende :<span class="dot k-zi"></span>ZI (zone d’intervention)<span class="dot k-ze"></span>ZE (zone d’évolution)<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG (zone géographique)<span class="dot k-tam"></span>Tampon
+  — survolez un code pour voir sa signification, cliquez pour filtrer.
+</div>
 
 <nav id="tabs"></nav>
 <section id="explorer" class="panel" hidden></section>
@@ -92,16 +102,28 @@ details{font-size:13px;color:var(--mut)}
 <section id="controls" style="margin-top:16px"></section>
 
 <details class="panel" style="margin-top:16px">
+<summary>📖 Glossaire pour les non-initiés (exemples tirés de vos fichiers)</summary>
+<ul>
+<li><b>Dépôt (NE1)</b> : le site physique. Tous les fichiers sont filtrés sur NE1.</li>
+<li><b>ZI — Zone d’Intervention</b> : périmètre organisationnel, « qui intervient où ». Ex. <code>ZIHUB</code> = « Zone Intervention HUB ».</li>
+<li><b>ZE — Zone d’Évolution</b> : sous-zone d’une ZI, « où ça circule ». Ex. <code>ZEHUB</code> = « Zone Evolution HUB ».</li>
+<li><b>ZG — Zone Géographique</b> : plus petite zone de localisation du stock. Ex. <code>ZGMAG3</code> = « LI-MAG3 ».</li>
+<li><b>Groupe ZG (GZG…)</b> : paquet de ZG utilisé comme point de départ ou d’arrivée des flux. Ex. <code>GZGHUB</code> = « Groupe ZG HUB ».</li>
+<li><b>Tampon</b> : zone d’attente traversée entre un groupe de départ et un groupe d’arrivée. Ex. <code>HUBT/S</code> = « HUB Tampon Sortie ».</li>
+<li><b>Emplacement (F5)</b> : adresse physique exacte = Allée + Face + Colonne + Niveau + Emplacement. Ex. <code>M2_LC006N4E1</code>.</li>
+<li><b>Séquence (F4)</b> : ordre de priorité du tampon dans un flux.</li>
+</ul>
+</details>
+
+<details class="panel" style="margin-top:12px">
 <summary>Règles de jointure appliquées</summary>
 <ul>
-<li><b>Filtre dépôt</b> : seules les lignes dont le Dépôt = <code>NE1</code> sont conservées (tous fichiers). Les lignes exclues sont consultables dans l'onglet « Exclus (≠NE1) ».</li>
-<li><b>Nom emplacement (F5)</b> : concaténation des champs <code>Allée + Face + Colonne + Niveau + Emplacement</code> (configurable dans la constante <code>EMPL_NAME_FIELDS</code> du script).</li>
+<li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées ; les autres sont listées dans l’onglet « Exclus (≠NE1) ».</li>
 <li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ.</li>
 <li><b>F2</b> : grain = Dépôt + ZI + ZE flux + Groupe départ + Groupe arrivée + ZG arrivée.</li>
-<li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE de rattachement (non exclusif).</li>
-<li><b>F4 (tampon)</b> : jointure prioritaire Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
-<li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) → jointure Dépôt + ZG avec F3, F1, F2.</li>
-<li>Seules les lignes strictement dupliquées sont retirées. Les libellés divergents et codes atypiques sont signalés dans l'onglet Écarts.</li>
+<li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE de rattachement.</li>
+<li><b>F4 (tampon)</b> : Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
+<li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom d’emplacement = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
 </ul>
 </details>
 </main>
@@ -115,18 +137,14 @@ const N=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLower
 const K=(...a)=>a.map(x=>String(x??'').trim()).join('|');
 const uniq=a=>[...new Set(a.filter(x=>x!==undefined&&x!==null&&x!==''))];
 const sortU=a=>uniq(a).sort((x,y)=>String(x).localeCompare(String(y),'fr',{numeric:true}));
-
-/* ========== Constantes configurables ========== */
 const DEPOT_KEEP='NE1';
-/* Champs utilisés pour construire le "Nom emplacement" (F5).
-   Retirez un champ de cette liste si le nom officiel n'en utilise que 4. */
 const EMPL_NAME_FIELDS=['allee','face','colonne','niveau','empl'];
-const EMPL_NAME_SEP=''; // mettez '-' ou '_' si vous préférez un séparateur
+const EMPL_NAME_SEP='';
 
 /* ========== Reconnaissance des en-têtes ========== */
 const EXACT={depot:'depot',zi:'zi',ze:'ze',zg:'zg',zonegeo:'zg',zonegeoographique:'zg',
-libellezi:'libZI',libellecourtzi:'courtZI',
-libelleze:'libZE',libellezg:'libZg',groupezgdepart:'gdep',groupezgarrivee:'garr',
+libellezi:'libZI',libellecourtzi:'courtZI',libelleze:'libZE',libellezg:'libZg',
+groupezgdepart:'gdep',groupezgarrivee:'garr',
 libellegroupezgdepart:'libGdep',libellegroupzgdepart:'libGdep',
 libellegroupezgarrivee:'libGarr',libellegroupzgarrivee:'libGarr',
 libellegroupezg:'libGarr',libellegroupzg:'libGarr',
@@ -198,28 +216,34 @@ function detectKind(rows){
 /* ================= État ================= */
 const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements'};
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
-  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[]};
+  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[],
+  simple:localStorage.getItem('zgMode')!=='expert'};
 const IDX={dep:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),tam5:new Map(),tam4:new Map(),empl:new Map()};
+const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map()};
+const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg};
 
 function tamponLabel(r){
   const em=[r.empl1,r.empl2,r.empl3,r.empl4,r.empl5]
     .map(v=>String(v??'').trim()).filter(v=>v&&v!=='.').join('/');
   return [r.sequence?('S'+r.sequence):'',em,r.libTampon].filter(Boolean).join(' · ');
 }
-function buildEmplName(r){
-  return EMPL_NAME_FIELDS.map(k=>String(r[k]??'').trim()).join(EMPL_NAME_SEP);
+function buildEmplName(r){return EMPL_NAME_FIELDS.map(k=>String(r[k]??'').trim()).join(EMPL_NAME_SEP);}
+function buildLabels(){
+  [S.raw.depart,S.raw.flux,S.raw.tampon,S.raw.ref,S.raw.empl].forEach(rows=>rows.forEach(r=>{
+    if(r.zi&&!LAB.zi.has(r.zi))LAB.zi.set(r.zi,r.libZI||r.courtZI||'');
+    if(r.ze&&!LAB.ze.has(r.ze))LAB.ze.set(r.ze,r.libZE||'');
+    if(r.gdep&&!LAB.g.has(r.gdep))LAB.g.set(r.gdep,r.libGdep||'');
+    if(r.garr&&!LAB.g.has(r.garr))LAB.g.set(r.garr,r.libGarr||'');
+    if(r.zgArr&&r.libZg&&!LAB.zg.has(r.zgArr))LAB.zg.set(r.zgArr,r.libZg);
+  }));
 }
 function store(kind,rows,name){
   if(kind==='empl')rows.forEach(r=>{
     if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}
     r.nomEmpl=buildEmplName(r);
   });
-  /* Filtre dépôt : on ne garde que NE1 */
   const kept=[],excl=[];
-  rows.forEach(r=>{
-    const d=String(r.depot??'').trim();
-    if(N(d)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);
-  });
+  rows.forEach(r=>{if(N(r.depot)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);});
   S.exclRows=S.exclRows.concat(excl);
   const d=dedup(kept);
   S.raw[kind]=d.rows;S.stats[kind]={n:d.rows.length,dup:d.dup,excl:excl.length};S.files[kind]=name;
@@ -232,15 +256,6 @@ async function ingest(kind,buf,name){
 }
 function buildModel(){
   Object.values(IDX).forEach(m=>m.clear());
-  S.exclRows=[];
-  Object.keys(S.raw).forEach(k=>{
-    const all=S.raw[k];
-    const kept=[],excl=[];
-    all.forEach(r=>{const d=String(r.depot??'').trim();
-      if(N(d)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);});
-    S.exclRows=S.exclRows.concat(excl);
-    S.raw[k]=kept;
-  });
   S.raw.depart.forEach(r=>{
     const k=K(r.depot,r.zi,r.gdep);
     if(!IDX.dep.has(k))IDX.dep.set(k,{zgs:new Set(),zes:new Set()});
@@ -289,13 +304,12 @@ function buildModel(){
     arrGroups:[...(IDX.byArrZg.get(K(r.depot,r.zg))||[])].sort().join(', ')}));
   S.empl=S.raw.empl.map(r=>{
     const ref=IDX.ref.get(K(r.depot,r.zg))||[];
-    return {...r,
-      nomEmpl:buildEmplName(r),
+    return {...r,nomEmpl:buildEmplName(r),
       refVia:sortU(ref.map(x=>x.zi+'/'+x.ze)),
       depGroups:[...(IDX.byDepZg.get(K(r.depot,r.zg))||[])].sort().join(', '),
       arrGroups:[...(IDX.byArrZg.get(K(r.depot,r.zg))||[])].sort().join(', ')};
   });
-  S.exclRows.forEach(r=>{r.nomEmpl=buildEmplName(r);});
+  buildLabels();
   S.controls=makeControls();
 }
 const emplCount=(depot,zg)=>{const a=IDX.empl.get(K(depot,zg));return a?a.length:0;};
@@ -339,64 +353,93 @@ function makeControls(){
 /* ================= Colonnes / vues ================= */
 const C=(k,l,ex={})=>({k,l,dim:false,get:r=>r[k]??'',...ex});
 const MULTI=(k,l,ex={})=>C(k,l,{dim:true,vals:r=>r[k]||[],has:(r,v)=>(r[k]||[]).some(t=>String(t).includes(v)),get:r=>(r[k]||[]).join(', '),...ex});
-const TAMCOL=MULTI('tamponList','Tampon · F4');
 const COLS={
  flux:[
-  C('depot','Dépôt',{dim:true}),C('zi','ZI',{dim:true}),C('ze','ZE du flux',{dim:true}),
-  C('gdep','Groupe ZG départ',{dim:true}),C('libGdep','Libellé groupe départ'),
-  C('garr','Groupe ZG arrivée',{dim:true}),C('libGarr','Libellé groupe arrivée'),
-  C('zgArr','ZG arrivée',{dim:true}),C('libZg','Libellé ZG arrivée'),
-  MULTI('depZGs','ZG du groupe de départ · F1'),
-  C('refZEs','ZE du ZG arrivée · F3',{get:r=>(r.refZEs||[]).join(', ')}),
-  C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':n;}}),
-  TAMCOL,
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('zi','ZI',{dim:true,dict:'zi',lSimple:'ZI'}),
+  C('ze','ZE du flux',{dim:true,dict:'ze',lSimple:'ZE'}),
+  C('gdep','Groupe ZG départ',{dim:true,dict:'g',lSimple:'Groupe de départ'}),
+  C('libGdep','Libellé groupe départ',{expertOnly:true}),
+  C('garr','Groupe ZG arrivée',{dim:true,dict:'g',lSimple:'Groupe d’arrivée'}),
+  C('libGarr','Libellé groupe arrivée',{expertOnly:true}),
+  C('zgArr','ZG arrivée',{dim:true,dict:'zg',lSimple:'ZG d’arrivée'}),
+  C('libZg','Libellé ZG arrivée',{expertOnly:true}),
+  MULTI('depZGs','ZG du groupe de départ · F1',{dict:'zg',lSimple:'ZG contenues dans le groupe de départ'}),
+  C('refZEs','ZE du ZG arrivée · F3',{get:r=>(r.refZEs||[]).join(', '),expertOnly:true}),
+  C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':n;},lSimple:'Nb d’emplacements (F5)'}),
+  MULTI('tamponList','Tampon · F4',{dict:'tam',lSimple:'Tampon traversé'}),
   C('_ctl','Contrôle',{get:r=>{
     const w=[];
-    if(!r.hasDep)w.push('⚠ grp départ absent F1');
-    if(!r.hasRef)w.push('⚠ ZG arrivée sans ZE F3');
+    if(!r.hasDep)w.push('⚠ groupe départ absent de F1');
+    if(!r.hasRef)w.push('⚠ ZG arrivée sans ZE dans F3');
     if(!(r.tamponList||[]).length)w.push('⚠ aucun tampon F4');
-    return w.length?w.join(' · '):'✓';}})
+    return w.length?w.join(' · '):'✓';},lSimple:'État'}),
+  C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>{
+    const g1=LAB.g.get(r.gdep)||r.gdep,g2=LAB.g.get(r.garr)||r.garr;
+    const tam=(r.tamponList||[])[0]||'aucun tampon défini';
+    const zg=r.zgArr?((LAB.zg.get(r.zgArr)||'')+' ('+r.zgArr+')'):'';
+    const n=r.depZGs.length?(' Le groupe de départ contient '+r.depZGs.length+' ZG.'):'';
+    return `Le groupe « ${g1} » envoie vers le groupe « ${g2} » en passant par ${tam}. ZG d’arrivée : ${zg}.${n}`;}})
  ],
  depart:[
-  C('depot','Dépôt',{dim:true}),C('zi','ZI',{dim:true}),C('ze','ZE',{dim:true}),
-  C('gdep','Groupe ZG départ',{dim:true}),C('libGdep','Libellé groupe départ'),
-  C('zgDep','ZG du groupe de départ',{dim:true}),
-  C('refZEs','ZE du ZG dans F3',{get:r=>(r.refZEs||[]).join(', ')}),
-  C('inFlux','Groupe utilisé dans F2 ?')
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('zi','ZI',{dim:true,dict:'zi'}),C('ze','ZE',{dim:true,dict:'ze'}),
+  C('gdep','Groupe ZG départ',{dim:true,dict:'g',lSimple:'Groupe de départ'}),
+  C('libGdep','Libellé groupe départ',{expertOnly:true}),
+  C('zgDep','ZG du groupe de départ',{dim:true,dict:'zg',lSimple:'ZG de départ'}),
+  C('refZEs','ZE du ZG dans F3',{get:r=>(r.refZEs||[]).join(', '),expertOnly:true}),
+  C('inFlux','Groupe utilisé dans F2 ?',{lSimple:'Flux existant ?'})
  ],
  ref:[
-  C('depot','Dépôt',{dim:true}),C('zi','ZI',{dim:true}),C('ze','ZE',{dim:true}),C('zg','ZG',{dim:true}),
-  C('libZg','Libellé (F2)'),C('depGroups','Groupes de départ (F1)'),C('arrGroups','Groupes d’arrivée (F2)'),
-  C('nbEmpl','Empl. F5',{get:r=>{const n=emplCount(r.depot,r.zg);return n===0?'—':n;}}),
-  C('usage','Utilisé ?',{get:r=>(r.depGroups||r.arrGroups)?'oui':'non'})
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('zi','ZI',{dim:true,dict:'zi'}),C('ze','ZE',{dim:true,dict:'ze'}),
+  C('zg','ZG',{dim:true,dict:'zg'}),
+  C('libZg','Libellé (F2)',{expertOnly:true}),
+  C('depGroups','Groupes de départ (F1)',{expertOnly:true}),
+  C('arrGroups','Groupes d’arrivée (F2)',{expertOnly:true}),
+  C('nbEmpl','Empl. F5',{get:r=>{const n=emplCount(r.depot,r.zg);return n===0?'—':n;},lSimple:'Nb d’emplacements (F5)'}),
+  C('usage','Utilisé ?',{get:r=>(r.depGroups||r.arrGroups)?'oui':'non',lSimple:'Utilisée ?'})
  ],
  tampon:[
-  C('depot','Dépôt',{dim:true}),C('zi','ZI',{dim:true}),C('ze','ZE',{dim:true}),
-  C('gdep','Groupe départ',{dim:true}),C('garr','Groupe arrivée',{dim:true}),
-  C('sequence','Séquence',{dim:true}),
-  C('empl1','EMPL 1',{dim:true}),C('empl2','EMPL 2',{dim:true}),C('empl3','EMPL 3',{dim:true}),
-  C('empl4','EMPL 4'),C('empl5','EMPL 5'),
-  C('libTampon','Libellé',{dim:true}),C('typeEmpl','Type emplacement'),
-  C('_lab','Chemin tampon',{get:r=>r._label||''}),
-  C('inFlux','Flux F2 correspondant ?',{get:r=>r.hasFlux?'oui':'non'})
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('zi','ZI',{dim:true,dict:'zi'}),C('ze','ZE',{dim:true,dict:'ze'}),
+  C('gdep','Groupe départ',{dim:true,dict:'g'}),C('garr','Groupe arrivée',{dim:true,dict:'g'}),
+  C('sequence','Séquence',{dim:true,lSimple:'Ordre'}),
+  C('empl1','EMPL 1',{dim:true,lSimple:'Code tampon'}),
+  C('empl2','EMPL 2',{dim:true,lSimple:'Sens (S/E/T)'}),
+  C('empl3','EMPL 3',{dim:true,lSimple:'Détail'}),
+  C('empl4','EMPL 4',{expertOnly:true}),C('empl5','EMPL 5',{expertOnly:true}),
+  C('libTampon','Libellé',{dim:true}),C('typeEmpl','Type emplacement',{expertOnly:true}),
+  C('_lab','Chemin tampon',{get:r=>r._label||'',lSimple:'Chemin du tampon'}),
+  C('inFlux','Flux F2 correspondant ?',{get:r=>r.hasFlux?'oui':'non',lSimple:'Flux existant ?'})
  ],
  empl:[
-  C('depot','Dépôt',{dim:true}),C('numEmpl','N° emplacement',{dim:true}),
-  C('nomEmpl','Nom emplacement (concaténé)',{dim:true}),
-  C('zg','Zone géo (ZG)',{dim:true}),
-  C('refVia','ZI / ZE via F3',{get:r=>(r.refVia||[]).join(', ')}),
-  C('depGroups','Groupes départ (F1)'),C('arrGroups','Groupes arrivée (F2)'),
-  C('zoneInv','Zone inventaire',{dim:true}),C('magasin','Code magasin',{dim:true}),
-  C('allee','Allée',{dim:true}),C('face','Face',{dim:true}),C('colonne','Colonne',{dim:true}),C('niveau','Niveau',{dim:true}),
-  C('empl','Emplacement',{dim:true}),C('libEmpl','Libellé'),C('taille','Code taille'),
-  C('nbStock','Nb supports stockables'),C('nbDispo','Nb supports dispo'),
-  C('topTampon','Top tampon',{dim:true}),C('topStock','Top stockage',{dim:true}),C('topPick','Top picking',{dim:true}),
-  C('active','IMPLANTATION_ACTIVE',{dim:true}),C('zp','ZP'),C('zs','ZS'),
-  C('posX','POSITION_X'),C('posY','POSITION_Y')
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('numEmpl','N° emplacement',{dim:true,lSimple:'N° d’emplacement'}),
+  C('nomEmpl','Nom emplacement (concaténé)',{dim:true,lSimple:'Nom de l’emplacement'}),
+  C('zg','Zone géo (ZG)',{dim:true,dict:'zg',lSimple:'ZG'}),
+  C('refVia','ZI / ZE via F3',{get:r=>(r.refVia||[]).join(', '),expertOnly:true}),
+  C('depGroups','Groupes départ (F1)',{expertOnly:true}),
+  C('arrGroups','Groupes arrivée (F2)',{expertOnly:true}),
+  C('zoneInv','Zone inventaire',{dim:true,expertOnly:true}),
+  C('magasin','Code magasin',{dim:true,expertOnly:true}),
+  C('allee','Allée',{dim:true}),C('face','Face',{dim:true}),
+  C('colonne','Colonne',{dim:true}),C('niveau','Niveau',{dim:true}),
+  C('empl','Emplacement',{dim:true}),
+  C('libEmpl','Libellé'),
+  C('taille','Code taille',{expertOnly:true}),
+  C('nbStock','Nb supports stockables',{lSimple:'Places stockables'}),
+  C('nbDispo','Nb supports dispo',{lSimple:'Places dispo'}),
+  C('topTampon','Top tampon',{dim:true,expertOnly:true}),
+  C('topStock','Top stockage',{dim:true,expertOnly:true}),
+  C('topPick','Top picking',{dim:true,expertOnly:true}),
+  C('active','IMPLANTATION_ACTIVE',{dim:true,expertOnly:true}),
+  C('zp','ZP',{expertOnly:true}),C('zs','ZS',{expertOnly:true}),
+  C('posX','POSITION_X',{expertOnly:true}),C('posY','POSITION_Y',{expertOnly:true})
  ],
  excl:[
   C('_file','Fichier d’origine'),C('depot','Dépôt',{dim:true}),
-  C('zg','Zone géo / ZG',{dim:true}),C('numEmpl','N° emplacement'),
+  C('zg','Zone géo / ZG',{dim:true,dict:'zg'}),C('numEmpl','N° emplacement'),
   C('nomEmpl','Nom emplacement'),
   C('zoneInv','Zone inventaire'),C('allee','Allée'),C('face','Face'),C('colonne','Colonne'),C('niveau','Niveau'),
   C('empl','Emplacement'),C('libEmpl','Libellé'),
@@ -407,8 +450,10 @@ const COLS={
 function cols(){
   let cs=COLS[S.tab]||[];
   if(S.tab==='tampon')cs=cs.filter(c=>S.raw.tampon.some(r=>String(c.get(r))!==''));
+  cs=S.simple?cs.filter(c=>!c.expertOnly):cs.filter(c=>!c.simpleOnly);
   return cs;
 }
+const lbl=c=>(S.simple&&c.lSimple)?c.lSimple:c.l;
 function colDef(k){return cols().find(c=>c.k===k);}
 function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,excl:S.exclRows,ecart:[]})[S.tab]||[];}
 function withSearch(rows){if(!S.q)return rows;const q=N(S.q);return rows.filter(r=>N(JSON.stringify(r)).includes(q));}
@@ -419,6 +464,14 @@ function filtered(){
   if(S.sort){const c=colDef(S.sort.k);
     if(c)rows=[...rows].sort((a,b)=>String(c.get(a)).localeCompare(String(c.get(b)),'fr',{numeric:true})*S.sort.dir);}
   return rows;
+}
+function labText(dict,v){const l=dict?dict.get(v):'';return l?`${l} (${v})`:String(v);}
+function chipHTML(c,v){
+  const on=S.filters[c.k]===String(v);
+  let txt=esc(v),title=String(v);
+  if(S.simple&&c.dict&&DICT[c.dict]){const l=DICT[c.dict].get(v);if(l){txt=`${esc(l)} <small>(${esc(v)})</small>`;title=`${v} = ${l}`;}}
+  const kc=c.dict?(' k-'+c.dict):(c.k==='tamponList'?' k-tam':'');
+  return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)}">${txt}</button>`;
 }
 
 /* ================= Rendu ================= */
@@ -448,7 +501,7 @@ function renderStats(){
   const empty=Object.keys(LABELS).filter(k=>S.files[k]&&S.stats[k].n===0&&S.stats[k].excl>0);
   const msgs=[];
   if(missing.length)msgs.push(`⚠ Fichier(s) non chargé(s) : <b>${missing.map(k=>LABELS[k]).join(', ')}</b>. Les recoupements correspondants sont incomplets.`);
-  if(empty.length)msgs.push(`⚠ <b>${empty.map(k=>LABELS[k]).join(', ')}</b> : aucune ligne Dépôt = ${DEPOT_KEEP} trouvée — toutes les lignes ont été exclues. Vérifiez le code dépôt de ce fichier (constante DEPOT_KEEP du script).`);
+  if(empty.length)msgs.push(`⚠ <b>${empty.map(k=>LABELS[k]).join(', ')}</b> : aucune ligne Dépôt = ${DEPOT_KEEP} trouvée — toutes les lignes ont été exclues.`);
   $('#notice').hidden=msgs.length===0;
   $('#notice').innerHTML=msgs.join('<br>');
 }
@@ -460,8 +513,8 @@ function renderFilters(){
     dims.filter(d=>d.k!==c.k&&S.filters[d.k]!=null).forEach(d=>{pool=pool.filter(r=>matchRow(d,r,S.filters[d.k]));});
     const vals=sortU(pool.flatMap(r=>c.vals?c.vals(r):[c.get(r)]));
     const cur=S.filters[c.k]??'';
-    html+=`<label>${esc(c.l)}<select data-filter="${c.k}"><option value="">Tous</option>${
-      vals.map(v=>`<option value="${esc(v)}" ${String(v)===cur?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
+    html+=`<label>${esc(lbl(c))}<select data-filter="${c.k}"><option value="">Tous</option>${
+      vals.map(v=>`<option value="${esc(v)}" ${String(v)===cur?'selected':''}>${esc(S.simple&&c.dict?labText(DICT[c.dict],v):v)}</option>`).join('')}</select></label>`;
   });
   $('#fselects').innerHTML=html||'<span class="mut">Filtres disponibles sur les onglets Flux / Départ / Référentiel / Tampon / Emplacements / Exclus.</span>';
 }
@@ -469,20 +522,20 @@ function renderGrid(){
   const cs=cols(),rows=filtered(),grid=$('#grid');
   if(!cs.length){grid.innerHTML='';$('#tableInfo').textContent='Voir les contrôles ci-dessous.';$('#more').hidden=true;return;}
   let html='<thead><tr>'+cs.map(c=>`<th>
-    <button class="th" data-explorer="${c.k}" title="Explorer les valeurs et les liens de cette colonne">${esc(c.l)} <span>🔗</span></button>
+    <button class="th" data-explorer="${c.k}" title="Explorer les valeurs et les liens de cette colonne">${esc(lbl(c))} <span>🔗</span></button>
     <button class="sort" data-sort="${c.k}" title="Trier">${S.sort&&S.sort.k===c.k?(S.sort.dir>0?'↑':'↓'):'↕'}</button></th>`).join('')+'</tr></thead><tbody>';
   rows.slice(0,S.limit).forEach(r=>{
     html+='<tr>'+cs.map(c=>{
       const vals=(c.vals?c.vals(r):[c.get(r)]).filter(v=>v!==''&&v!=null);
       if(c.dim&&vals.length){
-        const shown=vals.slice(0,3).map(v=>`<button class="chip ${S.filters[c.k]===String(v)?'on':''}" data-dim="${c.k}" data-val="${esc(v)}">${esc(v)}</button>`).join('');
+        const shown=vals.slice(0,3).map(v=>chipHTML(c,v)).join('');
         return `<td title="${esc(vals.join(' · '))}">`+shown+(vals.length>3?`<button class="chip" data-explorer="${c.k}">+${vals.length-3}</button>`:'')+'</td>';
       }
-      return `<td class="${c.dim?'':'plain'}">${esc(vals.join(' · ')||'—')}</td>`;
+      return `<td class="${c.cls||(c.dim?'':'plain')}">${esc(vals.join(' · ')||'—')}</td>`;
     }).join('')+'</tr>';
   });
   html+='</tbody>';
-  grid.innerHTML=rows.length?html:`<thead><tr>${cs.map(c=>`<th>${esc(c.l)}</th>`).join('')}</tr></thead><tbody><tr><td colspan="${cs.length}" class="mut">Aucune ligne ne correspond aux filtres.</td></tr></tbody>`;
+  grid.innerHTML=rows.length?html:`<thead><tr>${cs.map(c=>`<th>${esc(lbl(c))}</th>`).join('')}</tr></thead><tbody><tr><td colspan="${cs.length}" class="mut">Aucune ligne ne correspond aux filtres.</td></tr></tbody>`;
   $('#tableInfo').textContent=`${Math.min(rows.length,S.limit)} ligne(s) affichée(s) sur ${rows.length} · cliquez une valeur pour filtrer, re-cliquez pour enlever le filtre · cliquez un intitulé 🔗 pour explorer la colonne.`;
   $('#more').hidden=rows.length<=S.limit;
 }
@@ -493,8 +546,8 @@ function explorer(k){
     .forEach(v=>{const s=String(v);m.set(s,(m.get(s)||0)+1);}));
   const list=[...m].sort((a,b)=>b[1]-a[1]),max=Math.max(1,...list.map(x=>x[1]));
   const box=$('#explorer');box.hidden=false;
-  box.innerHTML=`<div class="expHead"><b>Explorateur · ${esc(c.l)}</b><small>${list.length} valeur(s) · cliquez pour filtrer toutes les colonnes liées</small><button id="closeExp">Fermer ×</button></div><div class="expList">`+
-    list.map(([v,n])=>`<button class="expItem" data-dim="${k}" data-val="${esc(v)}"><span>${esc(v)}</span><b>${n}</b><i style="width:${100*n/max}%"></i></button>`).join('')+'</div>';
+  box.innerHTML=`<div class="expHead"><b>Explorateur · ${esc(lbl(c))}</b><small>${list.length} valeur(s) · cliquez pour filtrer toutes les colonnes liées</small><button id="closeExp">Fermer ×</button></div><div class="expList">`+
+    list.map(([v,n])=>`<button class="expItem" data-dim="${k}" data-val="${esc(v)}"><span>${esc(S.simple&&c.dict?labText(DICT[c.dict],v):v)}</span><b>${n}</b><i style="width:${100*n/max}%"></i></button>`).join('')+'</div>';
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function renderControls(){
@@ -502,7 +555,11 @@ function renderControls(){
   if(S.tab!=='ecart'){box.innerHTML='';return;}
   box.innerHTML=S.controls.length?S.controls.map(c=>`<div class="card"><h3>${esc(c.title)} <small>(${c.items.length})</small></h3>
     <p class="mut">${esc(c.hint)}</p>`+
-    c.items.map(i=>`<button class="chip" data-ctrl="1" data-tab="${i.tab}" data-filters='${esc(JSON.stringify(i.filters))}'>${esc(i.code)} · ${i.n}</button>`).join('')+'</div>').join('')
+    c.items.map(i=>{
+      const d=Object.keys(i.filters)[0],v=i.filters[d];
+      const dict=d==='zi'?LAB.zi:d==='ze'?LAB.ze:(d==='gdep'||d==='garr')?LAB.g:(d==='zg'||d==='zgArr'||d==='zgDep')?LAB.zg:null;
+      return `<button class="chip" data-ctrl="1" data-tab="${i.tab}" data-filters='${esc(JSON.stringify(i.filters))}' title="${esc(v)}">${esc(S.simple&&dict?labText(dict,v):v)} · ${i.n}</button>`;
+    }).join('')+'</div>').join('')
     :'<div class="card">Aucun écart détecté sur les fichiers chargés. 🎉</div>';
 }
 function render(){
@@ -515,7 +572,7 @@ function render(){
 function exportCSV(){
   const cs=cols(),rows=filtered();
   const cell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
-  const csv='\uFEFF'+[cs.map(c=>cell(c.l)).join(';'),
+  const csv='\uFEFF'+[cs.map(c=>cell(lbl(c))).join(';'),
     ...rows.map(r=>cs.map(c=>cell(c.vals?c.vals(r).join(' | '):c.get(r))).join(';'))].join('\r\n');
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   const a=document.createElement('a');a.href=url;a.download='recoupement-'+S.tab+'.csv';a.click();
@@ -528,9 +585,15 @@ function clearAll(){
   $('#explorer').hidden=true;
   buildModel();render();
 }
+function setMode(s){
+  S.simple=s;localStorage.setItem('zgMode',s?'simple':'expert');
+  $('#mode').textContent=s?'👓 Mode débutant ✓':'🛠 Mode expert';
+  render();
+}
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='closeExp'){$('#explorer').hidden=true;return;}
+  if(b.id==='mode'){setMode(!S.simple);return;}
   if(b.id==='reset'){S.filters={};S.q='';$('#q').value='';S.limit=200;render();return;}
   if(b.id==='csv'){exportCSV();return;}
   if(b.id==='more'){S.limit+=200;renderGrid();return;}
@@ -587,6 +650,7 @@ if(typeof XLSX==='undefined'){
   $('#notice').hidden=false;
   $('#notice').textContent='Librairie SheetJS non chargée : connexion Internet requise au premier affichage.';
 }
+setMode(S.simple);
 buildModel();render();
 </script>
 </body>
