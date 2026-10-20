@@ -31,7 +31,7 @@ nav button.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-w
 #fselects{display:flex;flex-wrap:wrap;gap:10px}
 #fselects select{min-width:170px;max-width:300px}
 #explorer,#treeWrap{margin-bottom:14px;max-height:60vh;overflow:auto}
-.expHead{display:flex;gap:12px;align-items:center;position:sticky;top:0;background:var(--panel);padding-bottom:8px;z-index:1}
+.expHead{display:flex;gap:12px;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--panel);padding-bottom:8px;z-index:1;flex-wrap:wrap}
 .expList{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px}
 .expItem{display:flex;gap:8px;align-items:center;justify-content:space-between;position:relative;overflow:hidden;text-align:left}
 .expItem i{position:absolute;left:0;bottom:0;height:3px;background:var(--acc);opacity:.5}
@@ -67,6 +67,16 @@ summary:hover{background:#172944}
 .fcard{background:#0b1220;border:1px solid var(--line);border-radius:10px;padding:10px}
 .fcard h4{margin:0 0 6px;font-size:13px;color:var(--acc)}
 .fcard ul{margin:0;padding-left:16px;font-size:12.5px;max-height:200px;overflow:auto}
+/* Impression : seule la fiche sort, en noir sur blanc */
+@media print{
+  body *{visibility:hidden}
+  #fiche,#fiche *{visibility:visible}
+  #fiche{position:absolute;left:0;top:0;width:100%;border:0;background:#fff;color:#000}
+  #fiche .fcard{background:#fff;border-color:#999}
+  #fiche h4{color:#000}
+  #fiche button{display:none!important}
+  #fiche .fcard ul{max-height:none;overflow:visible}
+}
 </style>
 </head>
 <body>
@@ -104,7 +114,7 @@ summary:hover{background:#172944}
 
 <div class="panel mut" style="font-size:12.5px">
   Légende :<span class="dot k-zi"></span>ZI (zone d’intervention)<span class="dot k-ze"></span>ZE (zone d’évolution)<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG (zone géographique)<span class="dot k-tam"></span>Tampon
-  — survolez un code pour sa signification, cliquez pour filtrer, 📄 = fiche détaillée.
+  — 1 clic = filtrer · <b>double-clic = fiche détaillée</b> · 📄 = fiche · 🔗 = explorateur.
 </div>
 
 <nav id="tabs"></nav>
@@ -498,7 +508,7 @@ function chipHTML(c,v){
   let txt=esc(v),title=String(v);
   if(S.simple&&c.dict&&DICT[c.dict]){const l=DICT[c.dict].get(v);if(l){txt=`${esc(l)} <small>(${esc(v)})</small>`;title=`${v} = ${l}`;}}
   const kc=c.dict?(' k-'+c.dict):(c.k==='tamponList'?' k-tam':'');
-  return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)}">${txt}</button>`;
+  return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)} — double-clic : fiche">${txt}</button>`;
 }
 
 /* ================= Arborescence ================= */
@@ -586,14 +596,16 @@ function renderFiche(){
       +fcard('ZG du référentiel (F3)',zgs.slice(0,60).map(z=>gl(LAB.zg,z)).concat(zgs.length>60?[`… +${zgs.length-60} autres`]:[]));
   }
   box.hidden=false;
-  box.innerHTML=`<div class="expHead"><b>📄 ${head}</b><button data-ficheclose>Fermer ×</button></div><div class="ficheGrid">${cards}</div>`;
+  box.innerHTML=`<div class="expHead"><b>📄 ${head}</b>
+    <span class="row"><button data-printfiche>🖨 Imprimer / PDF</button><button data-ficheclose>Fermer ×</button></span></div>
+    <div class="ficheGrid">${cards}</div>`;
 }
 
 /* ================= Rendu ================= */
 function renderTabs(){
   const defs=[['flux','Flux enrichis',S.flux.length],['depart','Départ · F1',S.depart.length],
     ['ref','Référentiel ZG · F3',S.ref.length],['tampon','Tampon · F4',S.raw.tampon.length],
-    ['empl','Emplacements · F5',S.empl.length],['arbre',' Arborescence',uniq(S.raw.depart.map(r=>r.zi)).length],
+    ['empl','Emplacements · F5',S.empl.length],['arbre','🌳 Arborescence',uniq(S.raw.depart.map(r=>r.zi)).length],
     ['excl','Exclus (≠NE1)',S.exclRows.length],
     ['ecart','Écarts',S.controls.reduce((s,c)=>s+c.items.length,0)]];
   $('#tabs').innerHTML=defs.map(([k,l,n])=>
@@ -653,7 +665,7 @@ function renderGrid(){
   });
   html+='</tbody>';
   grid.innerHTML=rows.length?html:`<thead><tr>${cs.map(c=>`<th>${esc(lbl(c))}</th>`).join('')}</tr></thead><tbody><tr><td colspan="${cs.length}" class="mut">Aucune ligne ne correspond aux filtres.</td></tr></tbody>`;
-  $('#tableInfo').textContent=`${Math.min(rows.length,S.limit)} ligne(s) affichée(s) sur ${rows.length} · cliquez une valeur pour filtrer · 📄 = fiche détaillée · 🔗 = explorateur.`;
+  $('#tableInfo').textContent=`${Math.min(rows.length,S.limit)} ligne(s) affichée(s) sur ${rows.length} · 1 clic = filtrer · double-clic sur une pastille = fiche · 📄 = fiche · 🔗 = explorateur.`;
   $('#more').hidden=rows.length<=S.limit;
 }
 function explorer(k){
@@ -663,7 +675,7 @@ function explorer(k){
     .forEach(v=>{const s=String(v);m.set(s,(m.get(s)||0)+1);}));
   const list=[...m].sort((a,b)=>b[1]-a[1]),max=Math.max(1,...list.map(x=>x[1]));
   const box=$('#explorer');box.hidden=false;
-  box.innerHTML=`<div class="expHead"><b>Explorateur · ${esc(lbl(c))}</b><small>${list.length} valeur(s) · cliquez pour filtrer toutes les colonnes liées</small><button id="closeExp">Fermer ×</button></div><div class="expList">`+
+  box.innerHTML=`<div class="expHead"><b>Explorateur · ${esc(lbl(c))}</b><small>${list.length} valeur(s) · 1 clic = filtrer · double-clic = fiche</small><button id="closeExp">Fermer ×</button></div><div class="expList">`+
     list.map(([v,n])=>`<button class="expItem" data-dim="${k}" data-val="${esc(v)}"><span>${esc(S.simple&&c.dict?((DICT[c.dict].get(v)||'')+' ('+v+')'):v)}</span><b>${n}</b><i style="width:${100*n/max}%"></i></button>`).join('')+'</div>';
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -712,11 +724,13 @@ function setMode(s){
   $('#mode').textContent=s?'👓 Mode débutant ✓':'🛠 Mode expert';
   render();
 }
+function openFiche(type,code){S.fiche={type,code};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});}
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='closeExp'){$('#explorer').hidden=true;return;}
   if(b.dataset.ficheclose){S.fiche=null;renderFiche();return;}
-  if(b.dataset.fiche){const [t,c]=b.dataset.fiche.split(':');S.fiche={type:t,code:c};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});return;}
+  if(b.dataset.printfiche){window.print();return;}
+  if(b.dataset.fiche){const [t,c]=b.dataset.fiche.split(':');openFiche(t,c);return;}
   if(b.id==='mode'){setMode(!S.simple);return;}
   if(b.id==='reset'){S.filters={};S.q='';$('#q').value='';S.limit=200;render();return;}
   if(b.id==='csv'){exportCSV();return;}
@@ -737,6 +751,13 @@ document.addEventListener('click',e=>{
     S.tab=b.dataset.tab;S.filters=JSON.parse(b.dataset.filters);S.q='';$('#q').value='';S.limit=200;render();
     $('.tableWrap').scrollIntoView({behavior:'smooth'});return;
   }
+});
+/* Double-clic sur une pastille / valeur d'explorateur = fiche détaillée */
+document.addEventListener('dblclick',e=>{
+  const b=e.target.closest('button[data-dim]');if(!b)return;
+  const k=b.dataset.dim,v=b.dataset.val;
+  const t=k==='zi'?'zi':k==='ze'?'ze':(k==='gdep'||k==='garr')?'g':(k==='zg'||k==='zgArr'||k==='zgDep')?'zg':null;
+  if(t)openFiche(t,v);
 });
 document.addEventListener('change',e=>{
   if(e.target.dataset.filter){
