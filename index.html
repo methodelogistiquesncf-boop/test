@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Explorateur ZI · ZE · ZG · Tampons</title>
+<title>Explorateur ZI · ZE · ZG · Tampons · Emplacements</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#0f172a;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24}
@@ -54,25 +54,25 @@ details{font-size:13px;color:var(--mut)}
 </head>
 <body>
 <header>
-  <div><h1>Explorateur ZI · ZE · Groupes ZG · Tampons</h1>
-  <small>4 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet</small></div>
+  <div><h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements</h1>
+  <small>5 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small></div>
   <div class="row">
     <button id="reset">Réinitialiser les filtres</button>
     <button id="csv">Exporter CSV</button>
-   <button id="clear">Vider les fichiers</button>
+    <button id="clear">Vider les fichiers</button>
     <button onclick="location.href='aide.html'">Aide ❓</button>
-    
   </div>
 </header>
 
 <main>
 <section id="drop" class="panel">
-  <b>Vos fichiers</b> <span class="mut">— cliquez sur « Choisir un fichier » ou glissez-déposez les 4 classeurs ici (reconnaissance automatique par contenu).</span>
+  <b>Vos fichiers</b> <span class="mut">— cliquez sur « Choisir un fichier » ou glissez-déposez les classeurs ici (reconnaissance automatique par contenu). Les lignes dont le dépôt n'est pas NE1 sont écartées automatiquement.</span>
   <div class="row" style="margin-top:10px">
     <label>F1 · ZG du groupe de départ<input type="file" accept=".xlsx,.xls" data-kind="depart"></label>
     <label>F2 · Groupe d’arrivée<input type="file" accept=".xlsx,.xls" data-kind="flux"></label>
     <label>F3 · ZIZEZG<input type="file" accept=".xlsx,.xls" data-kind="ref"></label>
     <label>F4 · Tampon<input type="file" accept=".xlsx,.xls" data-kind="tampon"></label>
+    <label>F5 · Emplacements<input type="file" accept=".xlsx,.xls" data-kind="empl"></label>
   </div>
 </section>
 
@@ -81,7 +81,7 @@ details{font-size:13px;color:var(--mut)}
 
 <section class="panel">
   <div id="fselects"></div>
-  <div style="margin-top:10px"><label>Recherche libre (code, libellé…)<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, tampon…"></label></div>
+  <div style="margin-top:10px"><label>Recherche libre (code, libellé, n° emplacement…)<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, 34 451…"></label></div>
 </section>
 
 <nav id="tabs"></nav>
@@ -94,11 +94,13 @@ details{font-size:13px;color:var(--mut)}
 <details class="panel" style="margin-top:16px">
 <summary>Règles de jointure appliquées</summary>
 <ul>
-<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ (la ZE n’est pas utilisée comme clé).</li>
+<li><b>Filtre dépôt</b> : seules les lignes dont le Dépôt = <code>NE1</code> sont conservées (tous fichiers). Les lignes exclues sont consultables dans l'onglet « Exclus (≠NE1) ».</li>
+<li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ensemble des ZG de départ (la ZE n'est pas utilisée comme clé).</li>
 <li><b>F2</b> : grain = Dépôt + ZI + ZE flux + Groupe départ + Groupe arrivée + ZG arrivée.</li>
 <li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE de rattachement (non exclusif).</li>
-<li><b>F4 (tampon)</b> : jointure prioritaire Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée. Affichage : Séquence + EMPL 1→5 + Libellé.</li>
-<li>Seules les lignes strictement dupliquées sont retirées. Les libellés divergents et codes atypiques sont signalés dans l’onglet Écarts.</li>
+<li><b>F4 (tampon)</b> : jointure prioritaire Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
+<li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) → jointure Dépôt + ZG avec F3, F1, F2.</li>
+<li>Seules les lignes strictement dupliquées sont retirées. Les libellés divergents et codes atypiques sont signalés dans l'onglet Écarts.</li>
 </ul>
 </details>
 </main>
@@ -112,16 +114,23 @@ const N=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLower
 const K=(...a)=>a.map(x=>String(x??'').trim()).join('|');
 const uniq=a=>[...new Set(a.filter(x=>x!==undefined&&x!==null&&x!==''))];
 const sortU=a=>uniq(a).sort((x,y)=>String(x).localeCompare(String(y),'fr',{numeric:true}));
+/* Dépôt unique conservé : modifiez ici si besoin */
+const DEPOT_KEEP='NE1';
 
 /* ========== Reconnaissance des en-têtes ========== */
-const EXACT={depot:'depot',zi:'zi',ze:'ze',zg:'zg',libellezi:'libZI',libellecourtzi:'courtZI',
+const EXACT={depot:'depot',zi:'zi',ze:'ze',zg:'zg',zonegeo:'zg',libellezi:'libZI',libellecourtzi:'courtZI',
 libelleze:'libZE',libellezg:'libZg',groupezgdepart:'gdep',groupezgarrivee:'garr',
 libellegroupezgdepart:'libGdep',libellegroupzgdepart:'libGdep',
 libellegroupezgarrivee:'libGarr',libellegroupzgarrivee:'libGarr',
 libellegroupezg:'libGarr',libellegroupzg:'libGarr',
 sequence:'sequence',ordre:'sequence',rang:'sequence',typeemplacement:'typeEmpl',
-libelle:'libTampon',tampon:'tampon',emplacement:'emplacement',
-empl1:'empl1',empl2:'empl2',empl3:'empl3',empl4:'empl4',empl5:'empl5'};
+libelle:'libTampon',tampon:'tampon',emplacement:'empl',
+empl1:'empl1',empl2:'empl2',empl3:'empl3',empl4:'empl4',empl5:'empl5',
+numeroemplacement:'numEmpl',allee:'allee',face:'face',colonne:'colonne',niveau:'niveau',
+libelletypeemplacement:'libTypeEmpl',zoneinventaire:'zoneInv',codemagasin:'magasin',
+nbsupportsstockable:'nbStock',nbsupportsdispo:'nbDispo',codetaille:'taille',
+topemplstockage:'topStock',topemplpicking:'topPick',toptampon:'topTampon',
+implantationactive:'active',zp:'zp',zs:'zs',positionx:'posX',positiony:'posY'};
 function guess(raw){
   const t=N(raw);
   if(EXACT[t])return EXACT[t];
@@ -157,7 +166,7 @@ function parseSheet(ws,file,sheet){
       if(k){if(s)r[k]=s;}
       else if(s){const ek='x'+j;r.extra[ek]=s;r._labels[ek]=String(hdr[j]||ek);}
     });
-    if(r.zi||r.zg||r.gdep)out.push(r);
+    if(r.zi||r.zg||r.gdep||r.numEmpl)out.push(r);
   }
   return out;
 }
@@ -165,12 +174,13 @@ function dedup(rows){
   const seen=new Set(),out=[];let dup=0;
   rows.forEach(r=>{
     const sig=JSON.stringify([r.depot,r.zi,r.ze,r.gdep,r.garr,r.zgDep,r.zgArr,r.zg,r.libZg,
-      r.libGdep,r.libGarr,r.libZE,r.libZI,r.sequence,r.empl1,r.empl2,r.empl3,r.libTampon,r.extra]);
+      r.libGdep,r.libGarr,r.libZE,r.libZI,r.sequence,r.empl1,r.empl2,r.empl3,r.numEmpl,r.extra]);
     if(seen.has(sig))dup++;else{seen.add(sig);out.push(r);}
   });
   return {rows:out,dup};
 }
 function detectKind(rows){
+  if(rows.some(r=>r.numEmpl))return 'empl';
   if(rows.some(r=>r.empl1||r.typeEmpl))return 'tampon';
   if(rows.some(r=>r.zgArr))return 'flux';
   if(rows.some(r=>r.zgDep))return 'depart';
@@ -179,22 +189,30 @@ function detectKind(rows){
 }
 
 /* ================= État ================= */
-const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon'};
-const S={raw:{depart:[],flux:[],ref:[],tampon:[]},files:{},stats:{},
-  flux:[],depart:[],ref:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[]};
-const IDX={dep:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),tam5:new Map(),tam4:new Map()};
+const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements'};
+const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
+  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'flux',sort:null,limit:200,controls:[]};
+const IDX={dep:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),tam5:new Map(),tam4:new Map(),empl:new Map()};
 
 function tamponLabel(r){
   const em=[r.empl1,r.empl2,r.empl3,r.empl4,r.empl5]
     .map(v=>String(v??'').trim()).filter(v=>v&&v!=='.').join('/');
   return [r.sequence?('S'+r.sequence):'',em,r.libTampon].filter(Boolean).join(' · ');
 }
+function store(kind,rows,name){
+  if(kind==='empl')rows.forEach(r=>{if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}});
+  /* Filtre dépôt : on ne garde que NE1 */
+  const kept=[],excl=[];
+  rows.forEach(r=>{if(N(r.depot)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);});
+  S.exclRows=S.exclRows.concat(excl);
+  const d=dedup(kept);
+  S.raw[kind]=d.rows;S.stats[kind]={n:d.rows.length,dup:d.dup,excl:excl.length};S.files[kind]=name;
+}
 async function ingest(kind,buf,name){
   const wb=XLSX.read(buf,{type:'array'});
   let rows=[];
   wb.SheetNames.forEach(sn=>{rows=rows.concat(parseSheet(wb.Sheets[sn],name,sn));});
-  const d=dedup(rows);
-  S.raw[kind]=d.rows;S.stats[kind]={n:d.rows.length,dup:d.dup};S.files[kind]=name;
+  store(kind,rows,name);
 }
 function buildModel(){
   Object.values(IDX).forEach(m=>m.clear());
@@ -225,6 +243,10 @@ function buildModel(){
     if(!IDX.tam4.has(k4))IDX.tam4.set(k4,[]);IDX.tam4.get(k4).push(r._label);
     r.hasFlux=fk5.has(k5)||fk4.has(k4);
   });
+  S.raw.empl.forEach(r=>{
+    const k=K(r.depot,r.zg);
+    if(!IDX.empl.has(k))IDX.empl.set(k,[]);IDX.empl.get(k).push(r);
+  });
   S.flux=S.raw.flux.map(r=>{
     const d=IDX.dep.get(K(r.depot,r.zi,r.gdep));
     const ref=IDX.ref.get(K(r.depot,r.zgArr))||[];
@@ -240,13 +262,21 @@ function buildModel(){
     libZg:[...(IDX.lib.get(K(r.depot,r.zg))||[])].join(' / '),
     depGroups:[...(IDX.byDepZg.get(K(r.depot,r.zg))||[])].sort().join(', '),
     arrGroups:[...(IDX.byArrZg.get(K(r.depot,r.zg))||[])].sort().join(', ')}));
+  S.empl=S.raw.empl.map(r=>{
+    const ref=IDX.ref.get(K(r.depot,r.zg))||[];
+    return {...r,
+      refVia:sortU(ref.map(x=>x.zi+'/'+x.ze)),
+      depGroups:[...(IDX.byDepZg.get(K(r.depot,r.zg))||[])].sort().join(', '),
+      arrGroups:[...(IDX.byArrZg.get(K(r.depot,r.zg))||[])].sort().join(', ')};
+  });
   S.controls=makeControls();
 }
+const emplCount=(depot,zg)=>{const a=IDX.empl.get(K(depot,zg));return a?a.length:0;};
 
 /* ================= Contrôles / écarts ================= */
 function makeControls(){
   const out=[];
-  const grp=(rows,fn,tab,fk)=>{
+  const grp=(rows,fn,tab)=>{
     const m=new Map();
     rows.forEach(r=>{const o=fn(r);if(!o)return;const k=JSON.stringify(o);
       if(!m.has(k))m.set(k,{o,n:0});m.get(k).n++;});
@@ -270,8 +300,12 @@ function makeControls(){
     grp(S.ref.filter(r=>!r.depGroups&&!r.arrGroups),r=>r.zg?{zg:r.zg}:null,'ref'));
   add('Libellés ZG incohérents pour un même code','Plusieurs libellés déclarés pour le même Dépôt + ZG dans F2.',
     grp(S.flux.filter(r=>(IDX.lib.get(K(r.depot,r.zgArr))||new Set()).size>1),r=>r.zgArr?{zgArr:r.zgArr}:null,'flux'));
-  add('Codes « groupe arrivée » atypiques','Ne commencent pas par GZG (ex. ZGPRO, PROD, GZES, GZOU) — présents tels quels dans F2 et F4.',
+  add('Codes « groupe arrivée » atypiques','Ne commencent pas par GZG (ex. ZGPRO, PROD, GZES, GZOU).',
     grp(S.flux.filter(r=>r.garr&&!/^GZG/.test(r.garr)),r=>({garr:r.garr}),'flux'));
+  add('ZG d’emplacements (F5) absentes du référentiel F3','Ces ZG portent des emplacements NE1 mais n’existent pas dans ZIZEZG.',
+    grp(S.empl.filter(r=>!r.refVia.length),r=>r.zg?{zg:r.zg}:null,'empl'));
+  add('ZG du référentiel F3 sans aucun emplacement F5','Aucune ligne emplacement NE1 ne pointe vers ces ZG.',
+    grp(S.ref.filter(r=>r.zg&&!emplCount(r.depot,r.zg)),r=>({zg:r.zg}),'ref'));
   return out;
 }
 
@@ -287,6 +321,7 @@ const COLS={
   C('zgArr','ZG arrivée',{dim:true}),C('libZg','Libellé ZG arrivée'),
   MULTI('depZGs','ZG du groupe de départ · F1'),
   C('refZEs','ZE du ZG arrivée · F3',{get:r=>(r.refZEs||[]).join(', ')}),
+  C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':n;}}),
   TAMCOL,
   C('_ctl','Contrôle',{get:r=>{
     const w=[];
@@ -305,6 +340,7 @@ const COLS={
  ref:[
   C('depot','Dépôt',{dim:true}),C('zi','ZI',{dim:true}),C('ze','ZE',{dim:true}),C('zg','ZG',{dim:true}),
   C('libZg','Libellé (F2)'),C('depGroups','Groupes de départ (F1)'),C('arrGroups','Groupes d’arrivée (F2)'),
+  C('nbEmpl','Empl. F5',{get:r=>{const n=emplCount(r.depot,r.zg);return n===0?'—':n;}}),
   C('usage','Utilisé ?',{get:r=>(r.depGroups||r.arrGroups)?'oui':'non'})
  ],
  tampon:[
@@ -317,6 +353,26 @@ const COLS={
   C('_lab','Chemin tampon',{get:r=>r._label||''}),
   C('inFlux','Flux F2 correspondant ?',{get:r=>r.hasFlux?'oui':'non'})
  ],
+ empl:[
+  C('depot','Dépôt',{dim:true}),C('numEmpl','N° emplacement',{dim:true}),
+  C('zg','Zone géo (ZG)',{dim:true}),
+  C('refVia','ZI / ZE via F3',{get:r=>(r.refVia||[]).join(', ')}),
+  C('depGroups','Groupes départ (F1)'),C('arrGroups','Groupes arrivée (F2)'),
+  C('zoneInv','Zone inventaire',{dim:true}),C('magasin','Code magasin',{dim:true}),
+  C('allee','Allée',{dim:true}),C('face','Face'),C('colonne','Colonne'),C('niveau','Niveau'),
+  C('empl','Emplacement'),C('libEmpl','Libellé'),C('taille','Code taille'),
+  C('nbStock','Nb supports stockables'),C('nbDispo','Nb supports dispo'),
+  C('topTampon','Top tampon',{dim:true}),C('topStock','Top stockage',{dim:true}),C('topPick','Top picking',{dim:true}),
+  C('active','IMPLANTATION_ACTIVE',{dim:true}),C('zp','ZP'),C('zs','ZS'),
+  C('posX','POSITION_X'),C('posY','POSITION_Y')
+ ],
+ excl:[
+  C('_file','Fichier d’origine'),C('depot','Dépôt',{dim:true}),
+  C('zg','Zone géo / ZG',{dim:true}),C('numEmpl','N° emplacement'),
+  C('zoneInv','Zone inventaire'),C('allee','Allée'),C('face','Face'),C('colonne','Colonne'),C('niveau','Niveau'),
+  C('empl','Emplacement'),C('libEmpl','Libellé'),
+  C('nbStock','Nb supports stockables'),C('nbDispo','Nb supports dispo')
+ ],
  ecart:[]
 };
 function cols(){
@@ -325,7 +381,7 @@ function cols(){
   return cs;
 }
 function colDef(k){return cols().find(c=>c.k===k);}
-function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,ecart:[]})[S.tab]||[];}
+function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,excl:S.exclRows,ecart:[]})[S.tab]||[];}
 function withSearch(rows){if(!S.q)return rows;const q=N(S.q);return rows.filter(r=>N(JSON.stringify(r)).includes(q));}
 function matchRow(c,r,v){return c.has?c.has(r,v):String(c.get(r))===v;}
 function filtered(){
@@ -340,6 +396,7 @@ function filtered(){
 function renderTabs(){
   const defs=[['flux','Flux enrichis',S.flux.length],['depart','Départ · F1',S.depart.length],
     ['ref','Référentiel ZG · F3',S.ref.length],['tampon','Tampon · F4',S.raw.tampon.length],
+    ['empl','Emplacements · F5',S.empl.length],['excl','Exclus (≠NE1)',S.exclRows.length],
     ['ecart','Écarts',S.controls.reduce((s,c)=>s+c.items.length,0)]];
   $('#tabs').innerHTML=defs.map(([k,l,n])=>
     `<button data-go="${k}" class="${S.tab===k?'on':''}">${l} <small>${n}</small></button>`).join('');
@@ -351,15 +408,20 @@ function renderStats(){
     ['ZG arrivée distincts',uniq(S.flux.map(r=>r.zgArr)).length],
     ['Couples départ→arrivée',uniq(S.flux.map(r=>K(r.gdep,r.garr))).length],
     ['Tampons (F4)',S.raw.tampon.length],
+    ['Emplacements (F5)',S.empl.length],
+    ['Lignes exclues (≠NE1)',S.exclRows.length],
     ['Écarts détectés',ec]
   ].map(([l,v])=>`<div class="kpi"><small>${l}</small><b>${v}</b></div>`).join('')
   +Object.keys(LABELS).map(k=>`<div class="kpi"><small>${LABELS[k]}</small>
     <b style="font-size:15px;color:${S.files[k]?'var(--ok)':'var(--warn)'}">${S.files[k]?S.stats[k].n+' lignes':'non chargé'}</b>
-    <small>${S.files[k]?S.stats[k].dup+' doublon(s) retiré(s)':''}</small></div>`).join('');
+    <small>${S.files[k]?(S.stats[k].dup+' doublon(s) · '+S.stats[k].excl+' exclue(s)'):''}</small></div>`).join('');
   const missing=Object.keys(LABELS).filter(k=>!S.files[k]);
-  $('#notice').hidden=missing.length===0;
-  $('#notice').innerHTML=missing.length
-    ?`⚠ Fichier(s) non chargé(s) : <b>${missing.map(k=>LABELS[k]).join(', ')}</b>. Les recoupements correspondants sont incomplets.`:'';
+  const empty=Object.keys(LABELS).filter(k=>S.files[k]&&S.stats[k].n===0&&S.stats[k].excl>0);
+  const msgs=[];
+  if(missing.length)msgs.push(`⚠ Fichier(s) non chargé(s) : <b>${missing.map(k=>LABELS[k]).join(', ')}</b>. Les recoupements correspondants sont incomplets.`);
+  if(empty.length)msgs.push(`⚠ <b>${empty.map(k=>LABELS[k]).join(', ')}</b> : aucune ligne Dépôt = ${DEPOT_KEEP} trouvée — toutes les lignes ont été exclues. Vérifiez le code dépôt de ce fichier (constante DEPOT_KEEP du script).`);
+  $('#notice').hidden=msgs.length===0;
+  $('#notice').innerHTML=msgs.join('<br>');
 }
 function renderFilters(){
   const dims=cols().filter(c=>c.dim);
@@ -372,7 +434,7 @@ function renderFilters(){
     html+=`<label>${esc(c.l)}<select data-filter="${c.k}"><option value="">Tous</option>${
       vals.map(v=>`<option value="${esc(v)}" ${String(v)===cur?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
   });
-  $('#fselects').innerHTML=html||'<span class="mut">Filtres disponibles sur les onglets Flux / Départ / Référentiel / Tampon.</span>';
+  $('#fselects').innerHTML=html||'<span class="mut">Filtres disponibles sur les onglets Flux / Départ / Référentiel / Tampon / Emplacements / Exclus.</span>';
 }
 function renderGrid(){
   const cs=cols(),rows=filtered(),grid=$('#grid');
@@ -431,7 +493,7 @@ function exportCSV(){
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function clearAll(){
-  S.raw={depart:[],flux:[],ref:[],tampon:[]};S.files={};S.stats={};
+  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[]};S.files={};S.stats={};S.exclRows=[];
   S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';
   $$('#drop input[type=file]').forEach(i=>i.value='');
   $('#explorer').hidden=true;
@@ -485,8 +547,7 @@ dz.addEventListener('drop',async e=>{
       let rows=[];wb.SheetNames.forEach(sn=>{rows=rows.concat(parseSheet(wb.Sheets[sn],f.name,sn));});
       const kind=detectKind(rows);
       if(!kind){alert('Fichier non reconnu : '+f.name);continue;}
-      const d=dedup(rows);
-      S.raw[kind]=d.rows;S.stats[kind]={n:d.rows.length,dup:d.dup};S.files[kind]=f.name;
+      store(kind,rows,f.name);
     }catch(err){alert(err.message);}
   }
   buildModel();render();
