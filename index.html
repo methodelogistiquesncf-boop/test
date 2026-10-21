@@ -1282,11 +1282,15 @@ function renderPath(){
     targets.sort().forEach(t=>{
       const zgs=forward ? [...((IDX.fluxDepZg.get(K(D,g))||new Map()).get(t)||[])] : [...(IDX.depByG.get(K(D,t))?.zgs||[])];
 
+      // Si une ZG d'arrivée est spécifiée, ne garder que les chemins qui aboutissent EXACTEMENT à cette ZG
       if(targetZg && !zgs.includes(targetZg)) return;
 
       const pairKey=forward ? K(D,g,t) : K(D,t,g);
       const tams=IDX.tam4.get(pairKey)||[];
-      const emCount=zgs.reduce((s,z)=>s+emplCount(D,z),0);
+      
+      // Si une ZG d'arrivée est spécifiée, ne compter que les emplacements de CETTE ZG
+      const emCount = targetZg ? emplCount(D, targetZg) : zgs.reduce((s,z)=>s+emplCount(D,z),0);
+      
       paths.push({g, t, tams, zgs, emCount});
     });
   });
@@ -1321,7 +1325,7 @@ function renderPath(){
       ${targetZg ? makeLocHtml(targetEmpl ? targetEmpl.nomEmpl : targetLabel, targetEmpl, targetZi, targetZe, targetG, targetZg, false) : ''}
       <div style="margin-left:auto; font-size:12.5px; color:var(--mut); text-align:right; padding-top:4px; min-width: 150px;">
         <div style="font-size:14px; color:var(--txt); font-weight:600; margin-bottom:4px;">${fmt(paths.length)} chemin(s)</div>
-        <div>${fmt(totEm)} emplacements ${forward?'accessibles':'pouvant arriver ici'}</div>
+        <div>${fmt(totEm)} emplacement(s) dans ${targetZg ? esc(zgLab(targetZg)) : 'les ZG d\'arrivée'}</div>
         ${noTam ? `<div class="warn" style="margin-top:4px;">${noTam} sans tampon défini</div>` : '<div class="ok" style="margin-top:4px;">tous avec tampon</div>'}
       </div>
     </div>
@@ -1338,7 +1342,10 @@ function renderPath(){
           ? `<div style="display:flex;flex-direction:column;gap:4px">${p.tams.map(t => `<span class="chip k-tam">⏳ ${esc(t)}</span>`).join('')}</div>`
           : `<span class="chip warn">⚠ sans tampon défini en F4</span>`;
 
-        const arrHtml = p.zgs.sort().slice(0, 10).map(z => {
+        // Si une ZG d'arrivée est spécifiée, ne montrer QUE cette ZG
+        const zgsToShow = targetZg ? [targetZg] : p.zgs.sort().slice(0, 10);
+        
+        const arrHtml = zgsToShow.map(z => {
           const els = IDX.empl.get(K(D,z)) || [];
           const tamEmpls = els.filter(e => isTamEmpl(e));
           let html = `<b>${esc(zgLab(z))}</b> <small class="mut">(${fmt(els.length)} empl. au total)</small>`;
@@ -1352,7 +1359,7 @@ function renderPath(){
           }
           return html;
         }).join('<div style="border-top:1px dashed var(--line);margin:8px 0"></div>') +
-        (p.zgs.length > 10 ? `<br><small class="mut">… et ${p.zgs.length - 10} autres ZG d'arrivée</small>` : '');
+        (!targetZg && p.zgs.length > 10 ? `<br><small class="mut">… et ${p.zgs.length - 10} autres ZG d'arrivée</small>` : '');
 
         return `<tr>
           <td style="vertical-align:top;padding:10px;">${tamHtml}</td>
@@ -1370,10 +1377,14 @@ function renderPath(){
     html+=`<div class="trow"><span class="dot k-g"></span><details open><summary><b>${esc(LAB.g.get(g)||g)}</b> <span class="mut">(${esc(g)}) · ${ps.length} flux ${forward?'sortant(s)':'entrant(s)'}</span></summary><div class="tin">`;
     ps.forEach(p=>{
       html+=`<div class="trow" style="align-items:flex-start">
-        <div style="min-width:220px;flex-shrink:0">${p.tams.length?`<span class="chip k-tam" title="Tampon(s) défini(s) dans F4">⏳ ${p.tams.map(esc).join('<br>')}</span>`:'<span class="chip warn">⚠ sans tampon F4</span>'}</div>
+        <div style="min-width:220px;flex-shrink:0">${p.tams.length?`<span class="chip k-tam" title="Tampon(s) défini(s) dans F4"> ${p.tams.map(esc).join('<br>')}</span>`:'<span class="chip warn">⚠ sans tampon F4</span>'}</div>
         <span class="mut" style="padding:4px 8px;font-size:16px">${forward?'⇒':'⇐'}</span>
-        <details open style="flex:1"><summary><b>${esc(LAB.g.get(p.t)||p.t)}</b> <span class="mut">(${esc(p.t)}) · ${p.zgs.length} ZG · ${fmt(p.emCount)} empl.</span></summary><div class="tin">`+
-        p.zgs.sort().slice(0,40).map(z=>{
+        <details open style="flex:1"><summary><b>${esc(LAB.g.get(p.t)||p.t)}</b> <span class="mut">(${esc(p.t)}) · ${fmt(p.emCount)} empl.</span></summary><div class="tin">`;
+        
+        // Si une ZG d'arrivée est spécifiée, ne montrer QUE cette ZG
+        const zgsToShow = targetZg ? [targetZg] : p.zgs.sort().slice(0,40);
+        
+        html += zgsToShow.map(z=>{
           const els=IDX.empl.get(K(D,z))||[];
           const tamEmpls = els.filter(e => isTamEmpl(e));
           return `<div class="trow"><span class="dot k-zg"></span><details><summary>${esc(LAB.zg.get(z)||z)} <span class="mut">(${esc(z)}) · ${fmt(els.length)} empl. ${tamEmpls.length ? `· <span class="ok">${fmt(tamEmpls.length)} tampon(s) F5</span>` : ''}</span></summary><div class="tin">`+
@@ -1381,7 +1392,6 @@ function renderPath(){
             (tamEmpls.length > 15 ? `<div class="trow mut">… +${tamEmpls.length - 15} autres emplacements tampon</div>` : '') +
             `</div></details></div>`;
         }).join('')+
-        (p.zgs.length>40?`<div class="trow mut">… +${p.zgs.length-40} autres ZG</div>`:'')+
         `</div></details></div>`;
     });
     html+=`</div></details></div>`;
