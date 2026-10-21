@@ -88,6 +88,7 @@ input[type=checkbox]{width:auto;accent-color:var(--acc)}
 #mapTamList .chip{cursor:pointer}
 
 #kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+#kpis[hidden]{display:none}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:130px}
 .kpi b{display:block;font-size:20px;color:var(--acc)}
 #fselects{display:flex;flex-wrap:wrap;gap:10px}
@@ -1713,7 +1714,9 @@ function render(){
   $('#dropHide').hidden = !hasFiles;
   
   renderRestoreBanner();
-  renderMenu();renderStats();renderHome();renderFilters();renderControls();renderFiche();renderFileStatus();
+  renderMenu();renderStats();
+  $('#kpis').hidden = hasFiles;   // masqué dès que les fichiers sont chargés
+  renderHome();renderFilters();renderControls();renderFiche();renderFileStatus();
   renderFileChips($('#fileListInline'));
   const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte',isMat=S.tab==='mattype';
   const hideTable=isTree||isPath||isHome||isMap||isMat;
