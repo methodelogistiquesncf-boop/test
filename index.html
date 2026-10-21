@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Explorateur ZI · ZE · ZG · Tampons · Emplacements</title>
+<title>Explorateur ZI · ZE · ZG · Tampons · Emplacements · Matériel</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#0f172a;--bg2:#0b1220;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;--zebra:#131e33;--hover:#172944;--overlay:rgba(4,10,20,.78);--fs:14.5px}
@@ -53,7 +53,7 @@ input[type=checkbox]{width:auto;accent-color:var(--acc)}
 #mapBox{position:relative;height:62vh;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg2)}
 #mapCv{position:absolute;inset:0;display:block}
 #mapTip{position:absolute;display:none;pointer-events:none;background:var(--overlay);border:1px solid var(--acc);border-radius:8px;padding:6px 9px;font-size:12px;max-width:290px;z-index:5;line-height:1.45;color:var(--txt)}
-#mapWrap .row label{min-width:110px}
+#mapWrap .row label,#matWrap .row label{min-width:110px}
 #mapInfo{margin-top:8px;font-size:12.5px}
 #mapTam.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:700}
 #mapTamList .chip{cursor:pointer}
@@ -119,12 +119,12 @@ summary:hover{background:var(--hover)}
 @media print{
   body{background:#fff!important;color:#000!important}
   body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
-  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header,#mapWrap .row,#mapTip,#mapSel{display:none!important}
+  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header,#mapWrap .row,#mapTip,#mapSel,#matWrap .row,#matTypeChips{display:none!important}
   .panel,.card,.fcard,.fbox,.chip{background:#fff!important;border-color:#999!important;color:#000!important}
   th{background:#eee!important;color:#000!important}
   tbody tr:nth-child(even){background:#f5f5f5!important}
   .tableWrap{max-height:none;overflow:visible;border:0}
-  #fiche .fcard ul{max-height:none;overflow:visible}
+  #fiche .fcard ul,#matTypeDetail .fcard ul{max-height:none;overflow:visible}
   #mapBox{height:45vh;border-color:#999}
 }
 </style>
@@ -141,17 +141,17 @@ summary:hover{background:var(--hover)}
 <div class="menu-bar" id="menuBar"></div>
 
 <header>
-  <h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements</h1>
-  <small>5 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small>
+  <h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements · Matériel</h1>
+  <small>8 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small>
 </header>
 
 <main>
 <section id="drop" class="panel">
   <div id="dropFull">
     <div class="expHead"><b>📂 Vos fichiers — chargement en masse</b><button id="dropHide" class="fbtn" title="Masquer la zone de chargement (reste accessible via le menu 📂)">Masquer ▲</button></div>
-    <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> ici, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom). L'ordre n'a aucune importance.</span>
+    <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> ici, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom). L'ordre n'a aucune importance. Les 3 fichiers « matériel » (F6/F7/F8) sont optionnels.</span>
     <div class="row" style="margin-top:10px">
-      <label>Charger 1 à 5 fichiers Excel<input type="file" accept=".xlsx,.xls" multiple id="bulk"></label>
+      <label>Charger 1 à 8 fichiers Excel<input type="file" accept=".xlsx,.xls" multiple id="bulk"></label>
       <span class="mut" id="bulkState">Aucun fichier chargé</span>
     </div>
   </div>
@@ -168,11 +168,11 @@ summary:hover{background:var(--hover)}
 
 <section class="panel" id="filterPanel">
   <div id="fselects"></div>
-  <div style="margin-top:10px"><label>Recherche libre (code, libellé, n° emplacement…)<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, LAVAGE, M2_LC006…"></label></div>
+  <div style="margin-top:10px"><label>Recherche libre (code, libellé, n° emplacement…)<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, LAVAGE, M2_LC006, 11711K…"></label></div>
 </section>
 
 <div class="panel mut" style="font-size:12.5px">
-  Légende :<span class="dot k-zi"></span>ZI<span class="dot k-ze"></span>ZE<span class="dot k-g"></span>Groupe ZG<span class="dot k-zg"></span>ZG<span class="dot k-tam"></span>Tampon
+  Légende :<span class="dot k-zi"></span>ZI<span class="dot k-ze"></span>ZE<span class="dot k-g"></span>Groupe ZG / type matériel<span class="dot k-zg"></span>ZG<span class="dot k-tam"></span>Tampon / support
   — 1 clic = filtrer · double-clic = fiche · 📄 = fiche · 🧭 = chemins · 🗺 = carte · ⓘ = définition.
 </div>
 
@@ -227,6 +227,23 @@ summary:hover{background:var(--hover)}
   <div id="mapSel" class="card" hidden style="margin-top:10px;margin-bottom:0"></div>
 </section>
 
+<!-- ===== TYPES DE MATERIEL & SUPPORTS ===== -->
+<section id="matWrap" class="panel" hidden>
+  <div class="expHead" style="position:static;background:none">
+    <b>🏷 Types de matériel & supports transportables</b>
+    <small>— F7 types · F6 parc · F8 couples type↔support · 1 clic sur une pastille = détail · cliquez un support = recherche inverse · 📄 = fiche du type</small>
+  </div>
+  <div class="row" style="margin:10px 0">
+    <label>Type de matériel<select id="matTypeSel"></select></label>
+    <label>Recherche inverse : quel matériel transporte ce support ?<input type="search" id="matSupQ" placeholder="Ex. PAL, AA0, NK3, kardex, palette…"></label>
+  </div>
+  <div id="matTypeChips" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px"></div>
+  <div id="matTypeDetail" class="card" style="margin-bottom:12px"></div>
+  <div class="card" style="margin-bottom:0"><b>🔎 Supports → types de matériel (recherche inverse)</b>
+    <div id="matRevResults" style="margin-top:8px;display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+</section>
+
 <div class="tableWrap" id="tableWrap"><table id="grid"></table></div>
 <div id="tableInfo"></div>
 <button id="more" hidden>Afficher 200 lignes de plus</button>
@@ -242,8 +259,10 @@ summary:hover{background:var(--hover)}
 <li><b>Groupe ZG (GZG…)</b> : paquet de ZG utilisé comme point de départ ou d'arrivée des flux. Ex. <code>GZGHUB</code> = « Groupe ZG HUB ».</li>
 <li><b>Tampon</b> : zone d'attente traversée entre un groupe de départ et un groupe d'arrivée. Ex. <code>HUBT/S</code> = « HUB Tampon Sortie ».</li>
 <li><b>Emplacement (F5)</b> : adresse physique = Allée + Face + Colonne + Niveau + Emplacement. Ex. <code>M2_LC006N4E1</code>.</li>
-<li><b>Emplacement tampon (carte 🗺)</b> : emplacement F5 dont l'indicateur <code>TOP_TAMPON</code> est actif, ou dont la ZG / le libellé contient « tampon ».</li>
 <li><b>Séquence (F4)</b> : ordre de priorité du tampon dans un flux.</li>
+<li><b>Matériel (F6)</b> : engin du parc (chariot, transgerbeur, cariste…) avec son <b>type de matériel</b>, sa <b>ZI d'intervention</b> et son <b>emplacement parc</b> (allée <code>MAT</code>, ex. <code>MAT·117</code>).</li>
+<li><b>Type de matériel (F7)</b> : catégorie Réflex : <code>NE2</code> = « CHARIOT 3ème CAT.CMU 3T », <code>NEA</code> = « Matériel logistique », <code>PXQ</code> = « Transpalette élec Cat1 1,8T »… Certains sont <b>désactivés</b> (ex. <code>NBT</code>, <code>NEB</code>).</li>
+<li><b>Type de support (F8)</b> : contenant transportable : <code>PAL</code> = « Palette Europe sans rehausse », <code>NK3</code> = « Kardex Boite Type 3 »… Le fichier F8 liste, pour chaque type de matériel, les supports qu'il peut transporter.</li>
 <li><b>POSITION_X / POSITION_Y (F5)</b> : coordonnées utilisées pour dessiner la carte du magasin.</li>
 </ul>
 </details>
@@ -251,12 +270,15 @@ summary:hover{background:var(--hover)}
 <details class="panel" style="margin-top:12px">
 <summary>Règles de jointure appliquées</summary>
 <ul>
-<li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées ; les autres dans « Exclus (≠NE1) ».</li>
+<li><b>Filtre dépôt</b> : seules les lignes Dépôt = <code>NE1</code> sont conservées (fichiers sans colonne dépôt : toutes lignes gardées) ; les autres dans « Exclus (≠NE1) ».</li>
 <li><b>F1</b> : Dépôt + ZI + Groupe ZG départ → ZG de départ (la ZE n'est pas une clé).</li>
 <li><b>F2</b> : grain = Dépôt + ZI + ZE flux + Groupe départ + Groupe arrivée + ZG arrivée.</li>
 <li><b>F3</b> : Dépôt + ZG → une ou plusieurs ZE.</li>
 <li><b>F4 (tampon)</b> : Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
 <li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
+<li><b>F6 (matériel)</b> : ponts = <code>type_materiel</code> → F7/F8 et <code>zone_intervention</code> → ZI (F1/F3) ; emplacement parc = allée+face+colonne (valeur « . » ignorée).</li>
+<li><b>F7 (types)</b> : clé = <code>code</code> ; drapeau <code>desactivé</code> affiché en alerte.</li>
+<li><b>F8 (type↔support)</b> : grain = type_materiel + type_support ; index inverse support → types construit pour la recherche « qui peut transporter ce support ? ».</li>
 <li><b>Chemins (🧭)</b> : emplacement → ZG (F5) → groupes (F1/F2) → flux (F2) → tampon (F4) → ZG cible → emplacements (F5).</li>
 <li><b>Carte (🗺)</b> : un point par emplacement F5 ayant POSITION_X et POSITION_Y renseignées, groupés par code magasin ; filtre ⏳ = emplacements tampon uniquement.</li>
 </ul>
@@ -294,7 +316,14 @@ numeroemplacement:'numEmpl',allee:'allee',face:'face',colonne:'colonne',niveau:'
 libelletypeemplacement:'libTypeEmpl',zoneinventaire:'zoneInv',codemagasin:'magasin',
 nbsupportsstockable:'nbStock',nbsupportsdispo:'nbDispo',codetaille:'taille',
 topemplstockage:'topStock',topemplpicking:'topPick',toptampon:'topTampon',
-implantationactive:'active',zp:'zp',zs:'zs',positionx:'posX',positiony:'posY'};
+implantationactive:'active',zp:'zp',zs:'zs',positionx:'posX',positiony:'posY',
+/* --- matériel F6/F7/F8 --- */
+code:'code',libellereduit:'libRed',
+emplacement1allee:'allee',emplacement2face:'face',emplacement3colonne:'colonne',
+typemateriel:'typeMat',zoneintervention:'zoneInt',
+typematerielcode:'typeMatCode',typemateriellibelle:'typeMatLib',
+typesupportcode:'typeSupCode',typesupportlibelle:'typeSupLib',
+desactive:'desactive',controle:'controle'};
 function guess(raw){
   const t=N(raw);
   if(EXACT[t])return EXACT[t];
@@ -306,6 +335,18 @@ function guess(raw){
   if(t.includes('libelle')&&t.includes('tampon'))return 'libTampon';
   if(t.includes('groupe')&&t.includes('depart'))return 'gdep';
   if(t.includes('groupe')&&t.includes('arrive'))return 'garr';
+  /* --- matériel --- */
+  if(t.includes('support')&&t.includes('code'))return 'typeSupCode';
+  if(t.includes('support')&&t.includes('libelle'))return 'typeSupLib';
+  if(t.includes('materiel')&&t.includes('code'))return 'typeMatCode';
+  if(t.includes('materiel')&&t.includes('libelle'))return 'typeMatLib';
+  if(t.includes('typemateriel'))return 'typeMat';
+  if(t.includes('zone')&&t.includes('intervention'))return 'zoneInt';
+  if(t.includes('desactive'))return 'desactive';
+  if(t.includes('controle'))return 'controle';
+  if(t.includes('emplacement')&&t.includes('allee'))return 'allee';
+  if(t.includes('emplacement')&&t.includes('face'))return 'face';
+  if(t.includes('emplacement')&&t.includes('colonne'))return 'colonne';
   if(t.includes('tampon'))return 'tampon';
   if(t.includes('sequence'))return 'sequence';
   return null;
@@ -330,7 +371,7 @@ function parseSheet(ws,file,sheet){
       if(k){if(s)r[k]=s;}
       else if(s){const ek='x'+j;r.extra[ek]=s;r._labels[ek]=String(hdr[j]||ek);}
     });
-    if(r.zi||r.zg||r.gdep||r.numEmpl)out.push(r);
+    if(r.zi||r.zg||r.gdep||r.numEmpl||r.code||r.typeMatCode||r.typeSupCode)out.push(r);
   }
   return out;
 }
@@ -338,7 +379,8 @@ function dedup(rows){
   const seen=new Set(),out=[];let dup=0;
   rows.forEach(r=>{
     const sig=JSON.stringify([r.depot,r.zi,r.ze,r.gdep,r.garr,r.zgDep,r.zgArr,r.zg,r.libZg,
-      r.libGdep,r.libGarr,r.libZE,r.libZI,r.sequence,r.empl1,r.empl2,r.empl3,r.numEmpl,r.extra]);
+      r.libGdep,r.libGarr,r.libZE,r.libZI,r.sequence,r.empl1,r.empl2,r.empl3,r.numEmpl,
+      r.code,r.typeMat,r.zoneInt,r.typeMatCode,r.typeSupCode,r.extra]);
     if(seen.has(sig))dup++;else{seen.add(sig);out.push(r);}
   });
   return {rows:out,dup};
@@ -346,6 +388,9 @@ function dedup(rows){
 function detectKind(rows){
   if(rows.some(r=>r.numEmpl))return 'empl';
   if(rows.some(r=>r.empl1||r.typeEmpl))return 'tampon';
+  if(rows.some(r=>r.typeSupCode))return 'matsup';
+  if(rows.some(r=>r.typeMat&&r.zoneInt))return 'materiel';
+  if(rows.some(r=>r.desactive!==undefined&&r.code))return 'mattype';
   if(rows.some(r=>r.zgArr))return 'flux';
   if(rows.some(r=>r.zgDep))return 'depart';
   if(rows.some(r=>r.zg))return 'ref';
@@ -353,6 +398,9 @@ function detectKind(rows){
 }
 function detectByName(name){
   const n=N(name);
+  if(n.includes('support'))return 'matsup';
+  if(n.includes('type'))return 'mattype';
+  if(n.includes('materiel')||n.includes('matos'))return 'materiel';
   if(n.includes('tampon'))return 'tampon';
   if(n.includes('zizezg'))return 'ref';
   if(n.includes('empl'))return 'empl';
@@ -362,11 +410,16 @@ function detectByName(name){
 }
 
 /* ================= État ================= */
-const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements'};
-const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
-  flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'accueil',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
+const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements',
+materiel:'F6 · Matériel',mattype:'F7 · Types matériel',matsup:'F8 · Types supports'};
+const CORE_KINDS=['depart','flux','ref','tampon','empl'];
+const OPT_KINDS=['materiel','mattype','matsup'];
+const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]},files:{},stats:{},exclRows:[],
+  flux:[],depart:[],ref:[],empl:[],materiel:[],mattype:[],filters:{},q:'',tab:'accueil',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
   showDrop:true,posCount:0,mapSel:null,
+  matTypes:[],matSupAll:[],matTypeCount:0,mattypeDes:new Set(),
   map:{mag:'',mode:'zg',hl:'',tamOnly:localStorage.getItem('zgMapTam')==='1'},
+  mat:{type:'',qsup:'',supFilter:'',supLimit:120},
   mapCfg:(()=>{try{return JSON.parse(localStorage.getItem('zgMapCfg')||'{}')}catch(e){return{}}})(),
   _imgs:{},_mapXY:[],_mapGrid:new Map(),
   pathView:localStorage.getItem('zgPathView')||'simple',
@@ -374,9 +427,10 @@ const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},excl
   theme:localStorage.getItem('zgTheme')||'dark',
   fsz:localStorage.getItem('zgFs')||'0'};
 const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),
-  tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map(),fluxDepZg:new Map()};
-const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map()};
-const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg};
+  tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map(),fluxDepZg:new Map(),
+  matByType:new Map(),matByZi:new Map(),supByType:new Map(),typesBySup:new Map()};
+const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map(),typeMat:new Map(),typeSup:new Map()};
+const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg,typeMat:LAB.typeMat,typeSup:LAB.typeSup};
 const labOf=(c,v)=>{const m=c&&c.dict?DICT[c.dict]:null;return m?(m.get(v)||''):'';};
 
 const INFO={depot:'Site physique (ici NE1).',zi:'Zone d’Intervention : périmètre organisationnel.',ze:'Zone d’Évolution : sous-zone où circule le stock.',
@@ -391,7 +445,12 @@ magasin:'Code magasin rattaché (F5).',nbStock:'Supports stockables (F5).',nbDis
 depGroups:'Groupes de départ utilisant cette ZG (F1).',arrGroups:'Groupes d’arrivée utilisant cette ZG (F2).',libZg:'Libellé métier de la ZG (F2).',libGdep:'Libellé du groupe de départ.',
 libGarr:'Libellé du groupe d’arrivée.',_lab:'Chemin tampon complet (séquence + codes + libellé).',typeEmpl:'Type physique de l’emplacement tampon.',_file:'Fichier d’origine de la ligne.',
 topTampon:'Indicateur tampon (F5) : actif = emplacement tampon (filtre ⏳ de la carte).',topStock:'Indicateur stockage (F5).',topPick:'Indicateur picking (F5).',active:'Implantation active ? (F5).',zp:'Zone physique ZP (F5).',zs:'Zone physique ZS (F5).',
-posX:'Coordonnée X (F5) utilisée pour la carte.',posY:'Coordonnée Y (F5) utilisée pour la carte.',taille:'Code taille de l’emplacement (F5).'};
+posX:'Coordonnée X (F5) utilisée pour la carte.',posY:'Coordonnée Y (F5) utilisée pour la carte.',taille:'Code taille de l’emplacement (F5).',
+matCode:'Code interne du matériel (F6).',libMat:'Libellé du matériel (F6).',typeMat:'Type de matériel (F6) → F7/F8.',typeLib:'Libellé du type de matériel (F7).',
+zoneInt:'ZI d’intervention du matériel (F6) → ZI de F1/F3.',emplMat:'Emplacement parc du matériel (allée MAT · colonne).',
+nbSup:'Nombre de types de supports transportables par ce type de matériel (F8).',
+typeMatCode:'Code du type de matériel (F7/F8).',libTypeMat:'Libellé du type de matériel (F7).',desactive:'Type désactivé dans Réflex (F7) ?',
+typeSupCode:'Code du type de support transportable (F8).',typeSupLib:'Libellé du type de support (F8).'};
 
 function tamponLabel(r){
   const em=[r.empl1,r.empl2,r.empl3,r.empl4,r.empl5]
@@ -421,8 +480,17 @@ function store(kind,rows,name){
     if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}
     r.nomEmpl=buildEmplName(r);
   });
+  if(kind==='materiel')rows.forEach(r=>{
+    r.matCode=r.code||'';
+    r.libMat=r.libTampon||'';delete r.libTampon;
+    r.emplMat=[r.allee,r.face,r.colonne].map(v=>String(v??'').trim()).filter(v=>v&&v!=='.').join('·');
+  });
+  if(kind==='mattype')rows.forEach(r=>{
+    r.typeMatCode=r.code||'';
+    r.libTypeMat=r.libTampon||'';delete r.libTampon;
+  });
   const kept=[],excl=[];
-  rows.forEach(r=>{if(N(r.depot)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);});
+  rows.forEach(r=>{if(!r.depot||N(r.depot)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);});
   S.exclRows=S.exclRows.concat(excl);
   const d=dedup(kept);
   S.raw[kind]=d.rows;S.stats[kind]={n:d.rows.length,dup:d.dup,excl:excl.length};S.files[kind]=name;
@@ -438,7 +506,7 @@ async function loadFiles(files){
   S.loading=true;
   showLoad('Préparation du chargement…','0 / '+files.length+' fichier(s)');
   await frame();
-  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[]};S.files={};S.stats={};S.exclRows=[];
+  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};S.files={};S.stats={};S.exclRows=[];
   const done=[];let i=0;
   for(const f of files){
     i++;
@@ -510,6 +578,32 @@ function buildModel(){
     const k=K(r.depot,r.zg);
     if(!IDX.empl.has(k))IDX.empl.set(k,[]);IDX.empl.get(k).push(r);
   });
+  /* --- matériel F6/F7/F8 --- */
+  S.raw.materiel.forEach(r=>{
+    if(r.typeMat){if(!IDX.matByType.has(r.typeMat))IDX.matByType.set(r.typeMat,[]);IDX.matByType.get(r.typeMat).push(r);}
+    if(r.zoneInt){if(!IDX.matByZi.has(r.zoneInt))IDX.matByZi.set(r.zoneInt,[]);IDX.matByZi.get(r.zoneInt).push(r);}
+  });
+  S.raw.matsup.forEach(r=>{
+    if(r.typeMatCode&&r.typeSupCode){
+      if(!IDX.supByType.has(r.typeMatCode))IDX.supByType.set(r.typeMatCode,[]);
+      IDX.supByType.get(r.typeMatCode).push({c:r.typeSupCode,l:r.typeSupLib||''});
+      if(!IDX.typesBySup.has(r.typeSupCode))IDX.typesBySup.set(r.typeSupCode,new Set());
+      IDX.typesBySup.get(r.typeSupCode).add(r.typeMatCode);
+    }
+    if(r.typeSupCode&&!LAB.typeSup.has(r.typeSupCode))LAB.typeSup.set(r.typeSupCode,r.typeSupLib||'');
+    if(r.typeMatCode&&r.typeMatLib&&!LAB.typeMat.has(r.typeMatCode))LAB.typeMat.set(r.typeMatCode,r.typeMatLib);
+  });
+  S.raw.mattype.forEach(r=>{if(r.typeMatCode&&!LAB.typeMat.has(r.typeMatCode))LAB.typeMat.set(r.typeMatCode,r.libTypeMat||'');});
+  S.raw.materiel.forEach(r=>{if(r.typeMat&&!LAB.typeMat.has(r.typeMat))LAB.typeMat.set(r.typeMat,'');});
+  IDX.supByType.forEach(arr=>arr.sort((a,b)=>String(a.c).localeCompare(String(b.c),'fr',{numeric:true}));
+  S.mattypeDes=new Set(S.raw.mattype.filter(r=>TAM_YES.has(N(r.desactive))).map(r=>r.typeMatCode));
+  S.matTypes=sortU([...S.raw.mattype.map(r=>r.typeMatCode),...S.raw.materiel.map(r=>r.typeMat),...S.raw.matsup.map(r=>r.typeMatCode)].filter(Boolean));
+  S.matSupAll=(()=>{const m=new Map();S.raw.matsup.forEach(r=>{if(r.typeSupCode&&!m.has(r.typeSupCode))m.set(r.typeSupCode,r.typeSupLib||'');});
+    return [...m].map(([c,l])=>({c,l})).sort((a,b)=>String(a.c).localeCompare(String(b.c),'fr',{numeric:true}));})();
+  S.matTypeCount=S.matTypes.length;
+  S.materiel=S.raw.materiel.map(r=>({...r,typeLib:LAB.typeMat.get(r.typeMat)||'',nbSup:(IDX.supByType.get(r.typeMat)||[]).length}));
+  S.mattype=S.raw.mattype.map(r=>({...r,nbMat:(IDX.matByType.get(r.typeMatCode)||[]).length,nbSup:(IDX.supByType.get(r.typeMatCode)||[]).length}));
+  /* --- fin matériel --- */
   S.flux=S.raw.flux.map(r=>{
     const d=IDX.dep.get(K(r.depot,r.zi,r.gdep));
     const ref=IDX.ref.get(K(r.depot,r.zgArr))||[];
@@ -570,6 +664,12 @@ function makeControls(){
     grp(S.empl.filter(r=>!r.refVia.length),r=>r.zg?{zg:r.zg}:null,'empl'));
   add('ZG du référentiel F3 sans aucun emplacement F5','Aucune ligne emplacement NE1 ne pointe vers ces ZG.',
     grp(S.ref.filter(r=>r.zg&&!emplCount(r.depot,r.zg)),r=>({zg:r.zg}),'ref'));
+  add('Matériels (F6) rattachés à un type désactivé (F7)','Le type est marqué désactivé dans Réflex : parc potentiellement obsolète.',
+    grp(S.materiel.filter(r=>S.mattypeDes.has(r.typeMat)),r=>r.typeMat?{typeMat:r.typeMat}:null,'materiel'));
+  add('Matériels (F6) sans type connu dans F7/F8','Le code type_materiel du matériel n’existe ni dans F7 ni dans F8.',
+    grp(S.materiel.filter(r=>r.typeMat&&!S.raw.mattype.some(t=>t.typeMatCode===r.typeMat)&&!IDX.supByType.has(r.typeMat)),r=>r.typeMat?{typeMat:r.typeMat}:null,'materiel'));
+  add('Types de matériel (F7) sans aucun matériel (F6)','Type déclaré mais aucun engin du parc ne le porte.',
+    grp(S.mattype.filter(r=>!r.nbMat),r=>r.typeMatCode?{typeMatCode:r.typeMatCode}:null,'materiel'));
   return out;
 }
 
@@ -579,7 +679,7 @@ const FICHE=(k,getCode)=>C(k,'📄',{btn:r=>{const v=getCode(r);return v?`<butto
 const zgLab=z=>(LAB.zg.get(z)?LAB.zg.get(z)+' ('+z+')':z);
 const gLab=g=>(LAB.g.get(g)||g);
 const COLS={
- accueil:[],carte:[],
+ accueil:[],carte:[],mattype:[],
  flux:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
   C('zi','ZI',{dim:true,dict:'zi',lSimple:'ZI'}),
@@ -678,6 +778,19 @@ const COLS={
     `${r.nomEmpl} : allée ${r.allee||'—'}, face ${r.face||'—'}, colonne ${r.colonne||'—'}, niveau ${r.niveau||'—'} — dans la ZG ${zgLab(r.zg)}`+
     (r.refVia.length?`, rattachée à ${r.refVia.join(' / ')}.`:'.')})
  ],
+ materiel:[
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('matCode','Code matériel',{dim:true,lSimple:'Code'}),
+  C('libMat','Libellé matériel',{lSimple:'Libellé'}),
+  C('typeMat','Type de matériel',{dim:true,dict:'typeMat',lSimple:'Type'}),
+  C('typeLib','Type (libellé F7)',{expertOnly:true}),
+  C('zoneInt','ZI d’intervention',{dim:true,dict:'zi',lSimple:'ZI'}),
+  C('emplMat','Emplacement parc (MAT)',{lSimple:'Parc'}),
+  C('nbSup','Supports transportables (type)',{get:r=>fmt((IDX.supByType.get(r.typeMat)||[]).length),lSimple:'Nb supports'}),
+  C('_ficheMat','📄',{btn:r=>r.typeMat?`<button class="fbtn" data-fiche="mat:${esc(r.typeMat)}" title="Fiche du type ${esc(r.typeMat)}">📄</button>`:''}),
+  C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>
+    `Le matériel ${r.matCode} (${r.libMat||'—'}) est de type ${LAB.typeMat.get(r.typeMat)||r.typeMat||'—'} ; il intervient en ${LAB.zi.get(r.zoneInt)||r.zoneInt||'—'} et stationne au parc ${r.emplMat||'—'}.`})
+ ],
  excl:[
   C('_file','Fichier d’origine'),C('depot','Dépôt',{dim:true}),
   C('zg','Zone géo / ZG',{dim:true,dict:'zg'}),C('numEmpl','N° emplacement'),
@@ -696,7 +809,7 @@ function cols(){
 }
 const lbl=c=>(S.simple&&c.lSimple)?c.lSimple:c.l;
 function colDef(k){return cols().find(c=>c.k===k);}
-function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,excl:S.exclRows,ecart:[],arbre:[],chemin:[],accueil:[],carte:[]})[S.tab]||[];}
+function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,materiel:S.materiel,excl:S.exclRows,ecart:[],arbre:[],chemin:[],accueil:[],carte:[],mattype:[]})[S.tab]||[];}
 function withSearch(rows){if(!S.q)return rows;const q=N(S.q);return rows.filter(r=>N(JSON.stringify(r)).includes(q));}
 function matchRow(c,r,v){return c.has?c.has(r,v):String(c.get(r))===v;}
 function filtered(){
@@ -710,16 +823,16 @@ function chipHTML(c,v){
   const on=S.filters[c.k]===String(v);
   let txt=esc(v),title=String(v);
   if(S.simple){const l=labOf(c,v);if(l){txt=`${esc(l)} <small>(${esc(v)})</small>`;title=`${v} = ${l}`;}}
-  const kc=c.dict?(' k-'+c.dict):(c.k==='tamponList'?' k-tam':'');
+  const kc=c.dict?(' k-'+({zi:'zi',ze:'ze',g:'g',zg:'zg',typeMat:'g',typeSup:'tam'}[c.dict]||'')):(c.k==='tamponList'?' k-tam':'');
   return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)} — double-clic : fiche">${txt}</button>`;
 }
 
 function loadStatusHTML(){
   const ks=Object.keys(LABELS).filter(k=>S.files[k]);
   const miss=Object.keys(LABELS).filter(k=>!S.files[k]);
-  let s=ks.length?`<span class="ok">✓ ${ks.length}/5 fichier(s) chargé(s)</span> : ${ks.map(k=>LABELS[k]+' ('+fmt(S.stats[k].n)+' lignes)').join(' · ')}`
+  let s=ks.length?`<span class="ok">✓ ${ks.length}/8 fichier(s) chargé(s)</span> : ${ks.map(k=>LABELS[k]+' ('+fmt(S.stats[k].n)+' lignes)').join(' · ')}`
                  :'<span class="warn">Aucun fichier chargé</span>';
-  if(miss.length)s+=` <span class="warn">· manquants : ${miss.map(k=>LABELS[k]).join(', ')}</span>`;
+  if(miss.length)s+=` <span class="mut">· non chargés : ${miss.map(k=>LABELS[k]).join(', ')}</span>`;
   return s;
 }
 function loadStatusText(){
@@ -735,18 +848,20 @@ function renderHome(){
   if(!has){
     box.innerHTML=`<b>👋 Bienvenue — démarrez en 3 étapes</b>
       <div class="homeGrid" style="margin-top:12px">
-        <button class="homeCard" data-home="load"><b>1 · Charger vos fichiers</b><small>Cliquez ici (ou glissez-déposez) pour sélectionner vos 5 classeurs Excel d'un coup. Rien n'est envoyé sur Internet.</small></button>
+        <button class="homeCard" data-home="load"><b>1 · Charger vos fichiers</b><small>Cliquez ici (ou glissez-déposez) pour sélectionner vos classeurs Excel d'un coup (5 flux + 3 matériel optionnels). Rien n'est envoyé sur Internet.</small></button>
         <button class="homeCard" data-home="arbre"><b>2 · Explorer</b><small>Parcourez l'arborescence ZI → ZE → Groupe → ZG, cherchez un emplacement, calculez des chemins.</small></button>
         <button class="homeCard" data-home="ecart"><b>3 · Vérifier & exporter</b><small>Consultez les écarts détectés entre fichiers, puis exportez le résultat en CSV ou PDF.</small></button>
       </div>`;
   }else{
     box.innerHTML=`<b>🏠 Tableau de bord — que voulez-vous faire ?</b>
       <div class="homeGrid" style="margin-top:12px">
-        <button class="homeCard" data-home="search"><b>🔎 Chercher</b><small>Un emplacement, une ZG, un groupe… (recherche libre)</small></button>
+        <button class="homeCard" data-home="search"><b>🔎 Chercher</b><small>Un emplacement, une ZG, un groupe, un matériel… (recherche libre)</small></button>
         <button class="homeCard" data-home="flux"><b>📦 Voir les flux</b><small>${fmt(S.flux.length)} lignes de flux enrichies (F1+F2+F3+F4)</small></button>
         <button class="homeCard" data-home="arbre"><b>🌳 Arborescence</b><small>ZI → ZE → Groupe → ZG, avec nb d'emplacements</small></button>
         <button class="homeCard" data-home="chemin"><b>🧭 Chemins</b><small>D'où vient / où va un emplacement, via quels tampons</small></button>
-        <button class="homeCard" data-home="carte"><b>🗺 Carte / plan</b><small>Positions X/Y des emplacements par magasin, plan en image de fond, filtre ⏳ tampons en 1 clic</small></button>
+        <button class="homeCard" data-home="carte"><b>🗺 Carte / plan</b><small>Positions X/Y des emplacements par magasin, plan en image de fond, filtre ⏳ tampons</small></button>
+        <button class="homeCard" data-home="materiel"><b>🚜 Parc matériel</b><small>${fmt(S.materiel.length)} engin(s) : type, ZI d'intervention, emplacement parc</small></button>
+        <button class="homeCard" data-home="mattype"><b>🏷 Types & supports</b><small>${fmt(S.matTypeCount)} types de matériel · quels supports chacun peut transporter</small></button>
         <button class="homeCard" data-home="empl"><b>📍 Emplacements</b><small>${fmt(S.empl.length)} emplacements NE1 (F5)</small></button>
         <button class="homeCard" data-home="ecart"><b>⚠ Écarts</b><small>${fmt(S.controls.reduce((s,c)=>s+c.items.length,0))} anomalie(s) détectée(s)</small></button>
       </div>`;
@@ -764,8 +879,9 @@ function renderTree(){
   Object.keys(byZI).sort().forEach(zi=>{
     const zes=byZI[zi];
     const nG=Object.values(zes).reduce((s,o)=>s+Object.keys(o).length,0);
+    const nMat=(IDX.matByZi.get(zi)||[]).length;
     h+=`<div class="trow"><button class="fbtn" data-fiche="zi:${esc(zi)}" title="Fiche de ${esc(zi)}">📄</button>
-      <details><summary><span class="dot k-zi"></span><b>${esc(LAB.zi.get(zi)||zi)}</b> <span class="mut">(${esc(zi)}) · ${Object.keys(zes).length} ZE · ${nG} groupes</span></summary><div class="tin">`;
+      <details><summary><span class="dot k-zi"></span><b>${esc(LAB.zi.get(zi)||zi)}</b> <span class="mut">(${esc(zi)}) · ${Object.keys(zes).length} ZE · ${nG} groupes${nMat?` · ${nMat} matériels`:''}</span></summary><div class="tin">`;
     Object.keys(zes).sort().forEach(ze=>{
       const gs=zes[ze];
       h+=`<div class="trow"><button class="fbtn" data-fiche="ze:${esc(ze)}" title="Fiche de ${esc(ze)}">📄</button>
@@ -786,7 +902,7 @@ function renderTree(){
     h+=`</div></details></div>`;
   });
   $('#treeWrap').innerHTML=`<b>🌳 Arborescence ZI → ZE → Groupe de départ → ZG</b>
-    <span class="mut">— construite depuis F1 · dépliez avec les flèches · cliquez 📄 pour la fiche détaillée</span>`+h;
+    <span class="mut">— construite depuis F1 · dépliez avec les flèches · cliquez 📄 pour la fiche détaillée · les compteurs 🚜 indiquent les matériels intervenant dans la ZI</span>`+h;
 }
 
 function fillPathList(){
@@ -867,7 +983,6 @@ function renderPath(){
 const PAL=['#38bdf8','#34d399','#fbbf24','#c084fc','#f472b6','#fb923c','#a3e635','#22d3ee','#f87171','#818cf8','#facc15','#4ade80','#e879f9','#60a5fa'];
 const hash=s=>{let h=0;const t=String(s??'');for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return Math.abs(h);};
 const magOf=r=>r.magasin||'(sans code magasin)';
-/* Emplacement tampon : indicateur TOP_TAMPON actif, sinon ZG / libellé contenant « tampon » */
 const TAM_YES=new Set(['o','oui','x','1','true','y','yes','t']);
 function isTamEmpl(r){
   const t=N(r.topTampon);
@@ -908,7 +1023,7 @@ function saveCfg(){
 }
 function saveImg(m){
   const c=cfgFor(m);
-  try{if(c.img)localStorage.setItem('zgMapImg:'+m,c.img);else localStorage.removeItem('zgMapImg:'+m);}catch(e){/* image trop lourde : gardée en mémoire pour la session */}
+  try{if(c.img)localStorage.setItem('zgMapImg:'+m,c.img);else localStorage.removeItem('zgMapImg:'+m);}catch(e){}
 }
 function ensureImg(mag){
   const cfg=cfgFor(mag);
@@ -938,14 +1053,12 @@ function renderMapControls(){
   $('#mapImgOp').value=cfg.op;$('#mapImgSc').value=cfg.sc;$('#mapImgDx').value=cfg.dx;$('#mapImgDy').value=cfg.dy;
   $('#mapFlipY').checked=!!cfg.flip;
   $('#mapImgDel').disabled=!cfg.img;
-  /* bouton ⏳ tampons : état + compteur */
   const tb=$('#mapTam'),nTam=S.empl.filter(isTamEmpl).length;
   tb.classList.toggle('on',S.map.tamOnly);
   tb.textContent=S.map.tamOnly?`⏳ Emplacements tampon ✓`:`⏳ Emplacements tampon (${fmt(nTam)})`;
   ensureImg(S.map.mag);
 }
 function renderMap(){renderMapControls();drawMap();renderTamList();renderMapSel();}
-/* Liste groupée de TOUS les emplacements tampon (sous la carte, quand ⏳ est actif) */
 function renderTamList(){
   const box=$('#mapTamList');
   if(!S.map.tamOnly||S.tab!=='carte'){box.hidden=true;box.innerHTML='';return;}
@@ -988,7 +1101,6 @@ function drawMap(){
   const pad=26,sx=(maxX-minX)||1,sy=(maxY-minY)||1;
   const X=v=>pad+(v-minX)/sx*(W-2*pad);
   const Y=v=>{const t=(v-minY)/sy*(H-2*pad);return cfg.flip?pad+t:H-pad-t;};
-  /* image de fond (plan) */
   const im=S._imgs[mag];
   if(im&&im.complete&&im.naturalWidth){
     ctx.save();ctx.globalAlpha=(+cfg.op)/100;
@@ -996,7 +1108,6 @@ function drawMap(){
     ctx.drawImage(im,(W-iw)/2+(+cfg.dx)/100*W,(H-ih)/2+(+cfg.dy)/100*H,iw,ih);
     ctx.restore();
   }
-  /* points */
   S._mapXY=[];S._mapGrid=new Map();const CELL=10;
   const put=(x,y,r)=>{const i=S._mapXY.length;S._mapXY.push({x,y,r});
     const k=Math.floor(x/CELL)+':'+Math.floor(y/CELL);
@@ -1014,7 +1125,6 @@ function drawMap(){
       put(x,y,r);
     }
   }
-  /* légende + info */
   let leg='';
   if(mode==='occ'){
     leg=[['#34d399','places disponibles'],['#fbbf24','partiellement plein'],['#f87171','plein'],['#64748b','non stockable']]
@@ -1058,6 +1168,66 @@ function renderMapSel(){
     places dispo/stock : ${esc(r.nbDispo??'—')}/${esc(r.nbStock??'—')} · top tampon : ${esc(r.topTampon||'—')} · position X ${esc(r.posX??'—')} / Y ${esc(r.posY??'—')}</div>`;
 }
 
+/* ================= TYPES MATERIEL & SUPPORTS ================= */
+function renderMatTypeChips(){
+  $('#matTypeChips').innerHTML=S.matTypes.map(t=>{
+    const n=(IDX.matByType.get(t)||[]).length,s=(IDX.supByType.get(t)||[]).length;
+    const des=S.mattypeDes.has(t);
+    return `<button class="chip k-g${t===S.mat.type?' on':''}" data-matsel="${esc(t)}" title="${esc(t)} : ${n} matériels · ${s} supports${des?' · ⚠ désactivé':''}">${des?'⚠ ':''}${esc(LAB.typeMat.get(t)||t)} <small>(${esc(t)}) · ${n} 🚜 · ${s} </small></button>`;
+  }).join('')||'<span class="mut">Aucun fichier matériel (F6/F7/F8) chargé.</span>';
+}
+function renderMatSupChips(){
+  const box=$('#matSupChips');if(!box)return;
+  const c=S.mat.type,sups=IDX.supByType.get(c)||[];
+  const q=N(S.mat.supFilter);
+  const fs=q?sups.filter(s=>N(s.c).includes(q)||N(s.l).includes(q)):sups;
+  const cnt=$('#matSupCount');if(cnt)cnt.textContent=fmt(fs.length);
+  box.innerHTML=fs.length?fs.slice(0,S.mat.supLimit).map(s=>`<button class="chip k-tam" data-supq="${esc(s.c)}" title="Quels types de matériel transportent ${esc(s.c)} ?">${esc(s.c)} <small>${esc(s.l)}</small></button>`).join('')
+    +(fs.length>S.mat.supLimit?`<button class="chip" id="matSupMore">+ ${fmt(fs.length-S.mat.supLimit)} autres</button>`:'')
+    :'<span class="mut">aucun support correspondant</span>';
+}
+function renderMatDetail(){
+  const d=$('#matTypeDetail'),c=S.mat.type;
+  if(!c){d.innerHTML='<span class="mut">Choisissez un type de matériel (liste déroulante ou pastilles ci-dessus) pour voir ses engins, ses ZI d\'intervention et tous les types de supports qu\'il peut transporter.</span>';return;}
+  const mats=IDX.matByType.get(c)||[],sups=IDX.supByType.get(c)||[];
+  const zis=sortU(mats.map(m=>m.zoneInt).filter(Boolean));
+  const des=S.mattypeDes.has(c);
+  d.innerHTML=`<div class="expHead" style="position:static;background:none"><b>🏷 ${esc(LAB.typeMat.get(c)||c)} <span class="mut">(${esc(c)})</span></b>
+    <span class="row"><button class="fbtn" data-fiche="mat:${esc(c)}">📄 Fiche complète</button>
+    <button class="fbtn" data-gomat="${esc(c)}">🚜 Voir dans le tableau parc</button></span></div>
+    <div class="mut" style="font-size:12.5px;margin:4px 0 10px">${des?'<span class="warn">⚠ type désactivé dans Réflex (F7)</span> · ':''}${fmt(mats.length)} matériel(s) · ${fmt(sups.length)} type(s) de support transportable(s) · ${fmt(zis.length)} ZI d'intervention</div>
+    <div class="ficheGrid">
+      <div class="fcard"><h4>🚜 Matériels du type (F6)</h4><ul>${mats.length?mats.slice(0,60).map(m=>`<li><b>${esc(m.matCode)}</b> ${esc(m.libMat||'')} — ZI ${esc(LAB.zi.get(m.zoneInt)||m.zoneInt||'?')} — parc ${esc(m.emplMat||'?')}</li>`).join('')+(mats.length>60?`<li class="mut">… +${fmt(mats.length-60)} autres</li>`:''):'<li class="mut">aucun matériel déclaré pour ce type</li>'}</ul></div>
+      <div class="fcard"><h4>🗺 ZI d'intervention (F6)</h4><ul>${zis.length?zis.map(z=>`<li>${gl(LAB.zi,z)} · ${fmt(mats.filter(m=>m.zoneInt===z).length)} mat.</li>`).join(''):'<li class="mut">aucune</li>'}</ul></div>
+      <div class="fcard" style="grid-column:1/-1"><h4>🧰 Supports transportables (F8) — <span id="matSupCount">${fmt(sups.length)}</span> type(s)</h4>
+        <input type="search" id="matSupFilter" placeholder="Filtrer les supports de ce type (code ou libellé)…" value="${esc(S.mat.supFilter)}" style="margin:4px 0 8px;max-width:360px">
+        <div id="matSupChips" style="display:flex;flex-wrap:wrap;gap:4px;max-height:240px;overflow:auto"></div>
+      </div>
+    </div>`;
+  renderMatSupChips();
+}
+function renderMatRev(){
+  const rv=$('#matRevResults'),q=N(S.mat.qsup);
+  if(!q){rv.innerHTML='<span class="mut">Saisissez un code ou un libellé de support (ex. <code>PAL</code>, <code>AA0</code>, <code>NK3</code>, « palette », « kardex »…) pour voir quels types de matériel peuvent le transporter, et combien d\'engins cela représente.</span>';return;}
+  const matches=S.matSupAll.filter(s=>N(s.c).includes(q)||N(s.l).includes(q)).slice(0,25);
+  rv.innerHTML=matches.length?matches.map(s=>{
+    const types=[...(IDX.typesBySup.get(s.c)||[])].sort();
+    const nbMat=types.reduce((sum,t)=>sum+(IDX.matByType.get(t)||[]).length,0);
+    return `<div class="trow" style="align-items:flex-start"><span class="chip k-tam" style="cursor:default">${esc(s.c)} <small>${esc(s.l)}</small></span>
+      <span class="mut">· ${fmt(types.length)} type(s) · ${fmt(nbMat)} matériel(s) :</span>
+      ${types.slice(0,12).map(t=>`<button class="chip k-g" data-matsel="${esc(t)}" title="${esc(t)}">${esc(LAB.typeMat.get(t)||t)}</button>`).join('')+(types.length>12?`<span class="mut">+${types.length-12}</span>`:'')}</div>`;
+  }).join(''):`<span class="warn">Aucun support trouvé pour « ${esc(S.mat.qsup)} ».</span>`;
+}
+function renderMattype(){
+  $('#matTypeSel').innerHTML=`<option value="">— choisir un type (${fmt(S.matTypes.length)}) —</option>`+S.matTypes.map(c=>{
+    const n=(IDX.matByType.get(c)||[]).length;
+    return `<option value="${esc(c)}"${c===S.mat.type?' selected':''}>${esc(LAB.typeMat.get(c)||c)} (${esc(c)})${n?` · ${n} mat.`:''}</option>`;
+  }).join('');
+  $('#matTypeSel').value=S.mat.type||'';
+  $('#matSupQ').value=S.mat.qsup||'';
+  renderMatTypeChips();renderMatDetail();renderMatRev();
+}
+
 function fcard(t,items){return `<div class="fcard"><h4>${esc(t)}</h4><ul>${items.length?items.map(x=>`<li>${x}</li>`).join(''):'<li class="mut">aucun</li>'}</ul></div>`;}
 function renderFiche(){
   const box=$('#fiche');
@@ -1096,6 +1266,15 @@ function renderFiche(){
         [...((IDX.fluxDepZg.get(K(D,code))||new Map()).get(g)||[])].reduce((s,z)=>s+emplCount(D,z),0))))
       +fcard('Schéma des flux entrants',inn.map(g=>flowHTML(g,code,(IDX.tam4.get(K(D,g,code))||[])[0],null,null)))
       +fcard('État',w.length?w:['<span class="ok">✓ aucun écart détecté</span>']);
+  }else if(type==='mat'){
+    head=`Fiche type matériel — <b>${esc(code)}</b>${LAB.typeMat.get(code)?` · ${esc(LAB.typeMat.get(code))}`:''}`;
+    const mats=IDX.matByType.get(code)||[];
+    const sups=IDX.supByType.get(code)||[];
+    const zis=sortU(mats.map(m=>m.zoneInt).filter(Boolean));
+    cards=fcard('🚜 Matériels du parc (F6)',mats.slice(0,60).map(m=>`<b>${esc(m.matCode)}</b> ${esc(m.libMat||'')} · ZI ${esc(LAB.zi.get(m.zoneInt)||m.zoneInt||'?')} · parc ${esc(m.emplMat||'?')}`)+(mats.length>60?[`… +${fmt(mats.length-60)} autres`]:[]))
+      +fcard('ZI d’intervention (F6)',zis.map(z=>gl(LAB.zi,z)))
+      +fcard('🧰 Supports transportables (F8)',[`<b>${fmt(sups.length)}</b> type(s) de support`,...sups.slice(0,60).map(s=>`${esc(s.c)} — ${esc(s.l)}`)]+(sups.length>60?[`… +${fmt(sups.length-60)} autres`]:[]))
+      +fcard('État',S.mattypeDes.has(code)?['<span class="warn">⚠ type désactivé dans Réflex (F7)</span>']:['<span class="ok">✓ type actif</span>']);
   }else{
     const isZI=type==='zi';
     head=`Fiche ${isZI?'ZI':'ZE'} — <b>${esc(code)}</b>${(isZI?LAB.zi.get(code):LAB.ze.get(code))?` · ${esc(isZI?LAB.zi.get(code):LAB.ze.get(code))}`:''}`;
@@ -1104,7 +1283,8 @@ function renderFiche(){
     const groups=uniq(S.raw.depart.filter(r=>isZI?r.zi===code:r.ze===code).map(r=>r.gdep)).sort();
     cards=fcard(isZI?'ZE contenues (F3)':'ZI parente (F3)',isZI?uniq(ref.map(r=>r.ze)).sort().map(z=>gl(LAB.ze,z)):uniq(ref.map(r=>r.zi)).map(z=>gl(LAB.zi,z)))
       +fcard('Groupes de départ (F1)',groups.map(g=>gl(LAB.g,g)))
-      +fcard('ZG du référentiel (F3)',zgs.slice(0,60).map(z=>gl(LAB.zg,z)).concat(zgs.length>60?[`… +${zgs.length-60} autres`]:[]));
+      +fcard('ZG du référentiel (F3)',zgs.slice(0,60).map(z=>gl(LAB.zg,z)).concat(zgs.length>60?[`… +${zgs.length-60} autres`]:[]))
+      +(isZI?fcard('🚜 Matériels intervenant (F6)',(IDX.matByZi.get(code)||[]).slice(0,40).map(m=>`<b>${esc(m.matCode)}</b> ${esc(m.libMat||'')} · type ${esc(LAB.typeMat.get(m.typeMat)||m.typeMat||'?')} · parc ${esc(m.emplMat||'?')}`)): '');
   }
   box.hidden=false;
   box.innerHTML=`<div class="expHead"><b>📄 ${head}</b>
@@ -1119,6 +1299,7 @@ function renderMenu(){
     if(k==='tampon')return S.raw.tampon.length; if(k==='empl')return S.empl.length; if(k==='excl')return S.exclRows.length;
     if(k==='arbre')return uniq(S.raw.depart.map(r=>r.zi)).length; if(k==='ecart')return S.controls.reduce((s,c)=>s+c.items.length,0);
     if(k==='carte')return S.posCount;
+    if(k==='materiel')return S.materiel.length; if(k==='mattype')return S.matTypeCount;
     return null;};
   const cnt=k=>{const c=n(k);return c!=null?` <small>${fmt(c)}</small>`:'';};
   const mi=(k,lab)=>`<button data-go="${k}" class="${S.tab===k?'on':''}">${lab}${cnt(k)}</button>`;
@@ -1126,9 +1307,11 @@ function renderMenu(){
   const has=Object.keys(S.files).length;
   $('#menuBar').innerHTML=
     `<button class="menu-item${S.tab==='accueil'?' active':''}" data-go="accueil">🏠 Accueil</button>`+
-    `<button class="menu-item" id="menuChargement" title="Afficher / masquer la zone de chargement — ${esc(loadStatusText())}">📂 Chargement <span class="mbadge ${has?'ok':'warn'}">${has}/5</span></button>`+
+    `<button class="menu-item" id="menuChargement" title="Afficher / masquer la zone de chargement — ${esc(loadStatusText())}">📂 Chargement <span class="mbadge ${has?'ok':'warn'}">${has}/8</span></button>`+
     dd('explorer','📊','Explorer',['flux','empl','arbre','chemin','carte'].includes(S.tab),
        mi('flux','📦 Flux enrichis')+mi('empl','📍 Emplacements · F5')+mi('arbre','🌳 Arborescence')+mi('chemin','🧭 Chemins')+mi('carte','🗺 Carte / plan'))+
+    dd('mat','🚜','Matériel',['materiel','mattype'].includes(S.tab),
+       mi('materiel','🚜 Parc matériel · F6')+mi('mattype','🏷 Types & supports · F7/F8'))+
     dd('refs','📚','Référentiels',['depart','ref','tampon'].includes(S.tab),
        mi('depart','Départ · F1')+mi('ref','Référentiel · F3')+mi('tampon','Tampon · F4'))+
     dd('qual','✅','Qualité',['ecart','excl'].includes(S.tab),
@@ -1154,14 +1337,18 @@ function renderStats(){
     ['Tampons (F4)',fmt(S.raw.tampon.length)],
     ['Emplacements (F5)',fmt(S.empl.length)],
     ['Emplacements positionnés',fmt(S.posCount)],
+    ['Matériels (F6)',fmt(S.materiel.length)],
+    ['Types de matériel',fmt(S.matTypeCount)],
     ['Lignes exclues (≠NE1)',fmt(S.exclRows.length)],
     ['Écarts détectés',fmt(ec)]
   ].map(([l,v])=>`<div class="kpi"><small>${l}</small><b>${v}</b></div>`).join('');
-  const missing=Object.keys(LABELS).filter(k=>!S.files[k]);
-  const empty=Object.keys(LABELS).filter(k=>S.files[k]&&S.stats[k].n===0&&S.stats[k].excl>0);
+  const missing=CORE_KINDS.filter(k=>!S.files[k]);
+  const optMissing=OPT_KINDS.filter(k=>!S.files[k]);
+  const empty=CORE_KINDS.filter(k=>S.files[k]&&S.stats[k].n===0&&S.stats[k].excl>0);
   const msgs=[];
   if(missing.length)msgs.push(`⚠ Fichier(s) non chargé(s) : <b>${missing.map(k=>LABELS[k]).join(', ')}</b>. Les recoupements correspondants sont incomplets.`);
   if(empty.length)msgs.push(`⚠ <b>${empty.map(k=>LABELS[k]).join(', ')}</b> : aucune ligne Dépôt = ${DEPOT_KEEP} trouvée — toutes les lignes ont été exclues.`);
+  if(optMissing.length&&optMissing.length<OPT_KINDS.length+1&&missing.length===0)msgs.push(`<span class="mut">ℹ Fichiers optionnels non chargés : <b>${optMissing.map(k=>LABELS[k]).join(', ')}</b> — les vues 🚜 / 🏷 resteront vides.</span>`);
   $('#notice').hidden=msgs.length===0;
   $('#notice').innerHTML=msgs.join('<br>');
 }
@@ -1220,7 +1407,7 @@ function renderControls(){
     <p class="mut">${esc(c.hint)}</p>`+
     c.items.map(i=>{
       const d=Object.keys(i.filters)[0],v=i.filters[d];
-      const dict=d==='zi'?LAB.zi:d==='ze'?LAB.ze:(d==='gdep'||d==='garr')?LAB.g:(d==='zg'||d==='zgArr'||d==='zgDep')?LAB.zg:null;
+      const dict=d==='zi'?LAB.zi:d==='ze'?LAB.ze:(d==='gdep'||d==='garr')?LAB.g:(d==='zg'||d==='zgArr'||d==='zgDep')?LAB.zg:d==='typeMat'?LAB.typeMat:null;
       return `<button class="chip" data-ctrl="1" data-tab="${i.tab}" data-filters='${esc(JSON.stringify(i.filters))}' title="${esc(v)}">${esc(S.simple&&dict?((dict.get(v)||'')+' ('+v+')'):v)} · ${fmt(i.n)}</button>`;
     }).join('')+'</div>').join('')
     :'<div class="card">Aucun écart détecté sur les fichiers chargés. 🎉</div>';
@@ -1235,17 +1422,19 @@ function render(){
   $('#dropHide').hidden=!hasFiles;
   if(!showFull)$('#miniState').innerHTML=loadStatusHTML();
   renderMenu();renderStats();renderHome();renderFilters();renderControls();renderFiche();
-  const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte';
-  const hideTable=isTree||isPath||isHome||isMap;
+  const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte',isMat=S.tab==='mattype';
+  const hideTable=isTree||isPath||isHome||isMap||isMat;
   $('#treeWrap').hidden=!isTree;
   $('#pathWrap').hidden=!isPath;
   $('#mapWrap').hidden=!isMap;
+  $('#matWrap').hidden=!isMat;
   $('#tableWrap').style.display=hideTable?'none':'';
   $('#tableInfo').style.display=hideTable?'none':'';
-  $('#filterPanel').style.display=(isHome||isMap)?'none':'';
+  $('#filterPanel').style.display=(isHome||isMap||isMat)?'none':'';
   if(isTree){renderTree();$('#more').hidden=true;}
   else if(isPath){renderPath();$('#more').hidden=true;}
   else if(isMap){renderMap();$('#more').hidden=true;}
+  else if(isMat){renderMattype();$('#more').hidden=true;}
   else if(!isHome)renderGrid();
 }
 
@@ -1265,9 +1454,10 @@ function exportCSV(){
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function clearAll(){
-  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[]};S.files={};S.stats={};S.exclRows=[];S.fiche=null;S.path=null;
+  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};S.files={};S.stats={};S.exclRows=[];S.fiche=null;S.path=null;
   S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';S.tab='accueil';S.showDrop=true;
-  S.posCount=0;S.mapSel=null;S.map.mag='';
+  S.posCount=0;S.mapSel=null;S.map.mag='';S.mat={type:'',qsup:'',supFilter:'',supLimit:120};
+  S.materiel=[];S.mattype=[];S.matTypes=[];S.matSupAll=[];S.matTypeCount=0;S.mattypeDes=new Set();
   $('#bulk').value='';$('#bulkState').textContent='Aucun fichier chargé';
   $('#explorer').hidden=true;
   buildModel();render();
@@ -1304,6 +1494,12 @@ document.addEventListener('click',e=>{
     renderMapControls();drawMap();renderTamList();
     return;
   }
+  /* --- matériel --- */
+  if(b.dataset.matsel){S.mat.type=b.dataset.matsel;S.mat.supFilter='';S.mat.supLimit=120;renderMattype();return;}
+  if(b.dataset.supq){S.mat.qsup=b.dataset.supq;$('#matSupQ').value=S.mat.qsup;renderMatRev();return;}
+  if(b.id==='matSupMore'){S.mat.supLimit+=240;renderMatSupChips();return;}
+  if(b.dataset.gomat){S.tab='materiel';S.filters={typeMat:b.dataset.gomat};S.q='';$('#q').value='';S.limit=200;render();$('#tableWrap').scrollIntoView({behavior:'smooth'});return;}
+  /* --- fin matériel --- */
   if(b.id==='dropHide'){S.showDrop=false;render();return;}
   if(b.id==='dropShow'){S.showDrop=true;render();$('#drop').scrollIntoView({behavior:'smooth',block:'nearest'});return;}
   if(b.id==='menuChargement'){
@@ -1353,7 +1549,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('dblclick',e=>{
   const b=e.target.closest('button[data-dim]');if(!b)return;
   const k=b.dataset.dim,v=b.dataset.val;
-  const t=k==='zi'?'zi':k==='ze'?'ze':(k==='gdep'||k==='garr')?'g':(k==='zg'||k==='zgArr'||k==='zgDep')?'zg':null;
+  const t=k==='zi'?'zi':k==='ze'?'ze':(k==='gdep'||k==='garr')?'g':(k==='zg'||k==='zgArr'||k==='zgDep')?'zg':k==='typeMat'?'mat':null;
   if(t){S.fiche={type:t,code:v};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});}
 });
 document.addEventListener('change',e=>{
@@ -1363,6 +1559,11 @@ document.addEventListener('change',e=>{
     S.limit=200;render();
   }
   if(e.target.id==='pathDir'){S.path={q:$('#pathQ').value,dir:e.target.value};renderPath();}
+  if(e.target.id==='matTypeSel'){S.mat.type=e.target.value;S.mat.supFilter='';S.mat.supLimit=120;renderMattype();}
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='matSupFilter'){S.mat.supFilter=e.target.value;S.mat.supLimit=120;renderMatSupChips();}
+  else if(e.target.id==='matSupQ'){S.mat.qsup=e.target.value;renderMatRev();}
 });
 $('#q').addEventListener('input',e=>{S.q=e.target.value;S.limit=200;renderFilters();renderGrid();});
 $('#pathQ').addEventListener('input',fillPathList);
