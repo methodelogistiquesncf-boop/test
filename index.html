@@ -11,7 +11,6 @@ body.light{--bg:#eef1f6;--bg2:#ffffff;--panel:#ffffff;--line:#d8dee9;--txt:#1c2b
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.55 system-ui,Segoe UI,Roboto,sans-serif}
 
-/* ===== BARRE DE MENU UNIQUE ===== */
 .menu-bar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;background:var(--bg2);border-bottom:2px solid var(--line)}
 .menu-item{position:relative;display:flex;align-items:center;gap:7px;padding:12px 18px;background:none;border:0;border-right:1px solid var(--line);color:var(--txt);font:inherit;font-size:14.5px;font-weight:600;cursor:pointer}
 .menu-item:hover{background:var(--hover);color:var(--acc)}
@@ -43,7 +42,6 @@ button:disabled{opacity:.45;cursor:not-allowed}
 input[type=range]{accent-color:var(--acc);width:130px;padding:2px}
 input[type=checkbox]{width:auto;accent-color:var(--acc)}
 
-/* ===== SUIVI DE CHARGEMENT PAR FICHIER (✓ / rond qui tourne) ===== */
 .fstatusrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .fstatus{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border:1px solid var(--line);border-radius:20px;font-size:12px;background:var(--bg2);cursor:default}
 .fstatus small{color:var(--mut)}
@@ -54,13 +52,67 @@ input[type=checkbox]{width:auto;accent-color:var(--acc)}
 .spinmini{width:11px;height:11px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;display:inline-block;animation:rot 1s linear infinite;flex:none}
 #loadList{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px;max-width:560px}
 
+/* ===== SUIVI PAR FICHIER INDIVIDUEL ===== */
+.file-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 14px;margin:3px;
+  border:1.5px solid var(--line);border-radius:20px;
+  font-size:13px;font-weight:500;
+  background:var(--bg2);
+  transition:all 0.4s cubic-bezier(.4,0,.2,1);
+  min-width:200px;max-width:340px;
+}
+.file-chip .fname{
+  flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.file-chip .fkind{
+  font-size:10.5px;color:var(--mut);
+  padding:2px 7px;border-radius:8px;
+  background:var(--hover);
+  white-space:nowrap;font-weight:600;
+}
+.file-chip.done{
+  border-color:var(--ok);
+  background:rgba(52,211,153,0.12);
+  animation:slideIn 0.4s ease;
+}
+.file-chip.done .ic{color:var(--ok);font-size:18px;font-weight:900}
+.file-chip.wait{
+  border-color:var(--acc);
+  background:rgba(56,189,248,0.1);
+}
+.file-chip.wait .ic{color:var(--acc)}
+.file-chip.error{
+  border-color:var(--warn);
+  background:rgba(251,191,36,0.12);
+}
+.file-chip.error .ic{color:var(--warn)}
+@keyframes slideIn{
+  0%{opacity:0;transform:translateY(-6px) scale(0.95)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+#fileList, #fileListInline{
+  display:flex;flex-wrap:wrap;gap:4px;
+  margin-top:14px;max-width:100%;
+}
+.progress-bar{
+  width:100%;max-width:560px;height:6px;
+  background:var(--hover);border-radius:3px;
+  margin:10px 0;overflow:hidden;
+}
+.progress-bar .fill{
+  height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));
+  transition:width 0.4s ease;
+  border-radius:3px;
+}
+#loadProgress{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut)}
+
 #drop{border-style:dashed}
 #drop.over{border-color:var(--acc);background:var(--hover)}
 #dropFull .expHead{position:static;background:none}
 #dropMini{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13px;padding:2px 0}
 #dropMini .fbtn{font-size:12px;padding:4px 10px}
 
-/* ===== CARTE / PLAN ===== */
 #mapBox{position:relative;height:62vh;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg2)}
 #mapCv{position:absolute;inset:0;display:block}
 #mapTip{position:absolute;display:none;pointer-events:none;background:var(--overlay);border:1px solid var(--acc);border-radius:8px;padding:6px 9px;font-size:12px;max-width:290px;z-index:5;line-height:1.45;color:var(--txt)}
@@ -121,12 +173,12 @@ summary:hover{background:var(--hover)}
 .homeCard small{color:var(--mut)}
 #loading{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;z-index:60}
 #loading[hidden]{display:none}
-.loadBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 36px;text-align:center;max-width:680px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.loadBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 36px;text-align:center;max-width:860px;box-shadow:0 10px 40px rgba(0,0,0,.35);width:90vw}
 .spin{width:44px;height:44px;margin:0 auto 14px;border:4px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:rot 1s linear infinite}
 @keyframes rot{to{transform:rotate(360deg)}}
 #loadingMsg{font-size:15px;font-weight:600}
 #loadingSub{font-size:12.5px;color:var(--mut);margin-top:6px}
-@media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}}
+@media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}.file-chip{min-width:140px}}
 @media print{
   body{background:#fff!important;color:#000!important}
   body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
@@ -138,64 +190,6 @@ summary:hover{background:var(--hover)}
   #fiche .fcard ul,#matTypeDetail .fcard ul{max-height:none;overflow:visible}
   #mapBox{height:45vh;border-color:#999}
 }
-
-/* ===== SUIVI PAR FICHIER INDIVIDUEL ===== */
-.file-chip{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:8px 14px;margin:3px;
-  border:1.5px solid var(--line);border-radius:20px;
-  font-size:13px;font-weight:500;
-  background:var(--bg2);
-  transition:all 0.4s cubic-bezier(.4,0,.2,1);
-  min-width:180px;
-}
-.file-chip .fname{
-  flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  max-width:220px;
-}
-.file-chip .fkind{
-  font-size:10px;color:var(--mut);
-  padding:2px 6px;border-radius:8px;
-  background:var(--hover);
-  white-space:nowrap;
-}
-.file-chip.done{
-  border-color:var(--ok);
-  background:rgba(52,211,153,0.12);
-  animation:slideIn 0.4s ease;
-}
-.file-chip.done .ic{color:var(--ok);font-size:18px;font-weight:900}
-.file-chip.wait{
-  border-color:var(--acc);
-  background:rgba(56,189,248,0.1);
-}
-.file-chip.wait .ic{color:var(--acc)}
-.file-chip.error{
-  border-color:var(--warn);
-  background:rgba(251,191,36,0.1);
-}
-.file-chip.error .ic{color:var(--warn)}
-@keyframes slideIn{
-  0%{opacity:0;transform:translateY(-6px) scale(0.95)}
-  100%{opacity:1;transform:translateY(0) scale(1)}
-}
-#fileList{
-  display:flex;flex-wrap:wrap;gap:4px;
-  margin-top:14px;max-width:900px;
-}
-.progress-bar{
-  width:100%;max-width:560px;height:6px;
-  background:var(--hover);border-radius:3px;
-  margin:10px 0;overflow:hidden;
-}
-.progress-bar .fill{
-  height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));
-  transition:width 0.4s ease;
-  border-radius:3px;
-}
-#loadProgress{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut)}
-
-  
 </style>
 </head>
 <body>
@@ -204,7 +198,11 @@ summary:hover{background:var(--hover)}
     <div class="spin"></div>
     <div id="loadingMsg">Chargement des fichiers…</div>
     <div id="loadingSub">Merci de patienter — le traitement se fait entièrement dans votre navigateur.</div>
-    <div id="loadList"></div>
+    <div id="loadProgress">
+      <div class="progress-bar"><div class="fill" style="width:0%"></div></div>
+      <span id="loadCount">0 / 0</span>
+    </div>
+    <div id="fileList"></div>
   </div>
 </div>
 
@@ -230,8 +228,8 @@ summary:hover{background:var(--hover)}
     <button id="dropShow" class="fbtn" title="Ré-afficher la zone de chargement complète">📂 Afficher / modifier les fichiers</button>
     <span class="mut">(vous pouvez aussi glisser-déposer de nouveaux fichiers directement ici)</span>
   </div>
-  <!-- Suivi visuel : ✓ verte = chargé · rond qui tourne = en attente pendant la session · ○ / ! = non chargé après -->
   <div id="fileStatus" class="fstatusrow"></div>
+  <div id="fileListInline" class="fstatusrow"></div>
 </section>
 
 <div id="notice" class="panel" hidden></div>
@@ -267,7 +265,6 @@ summary:hover{background:var(--hover)}
   <div id="pathTree" style="margin-top:12px"></div>
 </section>
 
-<!-- ===== CARTE / PLAN PAR MAGASIN ===== -->
 <section id="mapWrap" class="panel" hidden>
   <div class="expHead" style="position:static;background:none">
     <b>🗺 Carte / plan par magasin</b>
@@ -299,7 +296,6 @@ summary:hover{background:var(--hover)}
   <div id="mapSel" class="card" hidden style="margin-top:10px;margin-bottom:0"></div>
 </section>
 
-<!-- ===== TYPES DE MATERIEL & SUPPORTS ===== -->
 <section id="matWrap" class="panel" hidden>
   <div class="expHead" style="position:static;background:none">
     <b>🏷 Types de matériel & supports transportables</b>
@@ -389,7 +385,6 @@ libelletypeemplacement:'libTypeEmpl',zoneinventaire:'zoneInv',codemagasin:'magas
 nbsupportsstockable:'nbStock',nbsupportsdispo:'nbDispo',codetaille:'taille',
 topemplstockage:'topStock',topemplpicking:'topPick',toptampon:'topTampon',
 implantationactive:'active',zp:'zp',zs:'zs',positionx:'posX',positiony:'posY',
-/* --- matériel F6/F7/F8 --- */
 code:'code',libellereduit:'libRed',
 emplacement1allee:'allee',emplacement2face:'face',emplacement3colonne:'colonne',
 typemateriel:'typeMat',zoneintervention:'zoneInt',
@@ -407,7 +402,6 @@ function guess(raw){
   if(t.includes('libelle')&&t.includes('tampon'))return 'libTampon';
   if(t.includes('groupe')&&t.includes('depart'))return 'gdep';
   if(t.includes('groupe')&&t.includes('arrive'))return 'garr';
-  /* --- matériel --- */
   if(t.includes('support')&&t.includes('code'))return 'typeSupCode';
   if(t.includes('support')&&t.includes('libelle'))return 'typeSupLib';
   if(t.includes('materiel')&&t.includes('code'))return 'typeMatCode';
@@ -498,7 +492,8 @@ const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],
   pathView:localStorage.getItem('zgPathView')||'simple',
   simple:localStorage.getItem('zgMode')!=='expert',
   theme:localStorage.getItem('zgTheme')||'dark',
-  fsz:localStorage.getItem('zgFs')||'0'};
+  fsz:localStorage.getItem('zgFs')||'0',
+  loadedFiles:[],pendingFiles:[]};
 const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),
   tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map(),fluxDepZg:new Map(),
   matByType:new Map(),matByZi:new Map(),supByType:new Map(),typesBySup:new Map()};
@@ -506,21 +501,21 @@ const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map(),typeMat:new Map(),
 const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg,typeMat:LAB.typeMat,typeSup:LAB.typeSup};
 const labOf=(c,v)=>{const m=c&&c.dict?DICT[c.dict]:null;return m?(m.get(v)||''):'';};
 
-const INFO={depot:'Site physique (ici NE1).',zi:'Zone d’Intervention : périmètre organisationnel.',ze:'Zone d’Évolution : sous-zone où circule le stock.',
-gdep:'Groupe de ZG d’où part le flux.',garr:'Groupe de ZG où arrive le flux.',zgArr:'Zone géographique de destination.',zgDep:'Zone géographique contenue dans le groupe de départ.',
+const INFO={depot:'Site physique (ici NE1).',zi:'Zone d\'Intervention : périmètre organisationnel.',ze:'Zone d\'Évolution : sous-zone où circule le stock.',
+gdep:'Groupe de ZG d\'où part le flux.',garr:'Groupe de ZG où arrive le flux.',zgArr:'Zone géographique de destination.',zgDep:'Zone géographique contenue dans le groupe de départ.',
 zg:'Zone géographique : plus petite zone de stock.',tamponList:'Tampon(s) traversé(s) entre départ et arrivée (F4).',depZGs:'ZG contenues dans le groupe de départ (F1).',
-refZEs:'ZE du référentiel où existe cette ZG (F3).',nbEmpl:'Nombre d’emplacements F5 rattachés à cette ZG.',numEmpl:'Numéro interne de l’emplacement (F5).',
-nomEmpl:'Nom complet = Allée+Face+Colonne+Niveau+Emplacement.',allee:'Allée de l’emplacement.',face:'Face de l’emplacement.',colonne:'Colonne de l’emplacement.',
-niveau:'Niveau de l’emplacement.',empl:'Complément d’adresse de l’emplacement.',sequence:'Ordre de priorité du tampon (F4).',empl1:'Code principal du tampon.',
+refZEs:'ZE du référentiel où existe cette ZG (F3).',nbEmpl:'Nombre d\'emplacements F5 rattachés à cette ZG.',numEmpl:'Numéro interne de l\'emplacement (F5).',
+nomEmpl:'Nom complet = Allée+Face+Colonne+Niveau+Emplacement.',allee:'Allée de l\'emplacement.',face:'Face de l\'emplacement.',colonne:'Colonne de l\'emplacement.',
+niveau:'Niveau de l\'emplacement.',empl:'Complément d\'adresse de l\'emplacement.',sequence:'Ordre de priorité du tampon (F4).',empl1:'Code principal du tampon.',
 empl2:'Sens : S sortie, E entrée, T transit.',empl3:'Sous-localisation du tampon.',libTampon:'Libellé lisible du tampon.',inFlux:'Un flux F2 utilise-t-il cet élément ?',
-usage:'La ZG est-elle utilisée par un groupe ?',_ctl:'État de cohérence de la ligne.',_phrase:'Explication de la ligne en une phrase.',zoneInv:'Zone d’inventaire (F5).',
-magasin:'Code magasin rattaché (F5).',nbStock:'Supports stockables (F5).',nbDispo:'Supports disponibles (F5).',libEmpl:'Libellé de l’emplacement.',refVia:'ZI/ZE du référentiel (F3).',
-depGroups:'Groupes de départ utilisant cette ZG (F1).',arrGroups:'Groupes d’arrivée utilisant cette ZG (F2).',libZg:'Libellé métier de la ZG (F2).',libGdep:'Libellé du groupe de départ.',
-libGarr:'Libellé du groupe d’arrivée.',_lab:'Chemin tampon complet (séquence + codes + libellé).',typeEmpl:'Type physique de l’emplacement tampon.',_file:'Fichier d’origine de la ligne.',
+usage:'La ZG est-elle utilisée par un groupe ?',_ctl:'État de cohérence de la ligne.',_phrase:'Explication de la ligne en une phrase.',zoneInv:'Zone d\'inventaire (F5).',
+magasin:'Code magasin rattaché (F5).',nbStock:'Supports stockables (F5).',nbDispo:'Supports disponibles (F5).',libEmpl:'Libellé de l\'emplacement.',refVia:'ZI/ZE du référentiel (F3).',
+depGroups:'Groupes de départ utilisant cette ZG (F1).',arrGroups:'Groupes d\'arrivée utilisant cette ZG (F2).',libZg:'Libellé métier de la ZG (F2).',libGdep:'Libellé du groupe de départ.',
+libGarr:'Libellé du groupe d\'arrivée.',_lab:'Chemin tampon complet (séquence + codes + libellé).',typeEmpl:'Type physique de l\'emplacement tampon.',_file:'Fichier d\'origine de la ligne.',
 topTampon:'Indicateur tampon (F5) : actif = emplacement tampon (filtre ⏳ de la carte).',topStock:'Indicateur stockage (F5).',topPick:'Indicateur picking (F5).',active:'Implantation active ? (F5).',zp:'Zone physique ZP (F5).',zs:'Zone physique ZS (F5).',
-posX:'Coordonnée X (F5) utilisée pour la carte.',posY:'Coordonnée Y (F5) utilisée pour la carte.',taille:'Code taille de l’emplacement (F5).',
+posX:'Coordonnée X (F5) utilisée pour la carte.',posY:'Coordonnée Y (F5) utilisée pour la carte.',taille:'Code taille de l\'emplacement (F5).',
 matCode:'Code interne du matériel (F6).',libMat:'Libellé du matériel (F6).',typeMat:'Type de matériel (F6) → F7/F8.',typeLib:'Libellé du type de matériel (F7).',
-zoneInt:'ZI d’intervention du matériel (F6) → ZI de F1/F3.',emplMat:'Emplacement parc du matériel (allée MAT · colonne).',
+zoneInt:'ZI d\'intervention du matériel (F6) → ZI de F1/F3.',emplMat:'Emplacement parc du matériel (allée MAT · colonne).',
 nbSup:'Nombre de types de supports transportables par ce type de matériel (F8).',
 typeMatCode:'Code du type de matériel (F7/F8).',libTypeMat:'Libellé du type de matériel (F7).',desactive:'Type désactivé dans Réflex (F7) ?',
 typeSupCode:'Code du type de support transportable (F8).',typeSupLib:'Libellé du type de support (F8).'};
@@ -549,12 +544,12 @@ function flowHTML(dg,ag,tam,nz,ne){
     (ne!=null?`<span class="farr">→</span><span class="fbox e">${fmt(ne)} empl.</span>`:'')+`</span>`;
 }
 
-/* ===== Suivi visuel de chargement : ✓ verte / rond qui tourne / ○ / ! ===== */
+/* ===== SUIVI VISUEL PAR FICHIER INDIVIDUEL ===== */
 function kindState(k){
   if(S.files[k])return 'done';
-  if(S.loading)return 'wait';                 /* pendant la session : rond qui tourne */
-  if(S.hasSession&&CORE_KINDS.includes(k))return 'warn';   /* requis manquant après session */
-  return 'no';                                /* optionnel manquant / avant toute session */
+  if(S.loading)return 'wait';
+  if(S.hasSession&&CORE_KINDS.includes(k))return 'warn';
+  return 'no';
 }
 function statusChip(k){
   const st=kindState(k);
@@ -573,6 +568,52 @@ function renderFileStatus(){
   const html=KIND_ORDER.map(statusChip).join('');
   const el=$('#fileStatus');if(el)el.innerHTML=html;
   const ll=$('#loadList');if(ll)ll.innerHTML=html;
+}
+
+/* ===== Chips par fichier individuel ===== */
+function renderFileChips(container){
+  if(!container) return;
+  const html = [...S.pendingFiles, ...S.loadedFiles].map(f => {
+    const icon = f.status === 'done' 
+      ? '<span class="ic">✓</span>'
+      : f.status === 'error' 
+      ? '<span class="ic">✗</span>'
+      : '<span class="spinmini"></span>';
+    const kindLabel = f.kind ? LABELS[f.kind] : '...';
+    const cls = f.status;
+    return `<div class="file-chip ${cls}" title="${esc(f.name)}">
+      ${icon}
+      <span class="fname">${esc(f.name)}</span>
+      <span class="fkind">${esc(kindLabel)}</span>
+    </div>`;
+  }).join('');
+  container.innerHTML = html;
+}
+
+function updateProgress(done, total){
+  const pct = total > 0 ? (done/total*100) : 0;
+  const fill = document.querySelector('#loadProgress .fill');
+  const count = document.getElementById('loadCount');
+  if(fill) fill.style.width = pct + '%';
+  if(count) count.textContent = `${done} / ${total}`;
+}
+
+function addLoadedFile(name, kind, status='done'){
+  const existing = S.loadedFiles.find(f => f.name === name);
+  if(existing){
+    existing.status = status;
+    existing.kind = kind;
+  } else {
+    S.loadedFiles.push({name, kind, status});
+  }
+  renderFileChips($('#fileList'));
+  renderFileChips($('#fileListInline'));
+}
+
+function setPendingFiles(files){
+  S.pendingFiles = files.map(f => ({name: f.name, status: 'wait', kind: null}));
+  renderFileChips($('#fileList'));
+  renderFileChips($('#fileListInline'));
 }
 
 function store(kind,rows,name){
@@ -602,14 +643,22 @@ function showLoad(msg,sub){
   renderFileStatus();
 }
 function hideLoad(){$('#loading').hidden=true;}
+
 async function loadFiles(files){
   if(!files||!files.length||S.loading)return;
   S.loading=true;
-  showLoad('Préparation du chargement…','0 / '+files.length+' fichier(s) — ✓ = chargé, rond qui tourne = en attente');
+  S.loadedFiles = [];
+  setPendingFiles(files);
+  
+  showLoad('Préparation du chargement…','0 / '+files.length+' fichier(s)');
+  updateProgress(0, files.length);
   await frame();
-  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};S.files={};S.stats={};S.exclRows=[];
+  
+  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};
+  S.files={};S.stats={};S.exclRows=[];
   renderFileStatus();
-  const done=[];let i=0;
+  
+  let done=0;let i=0;
   for(const f of files){
     i++;
     showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'Ouverture et reconnaissance des colonnes…');
@@ -619,21 +668,39 @@ async function loadFiles(files){
       const wb=XLSX.read(buf,{type:'array'});
       let rows=[];wb.SheetNames.forEach(sn=>{rows=rows.concat(parseSheet(wb.Sheets[sn],f.name,sn));});
       const kind=detectKind(rows)||detectByName(f.name);
-      if(!kind){alert('Fichier non reconnu : '+f.name);continue;}
-      store(kind,rows,f.name);done.push(kind);
-      showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+fmt(rows.length)+' lignes reconnues → '+LABELS[kind]);
-      renderFileStatus();   /* la ✓ verte apparaît immédiatement */
+      
+      // Retirer ce fichier de la liste "en attente"
+      S.pendingFiles = S.pendingFiles.filter(p => p.name !== f.name);
+      
+      if(!kind){
+        addLoadedFile(f.name, null, 'error');
+        alert('Fichier non reconnu : '+f.name);
+      } else {
+        store(kind,rows,f.name);
+        addLoadedFile(f.name, kind, 'done');
+        showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+fmt(rows.length)+' lignes reconnues → '+LABELS[kind]);
+        renderFileStatus();
+      }
+      
+      done++;
+      updateProgress(done, files.length);
       await frame();
-    }catch(err){alert('Erreur de lecture '+f.name+' : '+err.message);}
+    }catch(err){
+      S.pendingFiles = S.pendingFiles.filter(p => p.name !== f.name);
+      addLoadedFile(f.name, null, 'error');
+      done++;
+      updateProgress(done, files.length);
+      alert('Erreur de lecture '+f.name+' : '+err.message);
+    }
   }
-  showLoad('Calcul des recoupements…',done.length+' fichier(s) chargé(s) : '+done.map(k=>LABELS[k]).join(', '));
+  showLoad('Calcul des recoupements…',done+' fichier(s) chargé(s) : '+S.loadedFiles.filter(f=>f.kind).map(f=>LABELS[f.kind]).join(', '));
   await frame();
   try{
     buildModel();
-    if(done.length)S.showDrop=false;
+    if(done)S.showDrop=false;
     render();
-    $('#bulkState').innerHTML=done.length
-      ?`<span class="ok">✓ ${done.length} fichier(s) chargé(s)</span> : ${done.map(k=>LABELS[k]).join(', ')}`
+    $('#bulkState').innerHTML=done
+      ?`<span class="ok">✓ ${done} fichier(s) chargé(s)</span> : ${S.loadedFiles.filter(f=>f.kind).map(f=>LABELS[f.kind]).join(', ')}`
       :'<span class="warn">Aucun fichier reconnu</span>';
   }finally{
     hideLoad();S.loading=false;S.hasSession=true;renderFileStatus();
@@ -683,7 +750,6 @@ function buildModel(){
     const k=K(r.depot,r.zg);
     if(!IDX.empl.has(k))IDX.empl.set(k,[]);IDX.empl.get(k).push(r);
   });
-  /* --- matériel F6/F7/F8 --- */
   S.raw.materiel.forEach(r=>{
     if(r.typeMat){if(!IDX.matByType.has(r.typeMat))IDX.matByType.set(r.typeMat,[]);IDX.matByType.get(r.typeMat).push(r);}
     if(r.zoneInt){if(!IDX.matByZi.has(r.zoneInt))IDX.matByZi.set(r.zoneInt,[]);IDX.matByZi.get(r.zoneInt).push(r);}
@@ -708,7 +774,6 @@ function buildModel(){
   S.matTypeCount=S.matTypes.length;
   S.materiel=S.raw.materiel.map(r=>({...r,typeLib:LAB.typeMat.get(r.typeMat)||'',nbSup:(IDX.supByType.get(r.typeMat)||[]).length}));
   S.mattype=S.raw.mattype.map(r=>({...r,nbMat:(IDX.matByType.get(r.typeMatCode)||[]).length,nbSup:(IDX.supByType.get(r.typeMatCode)||[]).length}));
-  /* --- fin matériel --- */
   S.flux=S.raw.flux.map(r=>{
     const d=IDX.dep.get(K(r.depot,r.zi,r.gdep));
     const ref=IDX.ref.get(K(r.depot,r.zgArr))||[];
@@ -753,19 +818,19 @@ function makeControls(){
     grp(S.raw.tampon.filter(r=>!r.hasFlux),r=>r.gdep&&r.garr?{gdep:r.gdep,garr:r.garr}:null,'tampon'));
   add('Groupe de départ présent dans F2, absent de F1','Clé : Dépôt + ZI + Groupe ZG départ.',
     grp(S.flux.filter(r=>!r.hasDep),r=>r.gdep?{gdep:r.gdep}:null,'flux'));
-  add('ZG d’arrivée sans affectation ZE dans F3','Clé : Dépôt + ZG.',
+  add('ZG d\'arrivée sans affectation ZE dans F3','Clé : Dépôt + ZG.',
     grp(S.flux.filter(r=>!r.hasRef),r=>r.zgArr?{zgArr:r.zgArr}:null,'flux'));
   add('ZE du flux différente des ZE du référentiel','Peut être volontaire (ex. GZGHUB déclaré ZEHUB dans F1, utilisé ZEHUBE/ZEHU24 dans F2).',
     grp(S.flux.filter(r=>r.hasRef&&!r.refZEs.includes(r.ze)),r=>r.ze?{ze:r.ze}:null,'flux'));
   add('ZG de départ F1 absent du référentiel F3','Ces ZG de départ ne sont rattachés à aucune ZE.',
     grp(S.depart.filter(r=>!r.refZEs.length),r=>r.zgDep?{zgDep:r.zgDep}:null,'depart'));
-  add('ZG du référentiel jamais utilisé','Ni dans un groupe de départ (F1), ni d’arrivée (F2).',
+  add('ZG du référentiel jamais utilisé','Ni dans un groupe de départ (F1), ni d\'arrivée (F2).',
     grp(S.ref.filter(r=>!r.depGroups&&!r.arrGroups),r=>r.zg?{zg:r.zg}:null,'ref'));
   add('Libellés ZG incohérents pour un même code','Plusieurs libellés déclarés pour le même Dépôt + ZG dans F2.',
     grp(S.flux.filter(r=>(IDX.lib.get(K(r.depot,r.zgArr))||new Set()).size>1),r=>r.zgArr?{zgArr:r.zgArr}:null,'flux'));
   add('Codes « groupe arrivée » atypiques','Ne commencent pas par GZG (ex. ZGPRO, PROD, GZES, GZOU).',
     grp(S.flux.filter(r=>r.garr&&!/^GZG/.test(r.garr)),r=>({garr:r.garr}),'flux'));
-  add('ZG d’emplacements (F5) absentes du référentiel F3','Ces ZG portent des emplacements NE1 mais n’existent pas dans ZIZEZG.',
+  add('ZG d\'emplacements (F5) absentes du référentiel F3','Ces ZG portent des emplacements NE1 mais n\'existent pas dans ZIZEZG.',
     grp(S.empl.filter(r=>!r.refVia.length),r=>r.zg?{zg:r.zg}:null,'empl'));
   add('ZG du référentiel F3 sans aucun emplacement F5','Aucune ligne emplacement NE1 ne pointe vers ces ZG.',
     grp(S.ref.filter(r=>r.zg&&!emplCount(r.depot,r.zg)),r=>({zg:r.zg}),'ref'));
@@ -791,14 +856,14 @@ const COLS={
   C('ze','ZE du flux',{dim:true,dict:'ze',lSimple:'ZE'}),
   C('gdep','Groupe ZG départ',{dim:true,dict:'g',lSimple:'Groupe de départ'}),
   C('libGdep','Libellé groupe départ',{expertOnly:true}),
-  C('garr','Groupe ZG arrivée',{dim:true,dict:'g',lSimple:'Groupe d’arrivée'}),
+  C('garr','Groupe ZG arrivée',{dim:true,dict:'g',lSimple:'Groupe d\'arrivée'}),
   C('libGarr','Libellé groupe arrivée',{expertOnly:true}),
-  C('zgArr','ZG arrivée',{dim:true,dict:'zg',lSimple:'ZG d’arrivée'}),
+  C('zgArr','ZG arrivée',{dim:true,dict:'zg',lSimple:'ZG d\'arrivée'}),
   C('libZg','Libellé ZG arrivée',{expertOnly:true}),
   FICHE('_fiche',r=>r.zgArr),
   MULTI('depZGs','ZG du groupe de départ · F1',{dict:'zg',lSimple:'ZG contenues dans le groupe de départ'}),
   C('refZEs','ZE du ZG arrivée · F3',{get:r=>(r.refZEs||[]).join(', '),expertOnly:true}),
-  C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':fmt(n);},lSimple:'Nb d’emplacements (F5)'}),
+  C('nbEmpl','Empl. F5 (ZG arr.)',{get:r=>{const n=emplCount(r.depot,r.zgArr);return n===0?'—':fmt(n);},lSimple:'Nb d\'emplacements (F5)'}),
   MULTI('tamponList','Tampon · F4',{dict:'tam',lSimple:'Tampon traversé'}),
   C('_ctl','Contrôle',{get:r=>{
     const w=[];
@@ -809,7 +874,7 @@ const COLS={
   C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>{
     const tam=(r.tamponList||[])[0]||'aucun tampon défini';
     const n=r.depZGs.length?(' Le groupe de départ contient '+r.depZGs.length+' ZG.'):'';
-    return `Le groupe « ${gLab(r.gdep)} » envoie vers le groupe « ${gLab(r.garr)} » en passant par ${tam}. ZG d’arrivée : ${zgLab(r.zgArr)}.${n}`;}})
+    return `Le groupe « ${gLab(r.gdep)} » envoie vers le groupe « ${gLab(r.garr)} » en passant par ${tam}. ZG d'arrivée : ${zgLab(r.zgArr)}.${n}`;}})
  ],
  depart:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
@@ -831,12 +896,12 @@ const COLS={
   FICHE('_fiche',r=>r.zg),
   C('libZg','Libellé (F2)',{expertOnly:true}),
   C('depGroups','Groupes de départ (F1)',{expertOnly:true}),
-  C('arrGroups','Groupes d’arrivée (F2)',{expertOnly:true}),
-  C('nbEmpl','Empl. F5',{get:r=>{const n=emplCount(r.depot,r.zg);return n===0?'—':fmt(n);},lSimple:'Nb d’emplacements (F5)'}),
+  C('arrGroups','Groupes d\'arrivée (F2)',{expertOnly:true}),
+  C('nbEmpl','Empl. F5',{get:r=>{const n=emplCount(r.depot,r.zg);return n===0?'—':fmt(n);},lSimple:'Nb d\'emplacements (F5)'}),
   C('usage','Utilisé ?',{get:r=>(r.depGroups||r.arrGroups)?'oui':'non',lSimple:'Utilisée ?'}),
   C('_phrase','Lire la ligne',{simpleOnly:true,cls:'phrase',get:r=>
     `La ZG ${zgLab(r.zg)} est rattachée à ${LAB.zi.get(r.zi)||r.zi} / ${LAB.ze.get(r.ze)||r.ze}.`+
-    (r.depGroups?` Groupe(s) de départ : ${r.depGroups}.`:'')+(r.arrGroups?` Groupe(s) d’arrivée : ${r.arrGroups}.`:'')})
+    (r.depGroups?` Groupe(s) de départ : ${r.depGroups}.`:'')+(r.arrGroups?` Groupe(s) d'arrivée : ${r.arrGroups}.`:'')})
  ],
  tampon:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
@@ -855,8 +920,8 @@ const COLS={
  ],
  empl:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
-  C('numEmpl','N° emplacement',{dim:true,lSimple:'N° d’emplacement'}),
-  C('nomEmpl','Nom emplacement (concaténé)',{dim:true,lSimple:'Nom de l’emplacement'}),
+  C('numEmpl','N° emplacement',{dim:true,lSimple:'N° d\'emplacement'}),
+  C('nomEmpl','Nom emplacement (concaténé)',{dim:true,lSimple:'Nom de l\'emplacement'}),
   C('zg','Zone géo (ZG)',{dim:true,dict:'zg',lSimple:'ZG'}),
   FICHE('_fiche',r=>r.zg),
   C('_path','🧭',{btn:r=>`<button class="fbtn" data-path="${esc(r.nomEmpl)}" title="Chemins depuis cet emplacement">🧭</button>`}),
@@ -889,7 +954,7 @@ const COLS={
   C('libMat','Libellé matériel',{lSimple:'Libellé'}),
   C('typeMat','Type de matériel',{dim:true,dict:'typeMat',lSimple:'Type'}),
   C('typeLib','Type (libellé F7)',{expertOnly:true}),
-  C('zoneInt','ZI d’intervention',{dim:true,dict:'zi',lSimple:'ZI'}),
+  C('zoneInt','ZI d\'intervention',{dim:true,dict:'zi',lSimple:'ZI'}),
   C('emplMat','Emplacement parc (MAT)',{lSimple:'Parc'}),
   C('nbSup','Supports transportables (type)',{get:r=>fmt((IDX.supByType.get(r.typeMat)||[]).length),lSimple:'Nb supports'}),
   C('_ficheMat','📄',{btn:r=>r.typeMat?`<button class="fbtn" data-fiche="mat:${esc(r.typeMat)}" title="Fiche du type ${esc(r.typeMat)}">📄</button>`:''}),
@@ -897,7 +962,7 @@ const COLS={
     `Le matériel ${r.matCode} (${r.libMat||'—'}) est de type ${LAB.typeMat.get(r.typeMat)||r.typeMat||'—'} ; il intervient en ${LAB.zi.get(r.zoneInt)||r.zoneInt||'—'} et stationne au parc ${r.emplMat||'—'}.`})
  ],
  excl:[
-  C('_file','Fichier d’origine'),C('depot','Dépôt',{dim:true}),
+  C('_file','Fichier d\'origine'),C('depot','Dépôt',{dim:true}),
   C('zg','Zone géo / ZG',{dim:true,dict:'zg'}),C('numEmpl','N° emplacement'),
   C('nomEmpl','Nom emplacement'),
   C('zoneInv','Zone inventaire'),C('allee','Allée'),C('face','Face'),C('colonne','Colonne'),C('niveau','Niveau'),
@@ -1025,7 +1090,7 @@ function renderPath(){
   $('#pathQ').value=q;$('#pathDir').value=dir;
   $('#pathView').textContent=S.pathView==='simple'?'🌳 Version détaillée (arbre)':'📄 Version simplifiée (tableau)';
   fillPathList();
-  if(!q){box.innerHTML='<span class="mut">Saisissez un nom d’emplacement (ex. <code>M2_LC006N4E1</code>), un numéro (ex. <code>2 416</code>) ou un code ZG (ex. <code>ZGMAG3</code>), choisissez le sens, puis « Calculer les chemins ». Le bouton 🧭 de l’onglet Emplacements remplit aussi cette recherche.</span>';return;}
+  if(!q){box.innerHTML='<span class="mut">Saisissez un nom d\'emplacement (ex. <code>M2_LC006N4E1</code>), un numéro (ex. <code>2 416</code>) ou un code ZG (ex. <code>ZGMAG3</code>), choisissez le sens, puis « Calculer les chemins ». Le bouton 🧭 de l\'onglet Emplacements remplit aussi cette recherche.</span>';return;}
   let startZg=null,startLabel='';
   const nq=N(q);
   const em=S.empl.find(r=>N(r.nomEmpl)===nq)||S.empl.find(r=>N(String(r.numEmpl||''))===nq);
@@ -1034,7 +1099,7 @@ function renderPath(){
   else{box.innerHTML=`<span class="warn">⚠ Introuvable : « ${esc(q)} » (ni emplacement NE1, ni ZG connue).</span>`;return;}
   const forward=dir==='aller';
   const groups=forward?[...(IDX.byDepZg.get(K(D,startZg))||[])]:[...(IDX.byArrZg.get(K(D,startZg))||[])];
-  if(!groups.length){box.innerHTML=`<b>${esc(startLabel)}</b> : aucun groupe ${forward?'de départ (F1)':'d’arrivée (F2)'} ne contient cette ZG → aucun chemin possible.`;return;}
+  if(!groups.length){box.innerHTML=`<b>${esc(startLabel)}</b> : aucun groupe ${forward?'de départ (F1)':'d\'arrivée (F2)'} ne contient cette ZG → aucun chemin possible.`;return;}
   const paths=[];
   groups.sort().forEach(g=>{
     const targets=forward?[...(IDX.fluxDep.get(K(D,g))||[])]:[...(IDX.fluxArr.get(K(D,g))||[])];
@@ -1084,7 +1149,6 @@ function renderPath(){
   box.innerHTML=html;
 }
 
-/* ================= CARTE / PLAN PAR MAGASIN ================= */
 const PAL=['#38bdf8','#34d399','#fbbf24','#c084fc','#f472b6','#fb923c','#a3e635','#22d3ee','#f87171','#818cf8','#facc15','#4ade80','#e879f9','#60a5fa'];
 const hash=s=>{let h=0;const t=String(s??'');for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return Math.abs(h);};
 const magOf=r=>r.magasin||'(sans code magasin)';
@@ -1273,7 +1337,6 @@ function renderMapSel(){
     places dispo/stock : ${esc(r.nbDispo??'—')}/${esc(r.nbStock??'—')} · top tampon : ${esc(r.topTampon||'—')} · position X ${esc(r.posX??'—')} / Y ${esc(r.posY??'—')}</div>`;
 }
 
-/* ================= TYPES MATERIEL & SUPPORTS ================= */
 function renderMatTypeChips(){
   $('#matTypeChips').innerHTML=S.matTypes.map(t=>{
     const n=(IDX.matByType.get(t)||[]).length,s=(IDX.supByType.get(t)||[]).length;
@@ -1352,7 +1415,7 @@ function renderFiche(){
     if(!gD.length&&!gA.length)w.push('<span class="warn">⚠ utilisée dans aucun groupe</span>');
     cards=fcard('Rattachement géographique (F3)',uniq(ref.map(r=>gl(LAB.zi,r.zi)+' / '+gl(LAB.ze,r.ze))))
       +fcard('Groupes de départ (F1)',gD.map(g=>gl(LAB.g,g)))
-      +fcard('Groupes d’arrivée (F2)',gA.map(g=>gl(LAB.g,g)))
+      +fcard('Groupes d\'arrivée (F2)',gA.map(g=>gl(LAB.g,g)))
       +fcard('Schéma des flux entrants (F2 → cette ZG)',uniq(fl.map(r=>flowHTML(r.gdep,r.garr,(r.tamponList||[])[0],null,null))))
       +fcard('Emplacements physiques (F5)',em.length?[`<b>${fmt(em.length)}</b> emplacement(s)`,...em.slice(0,8).map(e=>esc(e.nomEmpl||''))]:[])
       +fcard('État',w.length?w:['<span class="ok">✓ aucun écart détecté</span>']);
@@ -1377,7 +1440,7 @@ function renderFiche(){
     const sups=IDX.supByType.get(code)||[];
     const zis=sortU(mats.map(m=>m.zoneInt).filter(Boolean));
     cards=fcard('🚜 Matériels du parc (F6)',mats.slice(0,60).map(m=>`<b>${esc(m.matCode)}</b> ${esc(m.libMat||'')} · ZI ${esc(LAB.zi.get(m.zoneInt)||m.zoneInt||'?')} · parc ${esc(m.emplMat||'?')}`)+(mats.length>60?[`… +${fmt(mats.length-60)} autres`]:[]))
-      +fcard('ZI d’intervention (F6)',zis.map(z=>gl(LAB.zi,z)))
+      +fcard('ZI d\'intervention (F6)',zis.map(z=>gl(LAB.zi,z)))
       +fcard('🧰 Supports transportables (F8)',[`<b>${fmt(sups.length)}</b> type(s) de support`,...sups.slice(0,60).map(s=>`${esc(s.c)} — ${esc(s.l)}`)]+(sups.length>60?[`… +${fmt(sups.length-60)} autres`]:[]))
       +fcard('État',S.mattypeDes.has(code)?['<span class="warn">⚠ type désactivé dans Réflex (F7)</span>']:['<span class="ok">✓ type actif</span>']);
   }else{
@@ -1397,7 +1460,6 @@ function renderFiche(){
     <div class="ficheGrid">${cards}</div>`;
 }
 
-/* ===== BARRE DE MENU ===== */
 function renderMenu(){
   const n=k=>{
     if(k==='flux')return S.flux.length; if(k==='depart')return S.depart.length; if(k==='ref')return S.ref.length;
@@ -1525,6 +1587,7 @@ function render(){
   $('#dropHide').hidden=!hasFiles;
   if(!showFull)$('#miniState').innerHTML=loadStatusHTML();
   renderMenu();renderStats();renderHome();renderFilters();renderControls();renderFiche();renderFileStatus();
+  renderFileChips($('#fileListInline'));
   const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte',isMat=S.tab==='mattype';
   const hideTable=isTree||isPath||isHome||isMap||isMat;
   $('#treeWrap').hidden=!isTree;
@@ -1561,8 +1624,10 @@ function clearAll(){
   S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';S.tab='accueil';S.showDrop=true;S.hasSession=false;
   S.posCount=0;S.mapSel=null;S.map.mag='';S.mat={type:'',qsup:'',supFilter:'',supLimit:120};
   S.materiel=[];S.mattype=[];S.matTypes=[];S.matSupAll=[];S.matTypeCount=0;S.mattypeDes=new Set();
+  S.loadedFiles=[];S.pendingFiles=[];
   $('#bulk').value='';$('#bulkState').textContent='Aucun fichier chargé';
   $('#explorer').hidden=true;
+  renderFileChips($('#fileListInline'));
   buildModel();render();
 }
 function setMode(s){
@@ -1570,7 +1635,6 @@ function setMode(s){
   render();
 }
 
-/* ===== Clics globaux ===== */
 document.addEventListener('click',e=>{
   const mi=e.target.closest('.menu-item');
   if(mi&&mi.dataset.menu&&!e.target.closest('.menu-dropdown')){
@@ -1597,12 +1661,10 @@ document.addEventListener('click',e=>{
     renderMapControls();drawMap();renderTamList();
     return;
   }
-  /* --- matériel --- */
   if(b.dataset.matsel){S.mat.type=b.dataset.matsel;S.mat.supFilter='';S.mat.supLimit=120;renderMattype();return;}
   if(b.dataset.supq){S.mat.qsup=b.dataset.supq;$('#matSupQ').value=S.mat.qsup;renderMatRev();return;}
   if(b.id==='matSupMore'){S.mat.supLimit+=240;renderMatSupChips();return;}
   if(b.dataset.gomat){S.tab='materiel';S.filters={typeMat:b.dataset.gomat};S.q='';$('#q').value='';S.limit=200;render();$('#tableWrap').scrollIntoView({behavior:'smooth'});return;}
-  /* --- fin matériel --- */
   if(b.id==='dropHide'){S.showDrop=false;render();return;}
   if(b.id==='dropShow'){S.showDrop=true;render();$('#drop').scrollIntoView({behavior:'smooth',block:'nearest'});return;}
   if(b.id==='menuChargement'){
@@ -1677,7 +1739,6 @@ dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');}
 dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');loadFiles([...e.dataTransfer.files]);});
 
-/* ===== Événements de la carte ===== */
 $('#mapMag').addEventListener('change',e=>{S.map.mag=e.target.value;S.map.hl='';renderMapControls();drawMap();renderTamList();});
 $('#mapMode').addEventListener('change',e=>{S.map.mode=e.target.value;drawMap();});
 $('#mapHl').addEventListener('change',e=>{S.map.hl=e.target.value;drawMap();renderTamList();});
@@ -1727,7 +1788,6 @@ cvEl.addEventListener('click',e=>{
 });
 window.addEventListener('resize',()=>{if(S.tab==='carte')drawMap();});
 
-/* Démarrage */
 if(typeof XLSX==='undefined'){
   $('#notice').hidden=false;
   $('#notice').textContent='Librairie SheetJS non chargée : connexion Internet requise au premier affichage.';
