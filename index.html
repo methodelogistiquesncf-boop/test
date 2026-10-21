@@ -1245,7 +1245,6 @@ function renderPath(){
       targetZg=emArr.zg;
       targetEmpl=emArr;
       targetLabel=`${emArr.nomEmpl}`;
-      // TROUVER LE GROUPE D'ARRIVÉE
       const arrGroups = [...(IDX.byArrZg.get(K(D, targetZg))||[])];
       if(arrGroups.length > 0) targetG = arrGroups[0];
     } else if(IDX.empl.has(K(D,qArr)) || IDX.ref.has(K(D,qArr))){
@@ -1254,7 +1253,7 @@ function renderPath(){
       const arrGroups = [...(IDX.byArrZg.get(K(D, targetZg))||[])];
       if(arrGroups.length > 0) targetG = arrGroups[0];
     } else {
-      box.innerHTML=`<span class="warn">⚠ Arrivée introuvable : « ${esc(qArr)} » (ni emplacement NE1, ni ZG connue).</span>`;
+      box.innerHTML=`<span class="warn"> Arrivée introuvable : « ${esc(qArr)} » (ni emplacement NE1, ni ZG connue).</span>`;
       return;
     }
   }
@@ -1262,34 +1261,52 @@ function renderPath(){
   console.log('Départ:', startLabel, 'Groupe:', startG);
   console.log('Arrivée:', targetLabel, 'ZG:', targetZg, 'Groupe:', targetG);
 
-  // --- RECHERCHE DES TAMPONS ---
-  let tams = [];
-  let intermediateGroup = null;
+  // --- BFS : TROUVER TOUS LES CHEMINS ---
+  const allPaths = [];
+  const MAX_DEPTH = 4;
 
-  if(startG && targetG){
-    // Essayer lien direct
-    const pairKey = K(D, startG, targetG);
-    tams = IDX.tam4.get(pairKey) || [];
-    console.log('Lien direct', startG, '→', targetG, ':', tams);
-
-    // Si pas de lien direct, chercher via groupe intermédiaire
-    if(tams.length === 0){
-      const nextGroups = [...(IDX.fluxDep.get(K(D, startG))||[])];
-      for(const midG of nextGroups){
-        const midKey = K(D, startG, midG);
-        const midTams = IDX.tam4.get(midKey) || [];
-        const finalKey = K(D, midG, targetG);
-        const finalTams = IDX.tam4.get(finalKey) || [];
-        
-        if(midTams.length > 0 && finalTams.length > 0){
-          tams = [...midTams, ...finalTams];
-          intermediateGroup = midG;
-          console.log('Via intermédiaire:', midG, 'tampons:', tams);
-          break;
-        }
+  function findPaths(currentGroup, targetGroup, depth, currentChain, visited){
+    if(depth > MAX_DEPTH) return;
+    
+    const nextGroups = [...(IDX.fluxDep.get(K(D, currentGroup))||[])];
+    
+    for(const nextGroup of nextGroups){
+      if(visited.has(nextGroup)) continue;
+      
+      const pairKey = K(D, currentGroup, nextGroup);
+      const tams = IDX.tam4.get(pairKey) || [];
+      
+      const newChain = [...currentChain, { from: currentGroup, to: nextGroup, tams }];
+      
+      if(nextGroup === targetGroup){
+        allPaths.push({ chain: newChain });
+      } else {
+        findPaths(nextGroup, targetGroup, depth+1, newChain, new Set([...visited, nextGroup]));
       }
     }
   }
+
+  if(startG && targetG){
+    findPaths(startG, targetG, 1, [], new Set([startG]));
+  }
+
+  console.log('Chemins trouvés:', allPaths.length);
+
+  if(allPaths.length === 0){
+    box.innerHTML = `<div style="padding:16px; background:var(--bg2); border-radius:10px; border:1px solid var(--line);">
+      <span class="warn">⚠ Aucun chemin trouvé entre ${esc(startLabel)} et ${esc(targetLabel)}.</span>
+    </div>`;
+    return;
+  }
+
+  // Trier par longueur (plus court d'abord) et prendre le premier
+  allPaths.sort((a, b) => a.chain.length - b.chain.length);
+  const bestPath = allPaths[0];
+
+  console.log('Meilleur chemin:', bestPath.chain.map(c => c.from+'→'+c.to).join(' | '));
+
+  // Collecter tous les tampons de la chaîne
+  const allTams = bestPath.chain.flatMap(c => c.tams);
 
   // --- TROUVER LES EMPLACEMENTS TAMPON F5 ---
   const targetEmpls = IDX.empl.get(K(D, targetZg)) || [];
@@ -1298,11 +1315,11 @@ function renderPath(){
   // --- AFFICHAGE ---
   let html = `
     <div style="margin-bottom:16px; padding:16px; background:var(--bg2); border-radius:10px; border:1px solid var(--line);">
-      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:stretch; gap:12px; flex-wrap:wrap;">
         
         <!-- DÉPART -->
         <div style="border-left: 3px solid var(--acc); padding-left: 12px; flex: 1; min-width: 200px;">
-          <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;">📍 Départ</div>
+          <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;"> Départ</div>
           <div style="font-size:16px; font-weight:600; margin: 4px 0;">${esc(startLabel)}</div>
           <div style="font-size:12px; color:var(--mut);">
             ${startZi ? `ZI: ${esc(LAB.zi.get(startZi)||startZi)} · ` : ''}
@@ -1312,14 +1329,22 @@ function renderPath(){
           </div>
         </div>
 
-        <!-- TAMPONS -->
-        <div style="text-align:center; flex: 1; min-width: 200px;">
-          <div style="color:var(--mut); font-size:11px; text-transform:uppercase; margin-bottom:8px;">⏳ Tampon(s) F4</div>
-          ${tams.length 
-            ? tams.map(t => `<div class="chip k-tam" style="margin:4px 0; font-size:13px;">⏳ ${esc(t)}</div>`).join('')
-            : '<span class="warn">Aucun tampon F4 défini</span>'
-          }
-          ${intermediateGroup ? `<div style="font-size:11px; color:var(--mut); margin-top:8px;">via ${esc(LAB.g.get(intermediateGroup)||intermediateGroup)}</div>` : ''}
+        <!-- FLÈCHE + TAMPONS -->
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex: 2; min-width: 300px; padding: 0 12px;">
+          <div style="color:var(--mut); font-size:11px; text-transform:uppercase; margin-bottom:8px;">⏳ Tampon(s) F4 (${bestPath.chain.length} étape${bestPath.chain.length > 1 ? 's' : ''})</div>
+          
+          ${bestPath.chain.map((step, i) => `
+            <div style="display:flex; align-items:center; gap:8px; margin:4px 0; width:100%;">
+              ${i > 0 ? '<span style="color:var(--mut); font-size:16px;">⇓</span>' : '<span style="color:var(--mut); font-size:16px;">⇒</span>'}
+              <div style="flex:1;">
+                ${step.tams.length 
+                  ? step.tams.map(t => `<span class="chip k-tam" style="margin:2px 0; font-size:12px;"> ${esc(t)}</span>`).join('')
+                  : '<span class="warn" style="font-size:11px;">sans tampon</span>'
+                }
+                ${i < bestPath.chain.length - 1 ? `<div style="font-size:10px; color:var(--mut); margin-top:2px;">via ${esc(LAB.g.get(step.to)||step.to)}</div>` : ''}
+              </div>
+            </div>
+          `).join('')}
         </div>
 
         <!-- ARRIVÉE -->
