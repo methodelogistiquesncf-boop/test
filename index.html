@@ -178,11 +178,26 @@ summary:hover{background:var(--hover)}
 @keyframes rot{to{transform:rotate(360deg)}}
 #loadingMsg{font-size:15px;font-weight:600}
 #loadingSub{font-size:12.5px;color:var(--mut);margin-top:6px}
+
+/* === CACHE UI === */
+#restoreBanner{
+  background:rgba(52,211,153,0.1);
+  border:1px dashed var(--ok);
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:14px;
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+}
+#restoreBanner .info{flex:1;min-width:220px}
+#restoreBanner b{color:var(--ok);display:block;margin-bottom:3px}
+#restoreBanner .mut{font-size:12.5px}
+#cacheInfo{font-size:11.5px;color:var(--mut);margin-top:6px}
+
 @media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}.file-chip{min-width:140px}}
 @media print{
   body{background:#fff!important;color:#000!important}
   body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
-  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header,#mapWrap .row,#mapTip,#mapSel,#matWrap .row,#matTypeChips{display:none!important}
+  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header,#mapWrap .row,#mapTip,#mapSel,#matWrap .row,#matTypeChips,#restoreBanner{display:none!important}
   .panel,.card,.fcard,.fbox,.chip{background:#fff!important;border-color:#999!important;color:#000!important}
   th{background:#eee!important;color:#000!important}
   tbody tr:nth-child(even){background:#f5f5f5!important}
@@ -214,10 +229,23 @@ summary:hover{background:var(--hover)}
 </header>
 
 <main>
+<!-- === Bannière de restauration depuis le cache === -->
+<section id="restoreBanner" class="panel" hidden>
+  <div class="info">
+    <b>💾 Fichiers précédents disponibles</b>
+    <div class="mut" id="restoreList">Des fichiers ont été conservés depuis votre dernière session.</div>
+    <div id="cacheInfo"></div>
+  </div>
+  <div class="row">
+    <button id="restoreBtn" class="fbtn" style="padding:7px 14px">⚡ Restaurer</button>
+    <button id="cacheClearBtn" class="fbtn" style="padding:7px 14px">🗑 Effacer le cache</button>
+  </div>
+</section>
+
 <section id="drop" class="panel">
   <div id="dropFull">
     <div class="expHead"><b>📂 Vos fichiers — chargement en masse</b><button id="dropHide" class="fbtn" title="Masquer la zone de chargement (reste accessible via le menu 📂)">Masquer ▲</button></div>
-    <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> ici, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom). L'ordre n'a aucune importance. Les 3 fichiers « matériel » (F6/F7/F8) sont optionnels.</span>
+    <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> ici, ou cliquez sur « Choisir les fichiers » (sélection multiple). Chaque fichier est reconnu automatiquement par son contenu (sinon par son nom). L'ordre n'a aucune importance. Les 3 fichiers « matériel » (F6/F7/F8) sont optionnels. <b>Les fichiers sont conservés en mémoire locale</b> et rechargés automatiquement après actualisation.</span>
     <div class="row" style="margin-top:10px">
       <label>Charger 1 à 8 fichiers Excel<input type="file" accept=".xlsx,.xls" multiple id="bulk"></label>
       <span class="mut" id="bulkState">Aucun fichier chargé</span>
@@ -370,6 +398,109 @@ const EMPL_NAME_SEP='';
 const frame=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 const closeMenus=()=>$$('.menu-item.open').forEach(x=>x.classList.remove('open'));
 
+/* ============================================================ */
+/* ============ CACHE IndexedDB (persistance entre sessions) ==== */
+/* ============================================================ */
+const CACHE_DB_NAME = 'explorateurCache';
+const CACHE_DB_VERSION = 1;
+const CACHE_STORE = 'files';
+let cacheDB = null;
+
+function openCacheDB() {
+  return new Promise((resolve, reject) => {
+    if (cacheDB) { resolve(cacheDB); return; }
+    try {
+      const req = indexedDB.open(CACHE_DB_NAME, CACHE_DB_VERSION);
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(CACHE_STORE)) {
+          d.createObjectStore(CACHE_STORE, { keyPath: 'name' });
+        }
+      };
+      req.onsuccess = e => { cacheDB = e.target.result; resolve(cacheDB); };
+      req.onerror = e => reject(e.target.error);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+async function cachePutFile(name, kind, buffer) {
+  try {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readwrite');
+      tx.objectStore(CACHE_STORE).put({
+        name,
+        kind,
+        buffer, // ArrayBuffer stocké nativement par IndexedDB
+        ts: Date.now()
+      });
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = e => reject(e.target.error);
+    });
+  } catch (err) {
+    console.warn('[cache] Impossible de sauvegarder', name, err);
+    return false;
+  }
+}
+
+async function cacheDeleteFile(name) {
+  try {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readwrite');
+      tx.objectStore(CACHE_STORE).delete(name);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = e => reject(e.target.error);
+    });
+  } catch (err) {
+    console.warn('[cache] Impossible de supprimer', name, err);
+    return false;
+  }
+}
+
+async function cacheGetAll() {
+  try {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readonly');
+      const req = tx.objectStore(CACHE_STORE).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = e => reject(e.target.error);
+    });
+  } catch (err) {
+    console.warn('[cache] Impossible de lire', err);
+    return [];
+  }
+}
+
+async function cacheClearAll() {
+  try {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readwrite');
+      tx.objectStore(CACHE_STORE).clear();
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = e => reject(e.target.error);
+    });
+  } catch (err) {
+    console.warn('[cache] Impossible de vider', err);
+    return false;
+  }
+}
+
+/* ================================================================= */
+/* === Fonctions pour charger depuis le cache (partagent le même pipeline) === */
+/* ================================================================= */
+// Un "fichier" pour processFiles peut être :
+//  - un File natif (avec .name, .arrayBuffer())
+//  - un objet issu du cache { name, kind, buffer (ArrayBuffer), ts }
+async function readBuffer(f) {
+  if (f.buffer instanceof ArrayBuffer) return f.buffer;
+  return await f.arrayBuffer();
+}
+
 /* ========== Reconnaissance des en-têtes ========== */
 const EXACT={depot:'depot',zi:'zi',ze:'ze',zg:'zg',zonegeo:'zg',zonegeoographique:'zg',
 libellezi:'libZI',libellecourtzi:'courtZI',libelleze:'libZE',libellezg:'libZg',
@@ -493,7 +624,9 @@ const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],
   simple:localStorage.getItem('zgMode')!=='expert',
   theme:localStorage.getItem('zgTheme')||'dark',
   fsz:localStorage.getItem('zgFs')||'0',
-  loadedFiles:[],pendingFiles:[]};
+  loadedFiles:[],pendingFiles:[],
+  cachedFiles:[]  // === NOUVEAU : liste des fichiers en cache ===
+  };
 const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),
   tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map(),fluxDepZg:new Map(),
   matByType:new Map(),matByZi:new Map(),supByType:new Map(),typesBySup:new Map()};
@@ -644,7 +777,12 @@ function showLoad(msg,sub){
 }
 function hideLoad(){$('#loading').hidden=true;}
 
-async function loadFiles(files){
+/* ===================================================================== */
+/* === Fonction unifiée de chargement (fichiers neufs OU depuis cache) === */
+/* ===================================================================== */
+// Chaque entrée de `files` doit avoir : .name et pouvoir fournir un ArrayBuffer
+// via .arrayBuffer() (File) ou via .buffer (objet issu du cache).
+async function processFiles(files){
   if(!files||!files.length||S.loading)return;
   S.loading=true;
   S.loadedFiles = [];
@@ -664,20 +802,23 @@ async function loadFiles(files){
     showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'Ouverture et reconnaissance des colonnes…');
     await frame();
     try{
-      const buf=await f.arrayBuffer();
+      const buf = await readBuffer(f);
       const wb=XLSX.read(buf,{type:'array'});
       let rows=[];wb.SheetNames.forEach(sn=>{rows=rows.concat(parseSheet(wb.Sheets[sn],f.name,sn));});
       const kind=detectKind(rows)||detectByName(f.name);
       
-      // Retirer ce fichier de la liste "en attente"
       S.pendingFiles = S.pendingFiles.filter(p => p.name !== f.name);
       
       if(!kind){
         addLoadedFile(f.name, null, 'error');
+        // Ne pas garder un fichier non reconnu dans le cache
+        cacheDeleteFile(f.name);
         alert('Fichier non reconnu : '+f.name);
       } else {
         store(kind,rows,f.name);
         addLoadedFile(f.name, kind, 'done');
+        // === NOUVEAU : mise en cache du fichier ===
+        await cachePutFile(f.name, kind, buf);
         showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+fmt(rows.length)+' lignes reconnues → '+LABELS[kind]);
         renderFileStatus();
       }
@@ -688,6 +829,7 @@ async function loadFiles(files){
     }catch(err){
       S.pendingFiles = S.pendingFiles.filter(p => p.name !== f.name);
       addLoadedFile(f.name, null, 'error');
+      cacheDeleteFile(f.name);
       done++;
       updateProgress(done, files.length);
       alert('Erreur de lecture '+f.name+' : '+err.message);
@@ -704,8 +846,28 @@ async function loadFiles(files){
       :'<span class="warn">Aucun fichier reconnu</span>';
   }finally{
     hideLoad();S.loading=false;S.hasSession=true;renderFileStatus();
+    // Masquer la bannière de restauration puisqu'on vient de charger
+    renderRestoreBanner();
   }
 }
+
+// Charge depuis des File natifs (sélection utilisateur / drag&drop)
+async function loadFiles(files){
+  return processFiles([...files]);
+}
+
+// === NOUVEAU : charge depuis le cache IndexedDB ===
+async function restoreFromCache() {
+  const cached = await cacheGetAll();
+  if (!cached.length) {
+    renderRestoreBanner();
+    return;
+  }
+  S.cachedFiles = cached;
+  // Lancer le même pipeline
+  return processFiles(cached);
+}
+
 function buildModel(){
   Object.values(IDX).forEach(m=>m.clear());
   S.raw.depart.forEach(r=>{
@@ -1016,9 +1178,14 @@ function renderHome(){
   if(S.tab!=='accueil'){box.hidden=true;box.innerHTML='';return;}
   box.hidden=false;
   if(!has){
+    // === NOUVEAU : bouton de restauration dans l'accueil si cache existe ===
+    const cachedInfo = S.cachedFiles.length 
+      ? `<button class="homeCard" data-home="restore" style="border-color:var(--ok)"><b>💾 Restaurer la session précédente</b><small>${S.cachedFiles.length} fichier(s) en mémoire locale — rechargement instantané.</small></button>`
+      : '';
     box.innerHTML=`<b>👋 Bienvenue — démarrez en 3 étapes</b>
       <div class="homeGrid" style="margin-top:12px">
-        <button class="homeCard" data-home="load"><b>1 · Charger vos fichiers</b><small>Cliquez ici (ou glissez-déposez) pour sélectionner vos classeurs Excel d'un coup (5 flux + 3 matériel optionnels). Rien n'est envoyé sur Internet.</small></button>
+        <button class="homeCard" data-home="load"><b>1 · Charger vos fichiers</b><small>Cliquez ici (ou glissez-déposez) pour sélectionner vos classeurs Excel d'un coup (5 flux + 3 matériel optionnels). Rien n'est envoyé sur Internet. Les fichiers sont conservés localement.</small></button>
+        ${cachedInfo}
         <button class="homeCard" data-home="arbre"><b>2 · Explorer</b><small>Parcourez l'arborescence ZI → ZE → Groupe → ZG, cherchez un emplacement, calculez des chemins.</small></button>
         <button class="homeCard" data-home="ecart"><b>3 · Vérifier & exporter</b><small>Consultez les écarts détectés entre fichiers, puis exportez le résultat en CSV ou PDF.</small></button>
       </div>`;
@@ -1472,9 +1639,11 @@ function renderMenu(){
   const mi=(k,lab)=>`<button data-go="${k}" class="${S.tab===k?'on':''}">${lab}${cnt(k)}</button>`;
   const dd=(id,icon,lab,cur,items)=>`<div class="menu-item${cur?' cur':''}" data-menu="${id}" tabindex="0">${icon} ${lab} ▾<div class="menu-dropdown">${items}</div></div>`;
   const has=Object.keys(S.files).length;
+  // === NOUVEAU : indicateur de cache dans le badge Chargement ===
+  const cachedBadge = S.cachedFiles.length && !has ? `<span class="mbadge ok" title="Fichiers précédents en mémoire">💾</span>` : '';
   $('#menuBar').innerHTML=
     `<button class="menu-item${S.tab==='accueil'?' active':''}" data-go="accueil">🏠 Accueil</button>`+
-    `<button class="menu-item" id="menuChargement" title="Afficher / masquer la zone de chargement — ${esc(loadStatusText())}">📂 Chargement <span class="mbadge ${has?'ok':'warn'}">${has}/8</span></button>`+
+    `<button class="menu-item" id="menuChargement" title="Afficher / masquer la zone de chargement — ${esc(loadStatusText())}">📂 Chargement <span class="mbadge ${has?'ok':'warn'}">${has}/8</span>${cachedBadge}</button>`+
     dd('explorer','📊','Explorer',['flux','empl','arbre','chemin','carte'].includes(S.tab),
        mi('flux','📦 Flux enrichis')+mi('empl','📍 Emplacements · F5')+mi('arbre','🌳 Arborescence')+mi('chemin','🧭 Chemins')+mi('carte','🗺 Carte / plan'))+
     dd('mat','🚜','Matériel',['materiel','mattype'].includes(S.tab),
@@ -1486,7 +1655,7 @@ function renderMenu(){
     dd('autre','⚙️','Autre',false,
        `<button data-act="export">📥 Exporter CSV</button>
         <button data-act="reset">🔄 Réinitialiser les filtres</button>
-        <button data-act="clear">🗑 Vider les fichiers</button>
+        <button data-act="clear">🗑 Vider les fichiers (et le cache)</button>
         <button data-act="print">🖨 Imprimer / PDF</button>
         <div class="menu-sep"></div>
         <button data-act="theme">${S.theme==='light'?'🌙 Passer en sombre':'☀️ Passer en clair'}</button>
@@ -1577,6 +1746,24 @@ function renderControls(){
     }).join('')+'</div>').join('')
     :'<div class="card">Aucun écart détecté sur les fichiers chargés. 🎉</div>';
 }
+
+/* === NOUVEAU : bannière de restauration depuis le cache === */
+function renderRestoreBanner() {
+  const banner = $('#restoreBanner');
+  if (!banner) return;
+  const hasLoaded = Object.keys(S.files).length > 0;
+  // Afficher la bannière si : il y a des fichiers en cache ET aucun fichier n'est encore chargé
+  if (S.cachedFiles.length && !hasLoaded) {
+    const names = S.cachedFiles.map(f => f.name).join(', ');
+    const totalMB = S.cachedFiles.reduce((s, f) => s + (f.buffer ? f.buffer.byteLength : 0), 0) / (1024*1024);
+    $('#restoreList').innerHTML = `<b>${S.cachedFiles.length} fichier(s)</b> de votre dernière session sont en mémoire locale : <span class="mut">${esc(names)}</span>`;
+    $('#cacheInfo').textContent = `Total : ${totalMB.toFixed(1)} Mo conservés dans votre navigateur.`;
+    banner.hidden = false;
+  } else {
+    banner.hidden = true;
+  }
+}
+
 function render(){
   const valid=new Set(cols().filter(c=>c.dim).map(c=>c.k));
   Object.keys(S.filters).forEach(k=>{if(!valid.has(k))delete S.filters[k];});
@@ -1586,6 +1773,7 @@ function render(){
   $('#dropMini').hidden=showFull;
   $('#dropHide').hidden=!hasFiles;
   if(!showFull)$('#miniState').innerHTML=loadStatusHTML();
+  renderRestoreBanner(); // === NOUVEAU
   renderMenu();renderStats();renderHome();renderFilters();renderControls();renderFiche();renderFileStatus();
   renderFileChips($('#fileListInline'));
   const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte',isMat=S.tab==='mattype';
@@ -1619,7 +1807,7 @@ function exportCSV(){
   const a=document.createElement('a');a.href=url;a.download='recoupement-'+S.tab+'.csv';a.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-function clearAll(){
+async function clearAll(){
   S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};S.files={};S.stats={};S.exclRows=[];S.fiche=null;S.path=null;
   S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';S.tab='accueil';S.showDrop=true;S.hasSession=false;
   S.posCount=0;S.mapSel=null;S.map.mag='';S.mat={type:'',qsup:'',supFilter:'',supLimit:120};
@@ -1627,6 +1815,9 @@ function clearAll(){
   S.loadedFiles=[];S.pendingFiles=[];
   $('#bulk').value='';$('#bulkState').textContent='Aucun fichier chargé';
   $('#explorer').hidden=true;
+  // === NOUVEAU : vider aussi le cache IndexedDB ===
+  await cacheClearAll();
+  S.cachedFiles = [];
   renderFileChips($('#fileListInline'));
   buildModel();render();
 }
@@ -1678,7 +1869,7 @@ document.addEventListener('click',e=>{
     const a=b.dataset.act;closeMenus();
     if(a==='export')exportCSV();
     else if(a==='reset'){S.filters={};S.q='';$('#q').value='';S.limit=200;render();}
-    else if(a==='clear'){if(confirm('Vider tous les fichiers chargés ?'))clearAll();}
+    else if(a==='clear'){if(confirm('Vider tous les fichiers chargés ET le cache local ?'))clearAll();}
     else if(a==='print'){window.print();}
     else if(a==='theme'){S.theme=S.theme==='light'?'dark':'light';localStorage.setItem('zgTheme',S.theme);applyTheme();renderMenu();}
     else if(a==='fsz'){S.fsz=String(((+S.fsz||0)+1)%3);localStorage.setItem('zgFs',S.fsz);applyTheme();renderMenu();}
@@ -1689,6 +1880,7 @@ document.addEventListener('click',e=>{
   if(b.dataset.home){
     const h=b.dataset.home;
     if(h==='load'){$('#bulk').click();return;}
+    if(h==='restore'){restoreFromCache();return;} // === NOUVEAU
     if(h==='search'){S.tab='flux';render();setTimeout(()=>$('#q').focus(),50);return;}
     S.tab=h;render();return;
   }
@@ -1709,6 +1901,18 @@ document.addEventListener('click',e=>{
   if(b.dataset.ctrl){
     S.tab=b.dataset.tab;S.filters=JSON.parse(b.dataset.filters);S.q='';$('#q').value='';S.limit=200;render();
     $('#tableWrap').scrollIntoView({behavior:'smooth'});return;
+  }
+  // === NOUVEAU : boutons de la bannière de restauration ===
+  if(b.id==='restoreBtn'){restoreFromCache();return;}
+  if(b.id==='cacheClearBtn'){
+    if(confirm('Effacer les fichiers du cache local ? Vous devrez recharger vos fichiers à la prochaine visite.')){
+      cacheClearAll().then(() => {
+        S.cachedFiles = [];
+        renderRestoreBanner();
+        render();
+      });
+    }
+    return;
   }
 });
 document.addEventListener('dblclick',e=>{
@@ -1795,6 +1999,19 @@ if(typeof XLSX==='undefined'){
 applyTheme();
 setMode(S.simple);
 buildModel();render();
+
+/* === NOUVEAU : au chargement de la page, initialiser IndexedDB et vérifier le cache === */
+(async () => {
+  try {
+    await openCacheDB();
+    S.cachedFiles = await cacheGetAll();
+    renderRestoreBanner();
+    render();
+  } catch (err) {
+    console.warn('[cache] IndexedDB indisponible :', err);
+    // Fallback : pas de cache possible (mode privé, navigateur ancien...)
+  }
+})();
 </script>
 </body>
 </html>
