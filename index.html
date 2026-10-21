@@ -52,7 +52,6 @@ input[type=checkbox]{width:auto;accent-color:var(--acc)}
 .spinmini{width:11px;height:11px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;display:inline-block;animation:rot 1s linear infinite;flex:none}
 #loadList{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px;max-width:560px}
 
-/* ===== SUIVI PAR FICHIER INDIVIDUEL ===== */
 .file-chip{
   display:inline-flex;align-items:center;gap:8px;
   padding:8px 14px;margin:3px;
@@ -62,56 +61,23 @@ input[type=checkbox]{width:auto;accent-color:var(--acc)}
   transition:all 0.4s cubic-bezier(.4,0,.2,1);
   min-width:200px;max-width:340px;
 }
-.file-chip .fname{
-  flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.file-chip .fkind{
-  font-size:10.5px;color:var(--mut);
-  padding:2px 7px;border-radius:8px;
-  background:var(--hover);
-  white-space:nowrap;font-weight:600;
-}
-.file-chip.done{
-  border-color:var(--ok);
-  background:rgba(52,211,153,0.12);
-  animation:slideIn 0.4s ease;
-}
+.file-chip .fname{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-chip .fkind{font-size:10.5px;color:var(--mut);padding:2px 7px;border-radius:8px;background:var(--hover);white-space:nowrap;font-weight:600;}
+.file-chip.done{border-color:var(--ok);background:rgba(52,211,153,0.12);animation:slideIn 0.4s ease;}
 .file-chip.done .ic{color:var(--ok);font-size:18px;font-weight:900}
-.file-chip.wait{
-  border-color:var(--acc);
-  background:rgba(56,189,248,0.1);
-}
+.file-chip.wait{border-color:var(--acc);background:rgba(56,189,248,0.1);}
 .file-chip.wait .ic{color:var(--acc)}
-.file-chip.error{
-  border-color:var(--warn);
-  background:rgba(251,191,36,0.12);
-}
+.file-chip.error{border-color:var(--warn);background:rgba(251,191,36,0.12);}
 .file-chip.error .ic{color:var(--warn)}
-@keyframes slideIn{
-  0%{opacity:0;transform:translateY(-6px) scale(0.95)}
-  100%{opacity:1;transform:translateY(0) scale(1)}
-}
-#fileList, #fileListInline{
-  display:flex;flex-wrap:wrap;gap:4px;
-  margin-top:14px;max-width:100%;
-}
-.progress-bar{
-  width:100%;max-width:560px;height:6px;
-  background:var(--hover);border-radius:3px;
-  margin:10px 0;overflow:hidden;
-}
-.progress-bar .fill{
-  height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));
-  transition:width 0.4s ease;
-  border-radius:3px;
-}
+@keyframes slideIn{0%{opacity:0;transform:translateY(-6px) scale(0.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+#fileList, #fileListInline{display:flex;flex-wrap:wrap;gap:4px;margin-top:14px;max-width:100%;}
+.progress-bar{width:100%;max-width:560px;height:6px;background:var(--hover);border-radius:3px;margin:10px 0;overflow:hidden;}
+.progress-bar .fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));transition:width 0.4s ease;border-radius:3px;}
 #loadProgress{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut)}
 
 #drop{border-style:dashed}
 #drop.over{border-color:var(--acc);background:var(--hover)}
 #dropFull .expHead{position:static;background:none}
-#dropMini{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13px;padding:2px 0}
-#dropMini .fbtn{font-size:12px;padding:4px 10px}
 
 #mapBox{position:relative;height:62vh;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg2)}
 #mapCv{position:absolute;inset:0;display:block}
@@ -179,7 +145,6 @@ summary:hover{background:var(--hover)}
 #loadingMsg{font-size:15px;font-weight:600}
 #loadingSub{font-size:12.5px;color:var(--mut);margin-top:6px}
 
-/* === CACHE UI === */
 #restoreBanner{
   background:rgba(52,211,153,0.1);
   border:1px dashed var(--ok);
@@ -229,7 +194,6 @@ summary:hover{background:var(--hover)}
 </header>
 
 <main>
-<!-- === Bannière de restauration depuis le cache === -->
 <section id="restoreBanner" class="panel" hidden>
   <div class="info">
     <b>💾 Fichiers précédents disponibles</b>
@@ -250,11 +214,6 @@ summary:hover{background:var(--hover)}
       <label>Charger 1 à 8 fichiers Excel<input type="file" accept=".xlsx,.xls" multiple id="bulk"></label>
       <span class="mut" id="bulkState">Aucun fichier chargé</span>
     </div>
-  </div>
-  <div id="dropMini" hidden>
-    <span id="miniState"></span>
-    <button id="dropShow" class="fbtn" title="Ré-afficher la zone de chargement complète">📂 Afficher / modifier les fichiers</button>
-    <span class="mut">(vous pouvez aussi glisser-déposer de nouveaux fichiers directement ici)</span>
   </div>
   <div id="fileStatus" class="fstatusrow"></div>
   <div id="fileListInline" class="fstatusrow"></div>
@@ -399,7 +358,7 @@ const frame=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 const closeMenus=()=>$$('.menu-item.open').forEach(x=>x.classList.remove('open'));
 
 /* ============================================================ */
-/* ============ CACHE IndexedDB (persistance entre sessions) ==== */
+/* ============ CACHE IndexedDB ================================= */
 /* ============================================================ */
 const CACHE_DB_NAME = 'explorateurCache';
 const CACHE_DB_VERSION = 1;
@@ -431,10 +390,7 @@ async function cachePutFile(name, kind, buffer) {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(CACHE_STORE, 'readwrite');
       tx.objectStore(CACHE_STORE).put({
-        name,
-        kind,
-        buffer, // ArrayBuffer stocké nativement par IndexedDB
-        ts: Date.now()
+        name, kind, buffer, ts: Date.now()
       });
       tx.oncomplete = () => resolve(true);
       tx.onerror = e => reject(e.target.error);
@@ -490,12 +446,6 @@ async function cacheClearAll() {
   }
 }
 
-/* ================================================================= */
-/* === Fonctions pour charger depuis le cache (partagent le même pipeline) === */
-/* ================================================================= */
-// Un "fichier" pour processFiles peut être :
-//  - un File natif (avec .name, .arrayBuffer())
-//  - un objet issu du cache { name, kind, buffer (ArrayBuffer), ts }
 async function readBuffer(f) {
   if (f.buffer instanceof ArrayBuffer) return f.buffer;
   return await f.arrayBuffer();
@@ -625,8 +575,7 @@ const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],
   theme:localStorage.getItem('zgTheme')||'dark',
   fsz:localStorage.getItem('zgFs')||'0',
   loadedFiles:[],pendingFiles:[],
-  cachedFiles:[]  // === NOUVEAU : liste des fichiers en cache ===
-  };
+  cachedFiles:[]};
 const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),
   tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map(),fluxDepZg:new Map(),
   matByType:new Map(),matByZi:new Map(),supByType:new Map(),typesBySup:new Map()};
@@ -703,7 +652,6 @@ function renderFileStatus(){
   const ll=$('#loadList');if(ll)ll.innerHTML=html;
 }
 
-/* ===== Chips par fichier individuel ===== */
 function renderFileChips(container){
   if(!container) return;
   const html = [...S.pendingFiles, ...S.loadedFiles].map(f => {
@@ -777,11 +725,6 @@ function showLoad(msg,sub){
 }
 function hideLoad(){$('#loading').hidden=true;}
 
-/* ===================================================================== */
-/* === Fonction unifiée de chargement (fichiers neufs OU depuis cache) === */
-/* ===================================================================== */
-// Chaque entrée de `files` doit avoir : .name et pouvoir fournir un ArrayBuffer
-// via .arrayBuffer() (File) ou via .buffer (objet issu du cache).
 async function processFiles(files){
   if(!files||!files.length||S.loading)return;
   S.loading=true;
@@ -811,13 +754,11 @@ async function processFiles(files){
       
       if(!kind){
         addLoadedFile(f.name, null, 'error');
-        // Ne pas garder un fichier non reconnu dans le cache
         cacheDeleteFile(f.name);
         alert('Fichier non reconnu : '+f.name);
       } else {
         store(kind,rows,f.name);
         addLoadedFile(f.name, kind, 'done');
-        // === NOUVEAU : mise en cache du fichier ===
         await cachePutFile(f.name, kind, buf);
         showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+fmt(rows.length)+' lignes reconnues → '+LABELS[kind]);
         renderFileStatus();
@@ -839,24 +780,22 @@ async function processFiles(files){
   await frame();
   try{
     buildModel();
-    if(done)S.showDrop=false;
+    // === Une fois chargé, on masque automatiquement la zone de chargement ===
+    if(done) S.showDrop = false;
     render();
     $('#bulkState').innerHTML=done
       ?`<span class="ok">✓ ${done} fichier(s) chargé(s)</span> : ${S.loadedFiles.filter(f=>f.kind).map(f=>LABELS[f.kind]).join(', ')}`
       :'<span class="warn">Aucun fichier reconnu</span>';
   }finally{
     hideLoad();S.loading=false;S.hasSession=true;renderFileStatus();
-    // Masquer la bannière de restauration puisqu'on vient de charger
     renderRestoreBanner();
   }
 }
 
-// Charge depuis des File natifs (sélection utilisateur / drag&drop)
 async function loadFiles(files){
   return processFiles([...files]);
 }
 
-// === NOUVEAU : charge depuis le cache IndexedDB ===
 async function restoreFromCache() {
   const cached = await cacheGetAll();
   if (!cached.length) {
@@ -864,7 +803,6 @@ async function restoreFromCache() {
     return;
   }
   S.cachedFiles = cached;
-  // Lancer le même pipeline
   return processFiles(cached);
 }
 
@@ -1178,7 +1116,6 @@ function renderHome(){
   if(S.tab!=='accueil'){box.hidden=true;box.innerHTML='';return;}
   box.hidden=false;
   if(!has){
-    // === NOUVEAU : bouton de restauration dans l'accueil si cache existe ===
     const cachedInfo = S.cachedFiles.length 
       ? `<button class="homeCard" data-home="restore" style="border-color:var(--ok)"><b>💾 Restaurer la session précédente</b><small>${S.cachedFiles.length} fichier(s) en mémoire locale — rechargement instantané.</small></button>`
       : '';
@@ -1639,7 +1576,6 @@ function renderMenu(){
   const mi=(k,lab)=>`<button data-go="${k}" class="${S.tab===k?'on':''}">${lab}${cnt(k)}</button>`;
   const dd=(id,icon,lab,cur,items)=>`<div class="menu-item${cur?' cur':''}" data-menu="${id}" tabindex="0">${icon} ${lab} ▾<div class="menu-dropdown">${items}</div></div>`;
   const has=Object.keys(S.files).length;
-  // === NOUVEAU : indicateur de cache dans le badge Chargement ===
   const cachedBadge = S.cachedFiles.length && !has ? `<span class="mbadge ok" title="Fichiers précédents en mémoire">💾</span>` : '';
   $('#menuBar').innerHTML=
     `<button class="menu-item${S.tab==='accueil'?' active':''}" data-go="accueil">🏠 Accueil</button>`+
@@ -1747,33 +1683,35 @@ function renderControls(){
     :'<div class="card">Aucun écart détecté sur les fichiers chargés. 🎉</div>';
 }
 
-/* === NOUVEAU : bannière de restauration depuis le cache === */
+/* === Bannière de restauration === */
 function renderRestoreBanner() {
   const banner = $('#restoreBanner');
   if (!banner) return;
   const hasLoaded = Object.keys(S.files).length > 0;
-  // Afficher la bannière si : il y a des fichiers en cache ET aucun fichier n'est encore chargé
-  if (S.cachedFiles.length && !hasLoaded) {
-    const names = S.cachedFiles.map(f => f.name).join(', ');
-    const totalMB = S.cachedFiles.reduce((s, f) => s + (f.buffer ? f.buffer.byteLength : 0), 0) / (1024*1024);
-    $('#restoreList').innerHTML = `<b>${S.cachedFiles.length} fichier(s)</b> de votre dernière session sont en mémoire locale : <span class="mut">${esc(names)}</span>`;
-    $('#cacheInfo').textContent = `Total : ${totalMB.toFixed(1)} Mo conservés dans votre navigateur.`;
-    banner.hidden = false;
-  } else {
-    banner.hidden = true;
-  }
+  const show = S.cachedFiles.length > 0 && !hasLoaded && !S.loading;
+  banner.hidden = !show;
+  if (!show) return;
+  const names = S.cachedFiles.map(f => f.name).join(', ');
+  const totalMB = S.cachedFiles.reduce((s, f) => s + (f.buffer ? f.buffer.byteLength : 0), 0) / (1024*1024);
+  $('#restoreList').innerHTML = `<b>${S.cachedFiles.length} fichier(s)</b> de votre dernière session sont en mémoire locale : <span class="mut">${esc(names)}</span>`;
+  $('#cacheInfo').textContent = `Total : ${totalMB.toFixed(1)} Mo conservés dans votre navigateur.`;
 }
 
 function render(){
   const valid=new Set(cols().filter(c=>c.dim).map(c=>c.k));
   Object.keys(S.filters).forEach(k=>{if(!valid.has(k))delete S.filters[k];});
   const hasFiles=Object.keys(S.files).length>0;
-  const showFull=!hasFiles||S.showDrop;
-  $('#dropFull').hidden=!showFull;
-  $('#dropMini').hidden=showFull;
-  $('#dropHide').hidden=!hasFiles;
-  if(!showFull)$('#miniState').innerHTML=loadStatusHTML();
-  renderRestoreBanner(); // === NOUVEAU
+  
+  // === Masquage complet de la zone de chargement une fois les fichiers chargés ===
+  // Le panneau #drop n'est visible que :
+  //   - si aucun fichier n'est chargé (première visite)
+  //   - OU si l'utilisateur a cliqué sur "📂 Chargement" dans le menu (S.showDrop)
+  //   - ET pas pendant le chargement (S.loading)
+  const showLoadUI = (!hasFiles || S.showDrop) && !S.loading;
+  $('#drop').hidden = !showLoadUI;
+  $('#dropHide').hidden = !hasFiles;
+  
+  renderRestoreBanner();
   renderMenu();renderStats();renderHome();renderFilters();renderControls();renderFiche();renderFileStatus();
   renderFileChips($('#fileListInline'));
   const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte',isMat=S.tab==='mattype';
@@ -1815,7 +1753,6 @@ async function clearAll(){
   S.loadedFiles=[];S.pendingFiles=[];
   $('#bulk').value='';$('#bulkState').textContent='Aucun fichier chargé';
   $('#explorer').hidden=true;
-  // === NOUVEAU : vider aussi le cache IndexedDB ===
   await cacheClearAll();
   S.cachedFiles = [];
   renderFileChips($('#fileListInline'));
@@ -1857,7 +1794,6 @@ document.addEventListener('click',e=>{
   if(b.id==='matSupMore'){S.mat.supLimit+=240;renderMatSupChips();return;}
   if(b.dataset.gomat){S.tab='materiel';S.filters={typeMat:b.dataset.gomat};S.q='';$('#q').value='';S.limit=200;render();$('#tableWrap').scrollIntoView({behavior:'smooth'});return;}
   if(b.id==='dropHide'){S.showDrop=false;render();return;}
-  if(b.id==='dropShow'){S.showDrop=true;render();$('#drop').scrollIntoView({behavior:'smooth',block:'nearest'});return;}
   if(b.id==='menuChargement'){
     const hasF=Object.keys(S.files).length>0;
     if(!hasF){S.showDrop=true;render();$('#drop').scrollIntoView({behavior:'smooth',block:'center'});return;}
@@ -1880,7 +1816,7 @@ document.addEventListener('click',e=>{
   if(b.dataset.home){
     const h=b.dataset.home;
     if(h==='load'){$('#bulk').click();return;}
-    if(h==='restore'){restoreFromCache();return;} // === NOUVEAU
+    if(h==='restore'){restoreFromCache();return;}
     if(h==='search'){S.tab='flux';render();setTimeout(()=>$('#q').focus(),50);return;}
     S.tab=h;render();return;
   }
@@ -1902,7 +1838,6 @@ document.addEventListener('click',e=>{
     S.tab=b.dataset.tab;S.filters=JSON.parse(b.dataset.filters);S.q='';$('#q').value='';S.limit=200;render();
     $('#tableWrap').scrollIntoView({behavior:'smooth'});return;
   }
-  // === NOUVEAU : boutons de la bannière de restauration ===
   if(b.id==='restoreBtn'){restoreFromCache();return;}
   if(b.id==='cacheClearBtn'){
     if(confirm('Effacer les fichiers du cache local ? Vous devrez recharger vos fichiers à la prochaine visite.')){
@@ -1942,6 +1877,20 @@ const dz=$('#drop');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
 dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');loadFiles([...e.dataTransfer.files]);});
+
+// === Glisser-déposer global : fonctionne même quand la zone #drop est masquée ===
+document.addEventListener('dragover',e=>{
+  if($('#drop').hidden && e.dataTransfer && [...(e.dataTransfer.types||[])].includes('Files')) {
+    e.preventDefault();
+  }
+});
+document.addEventListener('drop',e=>{
+  if(e.target.closest('#drop')) return;
+  if($('#drop').hidden && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length){
+    e.preventDefault();
+    loadFiles([...e.dataTransfer.files]);
+  }
+});
 
 $('#mapMag').addEventListener('change',e=>{S.map.mag=e.target.value;S.map.hl='';renderMapControls();drawMap();renderTamList();});
 $('#mapMode').addEventListener('change',e=>{S.map.mode=e.target.value;drawMap();});
@@ -2000,7 +1949,6 @@ applyTheme();
 setMode(S.simple);
 buildModel();render();
 
-/* === NOUVEAU : au chargement de la page, initialiser IndexedDB et vérifier le cache === */
 (async () => {
   try {
     await openCacheDB();
@@ -2009,7 +1957,6 @@ buildModel();render();
     render();
   } catch (err) {
     console.warn('[cache] IndexedDB indisponible :', err);
-    // Fallback : pas de cache possible (mode privé, navigateur ancien...)
   }
 })();
 </script>
