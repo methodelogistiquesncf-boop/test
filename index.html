@@ -1212,19 +1212,38 @@ function renderPath(){
   fillPathList(q || qArr);
   if(!q){box.innerHTML='<span class="mut">Saisissez un nom d\'emplacement (ex. <code>M2_LC006N4E1</code>), un numéro (ex. <code>2 416</code>) ou un code ZG (ex. <code>ZGMAG3</code>), choisissez le sens, puis « Calculer les chemins ». Le bouton 🧭 de l\'onglet Emplacements remplit aussi cette recherche.</span>';return;}
   
-  let startZg=null,startLabel='';
+  let startZg=null,startLabel='',startEmpl=null,startZi='',startZe='';
   const nq=N(q);
   const em=S.empl.find(r=>N(r.nomEmpl)===nq)||S.empl.find(r=>N(String(r.numEmpl||''))===nq);
-  if(em){startZg=em.zg;startLabel=`${em.nomEmpl} · ZG ${em.zg}${LAB.zg.get(em.zg)?' ('+LAB.zg.get(em.zg)+')':''}`;}
-  else if(IDX.empl.has(K(D,q))||IDX.ref.has(K(D,q))){startZg=q;startLabel=`ZG ${q}${LAB.zg.get(q)?' ('+LAB.zg.get(q)+')':''}`;}
+  if(em){
+    startZg=em.zg;
+    startEmpl=em;
+    startLabel=`${em.nomEmpl} · ZG ${em.zg}${LAB.zg.get(em.zg)?' ('+LAB.zg.get(em.zg)+')':''}`;
+    // Trouver ZI et ZE depuis F1
+    const depRow=S.raw.depart.find(r=>r.zgDep===em.zg && r.gdep);
+    if(depRow){startZi=depRow.zi||''; startZe=depRow.ze||'';}
+  }
+  else if(IDX.empl.has(K(D,q))||IDX.ref.has(K(D,q))){
+    startZg=q;
+    startLabel=`ZG ${q}${LAB.zg.get(q)?' ('+LAB.zg.get(q)+')':''}`;
+  }
   else{box.innerHTML=`<span class="warn">⚠ Introuvable : « ${esc(q)} » (ni emplacement NE1, ni ZG connue).</span>`;return;}
 
-  let targetZg=null, targetLabel='';
+  let targetZg=null, targetLabel='',targetEmpl=null,targetZi='',targetZe='';
   if(qArr){
     const nqArr=N(qArr);
     const emArr=S.empl.find(r=>N(r.nomEmpl)===nqArr)||S.empl.find(r=>N(String(r.numEmpl||''))===nqArr);
-    if(emArr){targetZg=emArr.zg;targetLabel=`${emArr.nomEmpl} · ZG ${emArr.zg}${LAB.zg.get(emArr.zg)?' ('+LAB.zg.get(emArr.zg)+')':''}`;}
-    else if(IDX.empl.has(K(D,qArr))||IDX.ref.has(K(D,qArr))){targetZg=qArr;targetLabel=`ZG ${qArr}${LAB.zg.get(qArr)?' ('+LAB.zg.get(qArr)+')':''}`;}
+    if(emArr){
+      targetZg=emArr.zg;
+      targetEmpl=emArr;
+      targetLabel=`${emArr.nomEmpl} · ZG ${emArr.zg}${LAB.zg.get(emArr.zg)?' ('+LAB.zg.get(emArr.zg)+')':''}`;
+      const depRowArr=S.raw.depart.find(r=>r.zgDep===emArr.zg && r.gdep);
+      if(depRowArr){targetZi=depRowArr.zi||''; targetZe=depRowArr.ze||'';}
+    }
+    else if(IDX.empl.has(K(D,qArr))||IDX.ref.has(K(D,qArr))){
+      targetZg=qArr;
+      targetLabel=`ZG ${qArr}${LAB.zg.get(qArr)?' ('+LAB.zg.get(qArr)+')':''}`;
+    }
     else{box.innerHTML=`<span class="warn">⚠ Arrivée introuvable : « ${esc(qArr)} » (ni emplacement NE1, ni ZG connue).</span>`;return;}
   }
 
@@ -1246,6 +1265,113 @@ function renderPath(){
       paths.push({g,t,tams,zgs,emCount});
     });
   });
+
+  if(paths.length===0){
+    box.innerHTML=`<b>${esc(startLabel)}</b> ${targetZg ? `vers <b>${esc(targetLabel)}</b>` : ''} : <span class="warn">Aucun chemin trouvé correspondant à ces critères.</span>`;
+    return;
+  }
+
+  const noTam=paths.filter(p=>!p.tams.length).length;
+  const totEm=paths.reduce((s,p)=>s+p.emCount,0);
+  const destText = targetZg ? `vers <b>${esc(targetLabel)}</b>` : '';
+  
+  // Construction du header avec détails complets
+  let startDetailsHtml = `<b>${esc(startEmpl?startEmpl.nomEmpl:startLabel)}</b>`;
+  if(startEmpl || (startZi && startZe)){
+    startDetailsHtml += `<br><small class="mut">`;
+    if(startZi) startDetailsHtml += `ZI ${esc(LAB.zi.get(startZi)||startZi)} · `;
+    if(startZe) startDetailsHtml += `ZE ${esc(LAB.ze.get(startZe)||startZe)} · `;
+    if(startEmpl) startDetailsHtml += `ZG ${esc(zgLab(startEmpl.zg))}`;
+    startDetailsHtml += `</small>`;
+  }
+  
+  let targetDetailsHtml = '';
+  if(targetEmpl || (targetZi && targetZe)){
+    targetDetailsHtml = `<b>${esc(targetEmpl?targetEmpl.nomEmpl:targetLabel)}</b>`;
+    targetDetailsHtml += `<br><small class="mut">`;
+    if(targetZi) targetDetailsHtml += `ZI ${esc(LAB.zi.get(targetZi)||targetZi)} · `;
+    if(targetZe) targetDetailsHtml += `ZE ${esc(LAB.ze.get(targetZe)||targetZe)} · `;
+    if(targetEmpl) targetDetailsHtml += `ZG ${esc(zgLab(targetEmpl.zg))}`;
+    targetDetailsHtml += `</small>`;
+  }
+  
+  const head=`<div style="margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:8px;border:1px solid var(--line)">
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <div><span style="color:var(--acc)"> Départ</span><br>${startDetailsHtml}</div>
+      ${targetDetailsHtml ? `<div><span style="color:var(--ok)">🏁 Arrivée</span><br>${targetDetailsHtml}</div>` : ''}
+    </div>
+    <div style="margin-top:8px;font-size:12.5px" class="mut">
+      ${fmt(paths.length)} chemin(s) · ${fmt(totEm)} emplacements ${forward?'accessibles':'pouvant arriver ici'} · ${noTam?`<span class="warn">${noTam} sans tampon défini</span>`:'tous avec tampon'}
+    </div>
+  </div>`;
+
+  if(S.pathView==='simple'){
+    box.innerHTML=head+`<div style="overflow:auto;margin-top:10px"><table><thead><tr>
+      <th>📍 Départ</th>
+      <th>⏳ Emplacement(s) Tampon (F4)</th>
+      <th>🏁 Arrivée (ZG & Emplacements Tampon F5)</th>
+      </tr></thead><tbody>`+
+      paths.map(p=>{
+        const depHtml = `<b>${esc(startEmpl?startEmpl.nomEmpl:startLabel)}</b><br><small class="mut">
+          ${startZi?`ZI ${esc(LAB.zi.get(startZi)||startZi)} · `:''}
+          ${startZe?`ZE ${esc(LAB.ze.get(startZe)||startZe)} · `:''}
+          Groupe: ${esc(LAB.g.get(p.g)||p.g)}${startEmpl?`<br>ZG ${esc(zgLab(startEmpl.zg))}`:''}
+        </small>`;
+        
+        const tamHtml = p.tams.length 
+          ? `<div style="display:flex;flex-direction:column;gap:4px">${p.tams.map(t => `<span class="chip k-tam">⏳ ${esc(t)}</span>`).join('')}</div>` 
+          : `<span class="chip warn">⚠ sans tampon défini en F4</span>`;
+        
+        const arrHtml = p.zgs.sort().slice(0, 10).map(z => {
+          const els = IDX.empl.get(K(D,z)) || [];
+          const tamEmpls = els.filter(e => isTamEmpl(e));
+          let html = `<b>${esc(zgLab(z))}</b> <small class="mut">(${fmt(els.length)} empl. au total)</small>`;
+          if (tamEmpls.length > 0) {
+            html += `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">` + 
+              tamEmpls.slice(0, 8).map(e => `<span class="chip k-tam" style="font-size:11px" title="${esc(e.libEmpl||'')}">⏳ ${esc(e.nomEmpl)}</span>`).join('') +
+              (tamEmpls.length > 8 ? `<span class="chip" style="font-size:11px">+${tamEmpls.length - 8}</span>` : '') +
+              `</div>`;
+          } else {
+            html += `<br><small class="mut">Aucun emplacement F5 marqué comme tampon dans cette ZG</small>`;
+          }
+          return html;
+        }).join('<div style="border-top:1px dashed var(--line);margin:6px 0"></div>') + 
+        (p.zgs.length > 10 ? `<br><small class="mut">… et ${p.zgs.length - 10} autres ZG d'arrivée</small>` : '');
+
+        return `<tr>
+          <td style="vertical-align:top;padding:8px">${depHtml}</td>
+          <td style="vertical-align:top;padding:8px">${tamHtml}</td>
+          <td style="vertical-align:top;padding:8px">${arrHtml}</td>
+        </tr>`;
+      }).join('')+
+      `</tbody></table></div>`;
+    return;
+  }
+
+  let html=head;
+  groups.forEach(g=>{
+    const ps=paths.filter(p=>p.g===g);
+    html+=`<div class="trow"><span class="dot k-g"></span><details open><summary><b>${esc(LAB.g.get(g)||g)}</b> <span class="mut">(${esc(g)}) · ${ps.length} flux ${forward?'sortant(s)':'entrant(s)'}</span></summary><div class="tin">`;
+    ps.forEach(p=>{
+      html+=`<div class="trow" style="align-items:flex-start">
+        <div style="min-width:220px;flex-shrink:0">${p.tams.length?`<span class="chip k-tam" title="Tampon(s) défini(s) dans F4">⏳ ${p.tams.map(esc).join('<br>')}</span>`:'<span class="chip warn">⚠ sans tampon F4</span>'}</div>
+        <span class="mut" style="padding:4px 8px;font-size:16px">${forward?'⇒':'⇐'}</span>
+        <details open style="flex:1"><summary><b>${esc(LAB.g.get(p.t)||p.t)}</b> <span class="mut">(${esc(p.t)}) · ${p.zgs.length} ZG · ${fmt(p.emCount)} empl.</span></summary><div class="tin">`+
+        p.zgs.sort().slice(0,40).map(z=>{
+          const els=IDX.empl.get(K(D,z))||[];
+          const tamEmpls = els.filter(e => isTamEmpl(e));
+          return `<div class="trow"><span class="dot k-zg"></span><details><summary>${esc(LAB.zg.get(z)||z)} <span class="mut">(${esc(z)}) · ${fmt(els.length)} empl. ${tamEmpls.length ? `· <span class="ok">${fmt(tamEmpls.length)} tampon(s) F5</span>` : ''}</span></summary><div class="tin">`+
+            (tamEmpls.length ? tamEmpls.slice(0, 15).map(e => `<div class="trow"><span class="chip k-tam" style="font-size:11px"> ${esc(e.nomEmpl)}</span> <small class="mut">${esc(e.libEmpl||'')}</small></div>`).join('') : '<div class="trow mut">aucun emplacement F5 marqué comme tampon dans cette ZG</div>') +
+            (tamEmpls.length > 15 ? `<div class="trow mut">… +${tamEmpls.length - 15} autres emplacements tampon</div>` : '') +
+            `</div></details></div>`;
+        }).join('')+
+        (p.zgs.length>40?`<div class="trow mut">… +${p.zgs.length-40} autres ZG</div>`:'')+
+        `</div></details></div>`;
+    });
+    html+=`</div></details></div>`;
+  });
+  box.innerHTML=html;
+}
 
   if(paths.length===0){
     box.innerHTML=`<b>${esc(startLabel)}</b> ${targetZg ? `vers <b>${esc(targetLabel)}</b>` : ''} : <span class="warn">Aucun chemin trouvé correspondant à ces critères.</span>`;
