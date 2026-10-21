@@ -1245,25 +1245,53 @@ function renderPath(){
       targetZg=emArr.zg;
       targetEmpl=emArr;
       targetLabel=`${emArr.nomEmpl}`;
-      const depRowArr = S.raw.depart.find(r => r.zgDep === emArr.zg);
-      if(depRowArr) { targetZi = depRowArr.zi || ''; targetZe = depRowArr.ze || ''; targetG = depRowArr.gdep || ''; }
+      // TROUVER LE GROUPE D'ARRIVÉE
+      const arrGroups = [...(IDX.byArrZg.get(K(D, targetZg))||[])];
+      if(arrGroups.length > 0) targetG = arrGroups[0];
     } else if(IDX.empl.has(K(D,qArr)) || IDX.ref.has(K(D,qArr))){
       targetZg=qArr;
       targetLabel=`ZG ${qArr}`;
+      const arrGroups = [...(IDX.byArrZg.get(K(D, targetZg))||[])];
+      if(arrGroups.length > 0) targetG = arrGroups[0];
     } else {
       box.innerHTML=`<span class="warn">⚠ Arrivée introuvable : « ${esc(qArr)} » (ni emplacement NE1, ni ZG connue).</span>`;
       return;
     }
   }
 
-  // --- RECHERCHE SIMPLE : départ → tampons F4 → arrivée ---
-  const forward = dir==='aller';
-  
-  // Trouver les tampons F4 entre le groupe de départ et le groupe d'arrivée
-  const pairKey = forward ? K(D, startG, targetG) : K(D, targetG, startG);
-  const tams = IDX.tam4.get(pairKey) || [];
-  
-  // Trouver les emplacements dans la ZG d'arrivée
+  console.log('Départ:', startLabel, 'Groupe:', startG);
+  console.log('Arrivée:', targetLabel, 'ZG:', targetZg, 'Groupe:', targetG);
+
+  // --- RECHERCHE DES TAMPONS ---
+  let tams = [];
+  let intermediateGroup = null;
+
+  if(startG && targetG){
+    // Essayer lien direct
+    const pairKey = K(D, startG, targetG);
+    tams = IDX.tam4.get(pairKey) || [];
+    console.log('Lien direct', startG, '→', targetG, ':', tams);
+
+    // Si pas de lien direct, chercher via groupe intermédiaire
+    if(tams.length === 0){
+      const nextGroups = [...(IDX.fluxDep.get(K(D, startG))||[])];
+      for(const midG of nextGroups){
+        const midKey = K(D, startG, midG);
+        const midTams = IDX.tam4.get(midKey) || [];
+        const finalKey = K(D, midG, targetG);
+        const finalTams = IDX.tam4.get(finalKey) || [];
+        
+        if(midTams.length > 0 && finalTams.length > 0){
+          tams = [...midTams, ...finalTams];
+          intermediateGroup = midG;
+          console.log('Via intermédiaire:', midG, 'tampons:', tams);
+          break;
+        }
+      }
+    }
+  }
+
+  // --- TROUVER LES EMPLACEMENTS TAMPON F5 ---
   const targetEmpls = IDX.empl.get(K(D, targetZg)) || [];
   const tamEmpls = targetEmpls.filter(e => isTamEmpl(e));
 
@@ -1288,9 +1316,10 @@ function renderPath(){
         <div style="text-align:center; flex: 1; min-width: 200px;">
           <div style="color:var(--mut); font-size:11px; text-transform:uppercase; margin-bottom:8px;">⏳ Tampon(s) F4</div>
           ${tams.length 
-            ? tams.map(t => `<div class="chip k-tam" style="margin:4px 0; font-size:13px;"> ${esc(t)}</div>`).join('')
+            ? tams.map(t => `<div class="chip k-tam" style="margin:4px 0; font-size:13px;">⏳ ${esc(t)}</div>`).join('')
             : '<span class="warn">Aucun tampon F4 défini</span>'
           }
+          ${intermediateGroup ? `<div style="font-size:11px; color:var(--mut); margin-top:8px;">via ${esc(LAB.g.get(intermediateGroup)||intermediateGroup)}</div>` : ''}
         </div>
 
         <!-- ARRIVÉE -->
