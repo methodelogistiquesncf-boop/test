@@ -43,6 +43,17 @@ button:disabled{opacity:.45;cursor:not-allowed}
 input[type=range]{accent-color:var(--acc);width:130px;padding:2px}
 input[type=checkbox]{width:auto;accent-color:var(--acc)}
 
+/* ===== SUIVI DE CHARGEMENT PAR FICHIER (✓ / rond qui tourne) ===== */
+.fstatusrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.fstatus{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border:1px solid var(--line);border-radius:20px;font-size:12px;background:var(--bg2);cursor:default}
+.fstatus small{color:var(--mut)}
+.ic{font-weight:800;line-height:1}
+.ic.ok{color:var(--ok)}
+.ic.warn{color:var(--warn)}
+.ic.no{color:var(--mut);opacity:.65}
+.spinmini{width:11px;height:11px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;display:inline-block;animation:rot 1s linear infinite;flex:none}
+#loadList{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px;max-width:560px}
+
 #drop{border-style:dashed}
 #drop.over{border-color:var(--acc);background:var(--hover)}
 #dropFull .expHead{position:static;background:none}
@@ -110,7 +121,7 @@ summary:hover{background:var(--hover)}
 .homeCard small{color:var(--mut)}
 #loading{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;z-index:60}
 #loading[hidden]{display:none}
-.loadBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 36px;text-align:center;max-width:600px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.loadBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 36px;text-align:center;max-width:680px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .spin{width:44px;height:44px;margin:0 auto 14px;border:4px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:rot 1s linear infinite}
 @keyframes rot{to{transform:rotate(360deg)}}
 #loadingMsg{font-size:15px;font-weight:600}
@@ -135,6 +146,7 @@ summary:hover{background:var(--hover)}
     <div class="spin"></div>
     <div id="loadingMsg">Chargement des fichiers…</div>
     <div id="loadingSub">Merci de patienter — le traitement se fait entièrement dans votre navigateur.</div>
+    <div id="loadList"></div>
   </div>
 </div>
 
@@ -160,6 +172,8 @@ summary:hover{background:var(--hover)}
     <button id="dropShow" class="fbtn" title="Ré-afficher la zone de chargement complète">📂 Afficher / modifier les fichiers</button>
     <span class="mut">(vous pouvez aussi glisser-déposer de nouveaux fichiers directement ici)</span>
   </div>
+  <!-- Suivi visuel : ✓ verte = chargé · rond qui tourne = en attente pendant la session · ○ / ! = non chargé après -->
+  <div id="fileStatus" class="fstatusrow"></div>
 </section>
 
 <div id="notice" class="panel" hidden></div>
@@ -261,7 +275,7 @@ summary:hover{background:var(--hover)}
 <li><b>Emplacement (F5)</b> : adresse physique = Allée + Face + Colonne + Niveau + Emplacement. Ex. <code>M2_LC006N4E1</code>.</li>
 <li><b>Séquence (F4)</b> : ordre de priorité du tampon dans un flux.</li>
 <li><b>Matériel (F6)</b> : engin du parc (chariot, transgerbeur, cariste…) avec son <b>type de matériel</b>, sa <b>ZI d'intervention</b> et son <b>emplacement parc</b> (allée <code>MAT</code>, ex. <code>MAT·117</code>).</li>
-<li><b>Type de matériel (F7)</b> : catégorie Réflex : <code>NE2</code> = « CHARIOT 3ème CAT.CMU 3T », <code>NEA</code> = « Matériel logistique », <code>PXQ</code> = « Transpalette élec Cat1 1,8T »… Certains sont <b>désactivés</b> (ex. <code>NBT</code>, <code>NEB</code>).</li>
+<li><b>Type de matériel (F7)</b> : catégorie Réflex : <code>NE2</code> = « CHARIOT 3ème CAT.CMU 3T », <code>NEA</code> = « Matériel logistique », <code>PXQ</code> = « Transpelette elec Cat1 1,8T »… Certains sont <b>désactivés</b> (ex. <code>NBT</code>, <code>NEB</code>).</li>
 <li><b>Type de support (F8)</b> : contenant transportable : <code>PAL</code> = « Palette Europe sans rehausse », <code>NK3</code> = « Kardex Boite Type 3 »… Le fichier F8 liste, pour chaque type de matériel, les supports qu'il peut transporter.</li>
 <li><b>POSITION_X / POSITION_Y (F5)</b> : coordonnées utilisées pour dessiner la carte du magasin.</li>
 </ul>
@@ -412,11 +426,12 @@ function detectByName(name){
 /* ================= État ================= */
 const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements',
 materiel:'F6 · Matériel',mattype:'F7 · Types matériel',matsup:'F8 · Types supports'};
+const KIND_ORDER=['depart','flux','ref','tampon','empl','materiel','mattype','matsup'];
 const CORE_KINDS=['depart','flux','ref','tampon','empl'];
 const OPT_KINDS=['materiel','mattype','matsup'];
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]},files:{},stats:{},exclRows:[],
   flux:[],depart:[],ref:[],empl:[],materiel:[],mattype:[],filters:{},q:'',tab:'accueil',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
-  showDrop:true,posCount:0,mapSel:null,
+  showDrop:true,hasSession:false,posCount:0,mapSel:null,
   matTypes:[],matSupAll:[],matTypeCount:0,mattypeDes:new Set(),
   map:{mag:'',mode:'zg',hl:'',tamOnly:localStorage.getItem('zgMapTam')==='1'},
   mat:{type:'',qsup:'',supFilter:'',supLimit:120},
@@ -475,6 +490,33 @@ function flowHTML(dg,ag,tam,nz,ne){
     (nz!=null?`<span class="farr">→</span><span class="fbox z">${fmt(nz)} ZG</span>`:'')+
     (ne!=null?`<span class="farr">→</span><span class="fbox e">${fmt(ne)} empl.</span>`:'')+`</span>`;
 }
+
+/* ===== Suivi visuel de chargement : ✓ verte / rond qui tourne / ○ / ! ===== */
+function kindState(k){
+  if(S.files[k])return 'done';
+  if(S.loading)return 'wait';                 /* pendant la session : rond qui tourne */
+  if(S.hasSession&&CORE_KINDS.includes(k))return 'warn';   /* requis manquant après session */
+  return 'no';                                /* optionnel manquant / avant toute session */
+}
+function statusChip(k){
+  const st=kindState(k);
+  const ic=st==='done'?'<span class="ic ok">✓</span>'
+        :st==='wait'?'<span class="spinmini" aria-label="en cours"></span>'
+        :st==='warn'?'<span class="ic warn">!</span>'
+        :'<span class="ic no">○</span>';
+  const n=S.files[k]?` <small>· ${fmt(S.stats[k].n)}</small>`:'';
+  const tip=LABELS[k]+(S.files[k]?` — chargé (${S.stats[k].n} lignes, ${S.stats[k].dup} doublon(s), ${S.stats[k].excl} exclue(s))`
+    :st==='wait'?' — en attente / lecture en cours…'
+    :st==='warn'?' — NON chargé (fichier requis)'
+    :' — non chargé (fichier optionnel)');
+  return `<span class="fstatus" title="${esc(tip)}">${ic} ${esc(LABELS[k])}${n}</span>`;
+}
+function renderFileStatus(){
+  const html=KIND_ORDER.map(statusChip).join('');
+  const el=$('#fileStatus');if(el)el.innerHTML=html;
+  const ll=$('#loadList');if(ll)ll.innerHTML=html;
+}
+
 function store(kind,rows,name){
   if(kind==='empl')rows.forEach(r=>{
     if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}
@@ -499,14 +541,16 @@ function showLoad(msg,sub){
   $('#loadingMsg').textContent=msg;
   $('#loadingSub').textContent=sub||'Merci de patienter — le traitement se fait entièrement dans votre navigateur.';
   $('#loading').hidden=false;
+  renderFileStatus();
 }
 function hideLoad(){$('#loading').hidden=true;}
 async function loadFiles(files){
   if(!files||!files.length||S.loading)return;
   S.loading=true;
-  showLoad('Préparation du chargement…','0 / '+files.length+' fichier(s)');
+  showLoad('Préparation du chargement…','0 / '+files.length+' fichier(s) — ✓ = chargé, rond qui tourne = en attente');
   await frame();
   S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};S.files={};S.stats={};S.exclRows=[];
+  renderFileStatus();
   const done=[];let i=0;
   for(const f of files){
     i++;
@@ -520,6 +564,7 @@ async function loadFiles(files){
       if(!kind){alert('Fichier non reconnu : '+f.name);continue;}
       store(kind,rows,f.name);done.push(kind);
       showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+fmt(rows.length)+' lignes reconnues → '+LABELS[kind]);
+      renderFileStatus();   /* la ✓ verte apparaît immédiatement */
       await frame();
     }catch(err){alert('Erreur de lecture '+f.name+' : '+err.message);}
   }
@@ -532,7 +577,9 @@ async function loadFiles(files){
     $('#bulkState').innerHTML=done.length
       ?`<span class="ok">✓ ${done.length} fichier(s) chargé(s)</span> : ${done.map(k=>LABELS[k]).join(', ')}`
       :'<span class="warn">Aucun fichier reconnu</span>';
-  }finally{hideLoad();S.loading=false;}
+  }finally{
+    hideLoad();S.loading=false;S.hasSession=true;renderFileStatus();
+  }
 }
 function buildModel(){
   Object.values(IDX).forEach(m=>m.clear());
@@ -1343,12 +1390,10 @@ function renderStats(){
     ['Écarts détectés',fmt(ec)]
   ].map(([l,v])=>`<div class="kpi"><small>${l}</small><b>${v}</b></div>`).join('');
   const missing=CORE_KINDS.filter(k=>!S.files[k]);
-  const optMissing=OPT_KINDS.filter(k=>!S.files[k]);
   const empty=CORE_KINDS.filter(k=>S.files[k]&&S.stats[k].n===0&&S.stats[k].excl>0);
   const msgs=[];
-  if(missing.length)msgs.push(`⚠ Fichier(s) non chargé(s) : <b>${missing.map(k=>LABELS[k]).join(', ')}</b>. Les recoupements correspondants sont incomplets.`);
+  if(missing.length)msgs.push(`⚠ Fichier(s) requis non chargé(s) : <b>${missing.map(k=>LABELS[k]).join(', ')}</b>. Les recoupements correspondants sont incomplets.`);
   if(empty.length)msgs.push(`⚠ <b>${empty.map(k=>LABELS[k]).join(', ')}</b> : aucune ligne Dépôt = ${DEPOT_KEEP} trouvée — toutes les lignes ont été exclues.`);
-  if(optMissing.length&&optMissing.length<OPT_KINDS.length+1&&missing.length===0)msgs.push(`<span class="mut">ℹ Fichiers optionnels non chargés : <b>${optMissing.map(k=>LABELS[k]).join(', ')}</b> — les vues 🚜 / 🏷 resteront vides.</span>`);
   $('#notice').hidden=msgs.length===0;
   $('#notice').innerHTML=msgs.join('<br>');
 }
@@ -1421,7 +1466,7 @@ function render(){
   $('#dropMini').hidden=showFull;
   $('#dropHide').hidden=!hasFiles;
   if(!showFull)$('#miniState').innerHTML=loadStatusHTML();
-  renderMenu();renderStats();renderHome();renderFilters();renderControls();renderFiche();
+  renderMenu();renderStats();renderHome();renderFilters();renderControls();renderFiche();renderFileStatus();
   const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte',isMat=S.tab==='mattype';
   const hideTable=isTree||isPath||isHome||isMap||isMat;
   $('#treeWrap').hidden=!isTree;
@@ -1455,7 +1500,7 @@ function exportCSV(){
 }
 function clearAll(){
   S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};S.files={};S.stats={};S.exclRows=[];S.fiche=null;S.path=null;
-  S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';S.tab='accueil';S.showDrop=true;
+  S.filters={};S.q='';S.sort=null;S.limit=200;$('#q').value='';$('#pathQ').value='';S.tab='accueil';S.showDrop=true;S.hasSession=false;
   S.posCount=0;S.mapSel=null;S.map.mag='';S.mat={type:'',qsup:'',supFilter:'',supLimit:120};
   S.materiel=[];S.mattype=[];S.matTypes=[];S.matSupAll=[];S.matTypeCount=0;S.mattypeDes=new Set();
   $('#bulk').value='';$('#bulkState').textContent='Aucun fichier chargé';
