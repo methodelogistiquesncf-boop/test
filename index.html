@@ -1221,18 +1221,15 @@ function renderPath(){
   const nq=N(q);
   const em=S.empl.find(r=>N(r.nomEmpl)===nq)||S.empl.find(r=>N(String(r.numEmpl||''))===nq);
   if(em){
-    startZg=em.zg;
-    startEmpl=em;
-    startLabel=`${em.nomEmpl}`;
+    startZg=em.zg; startEmpl=em; startLabel=`${em.nomEmpl}`;
     const depRow = S.raw.depart.find(r => r.zgDep === em.zg);
     if(depRow) { startZi = depRow.zi || ''; startZe = depRow.ze || ''; startG = depRow.gdep || ''; }
   } else if(IDX.empl.has(K(D,q)) || IDX.ref.has(K(D,q))){
-    startZg=q;
-    startLabel=`ZG ${q}`;
+    startZg=q; startLabel=`ZG ${q}`;
     const depRow = S.raw.depart.find(r => r.zgDep === q);
     if(depRow) { startZi = depRow.zi || ''; startZe = depRow.ze || ''; startG = depRow.gdep || ''; }
   } else {
-    box.innerHTML=`<span class="warn">⚠ Introuvable : « ${esc(q)} » (ni emplacement NE1, ni ZG connue).</span>`;
+    box.innerHTML=`<span class="warn"> Introuvable : « ${esc(q)} »</span>`;
     return;
   }
 
@@ -1242,24 +1239,18 @@ function renderPath(){
     const nqArr=N(qArr);
     const emArr=S.empl.find(r=>N(r.nomEmpl)===nqArr)||S.empl.find(r=>N(String(r.numEmpl||''))===nqArr);
     if(emArr){
-      targetZg=emArr.zg;
-      targetEmpl=emArr;
-      targetLabel=`${emArr.nomEmpl}`;
+      targetZg=emArr.zg; targetEmpl=emArr; targetLabel=`${emArr.nomEmpl}`;
       const arrGroups = [...(IDX.byArrZg.get(K(D, targetZg))||[])];
       if(arrGroups.length > 0) targetG = arrGroups[0];
     } else if(IDX.empl.has(K(D,qArr)) || IDX.ref.has(K(D,qArr))){
-      targetZg=qArr;
-      targetLabel=`ZG ${qArr}`;
+      targetZg=qArr; targetLabel=`ZG ${qArr}`;
       const arrGroups = [...(IDX.byArrZg.get(K(D, targetZg))||[])];
       if(arrGroups.length > 0) targetG = arrGroups[0];
     } else {
-      box.innerHTML=`<span class="warn"> Arrivée introuvable : « ${esc(qArr)} » (ni emplacement NE1, ni ZG connue).</span>`;
+      box.innerHTML=`<span class="warn">⚠ Arrivée introuvable : « ${esc(qArr)} »</span>`;
       return;
     }
   }
-
-  console.log('Départ:', startLabel, 'Groupe:', startG);
-  console.log('Arrivée:', targetLabel, 'ZG:', targetZg, 'Groupe:', targetG);
 
   // --- BFS : TROUVER TOUS LES CHEMINS ---
   const allPaths = [];
@@ -1267,17 +1258,12 @@ function renderPath(){
 
   function findPaths(currentGroup, targetGroup, depth, currentChain, visited){
     if(depth > MAX_DEPTH) return;
-    
     const nextGroups = [...(IDX.fluxDep.get(K(D, currentGroup))||[])];
-    
     for(const nextGroup of nextGroups){
       if(visited.has(nextGroup)) continue;
-      
       const pairKey = K(D, currentGroup, nextGroup);
       const tams = IDX.tam4.get(pairKey) || [];
-      
       const newChain = [...currentChain, { from: currentGroup, to: nextGroup, tams }];
-      
       if(nextGroup === targetGroup){
         allPaths.push({ chain: newChain });
       } else {
@@ -1290,36 +1276,23 @@ function renderPath(){
     findPaths(startG, targetG, 1, [], new Set([startG]));
   }
 
-  console.log('Chemins trouvés:', allPaths.length);
-
   if(allPaths.length === 0){
     box.innerHTML = `<div style="padding:16px; background:var(--bg2); border-radius:10px; border:1px solid var(--line);">
-      <span class="warn">⚠ Aucun chemin trouvé entre ${esc(startLabel)} et ${esc(targetLabel)}.</span>
+      <span class="warn"> Aucun chemin trouvé entre ${esc(startLabel)} et ${esc(targetLabel)}.</span>
     </div>`;
     return;
   }
-
-  // Trier par longueur (plus court d'abord) et prendre le premier
-  allPaths.sort((a, b) => a.chain.length - b.chain.length);
-  const bestPath = allPaths[0];
-
-  console.log('Meilleur chemin:', bestPath.chain.map(c => c.from+'→'+c.to).join(' | '));
-
-  // Collecter tous les tampons de la chaîne
-  const allTams = bestPath.chain.flatMap(c => c.tams);
 
   // --- TROUVER LES EMPLACEMENTS TAMPON F5 ---
   const targetEmpls = IDX.empl.get(K(D, targetZg)) || [];
   const tamEmpls = targetEmpls.filter(e => isTamEmpl(e));
 
-  // --- AFFICHAGE ---
+  // --- AFFICHAGE : UN BLOC PAR CHEMIN ---
   let html = `
     <div style="margin-bottom:16px; padding:16px; background:var(--bg2); border-radius:10px; border:1px solid var(--line);">
-      <div style="display:flex; align-items:stretch; gap:12px; flex-wrap:wrap;">
-        
-        <!-- DÉPART -->
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <div style="border-left: 3px solid var(--acc); padding-left: 12px; flex: 1; min-width: 200px;">
-          <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;"> Départ</div>
+          <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;">📍 Départ</div>
           <div style="font-size:16px; font-weight:600; margin: 4px 0;">${esc(startLabel)}</div>
           <div style="font-size:12px; color:var(--mut);">
             ${startZi ? `ZI: ${esc(LAB.zi.get(startZi)||startZi)} · ` : ''}
@@ -1328,26 +1301,6 @@ function renderPath(){
             ${startZg ? `ZG: ${esc(zgLab(startZg))}` : ''}
           </div>
         </div>
-
-        <!-- FLÈCHE + TAMPONS -->
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex: 2; min-width: 300px; padding: 0 12px;">
-          <div style="color:var(--mut); font-size:11px; text-transform:uppercase; margin-bottom:8px;">⏳ Tampon(s) F4 (${bestPath.chain.length} étape${bestPath.chain.length > 1 ? 's' : ''})</div>
-          
-          ${bestPath.chain.map((step, i) => `
-            <div style="display:flex; align-items:center; gap:8px; margin:4px 0; width:100%;">
-              ${i > 0 ? '<span style="color:var(--mut); font-size:16px;">⇓</span>' : '<span style="color:var(--mut); font-size:16px;">⇒</span>'}
-              <div style="flex:1;">
-                ${step.tams.length 
-                  ? step.tams.map(t => `<span class="chip k-tam" style="margin:2px 0; font-size:12px;"> ${esc(t)}</span>`).join('')
-                  : '<span class="warn" style="font-size:11px;">sans tampon</span>'
-                }
-                ${i < bestPath.chain.length - 1 ? `<div style="font-size:10px; color:var(--mut); margin-top:2px;">via ${esc(LAB.g.get(step.to)||step.to)}</div>` : ''}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-
-        <!-- ARRIVÉE -->
         <div style="border-left: 3px solid var(--ok); padding-left: 12px; flex: 1; min-width: 200px;">
           <div style="color:var(--ok); font-weight:700; font-size:12px; text-transform:uppercase;">🏁 Arrivée</div>
           <div style="font-size:16px; font-weight:600; margin: 4px 0;">${esc(targetLabel)}</div>
@@ -1358,21 +1311,54 @@ function renderPath(){
             ${targetZg ? `ZG: ${esc(zgLab(targetZg))}` : ''}
           </div>
         </div>
-
       </div>
 
-      ${tamEmpls.length ? `
-        <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--line);">
-          <div style="font-size:12px; color:var(--mut); margin-bottom:8px;">Emplacements tampon F5 dans ${esc(zgLab(targetZg))} (${tamEmpls.length}) :</div>
-          <div style="display:flex; flex-wrap:wrap; gap:6px;">
-            ${tamEmpls.slice(0, 20).map(e => `<span class="chip k-tam" style="font-size:11.5px;">⏳ ${esc(e.nomEmpl)}</span>`).join('')}
-            ${tamEmpls.length > 20 ? `<span class="chip">+${tamEmpls.length - 20} autres</span>` : ''}
-          </div>
-        </div>
-      ` : ''}
-    </div>
+      <div style="font-size:13px; color:var(--mut); margin-bottom:12px; border-top:1px solid var(--line); padding-top:12px;">
+        <b>${allPaths.length} chemin(s) trouvé(s) :</b>
+      </div>
   `;
 
+  allPaths.forEach((path, idx) => {
+    const allTams = path.chain.flatMap(c => c.tams);
+    const uniqueTams = [...new Set(allTams)];
+    
+    html += `
+      <div style="margin-bottom:12px; padding:12px; background:var(--bg); border-radius:8px; border-left: 3px solid ${uniqueTams.length >= 2 ? 'var(--ok)' : 'var(--acc)'};">
+        <div style="font-size:12px; color:var(--mut); margin-bottom:8px;">
+          <b>Chemin ${idx+1}</b> · ${path.chain.length} étape${path.chain.length > 1 ? 's' : ''} · ${uniqueTams.length} tampon(s) distinct(s)
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span style="font-weight:600; color:var(--acc);">${esc(startLabel)}</span>
+          ${path.chain.map((step, i) => `
+            <span style="color:var(--mut);">⇒</span>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              ${step.tams.length 
+                ? step.tams.map(t => `<span class="chip k-tam" style="margin:0; font-size:11.5px;">⏳ ${esc(t)}</span>`).join('')
+                : '<span class="warn" style="font-size:11px;">sans tampon</span>'
+              }
+              ${i < path.chain.length - 1 ? `<span style="font-size:10px; color:var(--mut);">via ${esc(LAB.g.get(step.to)||step.to)}</span>` : ''}
+            </div>
+          `).join('')}
+          <span style="color:var(--mut);">⇒</span>
+          <span style="font-weight:600; color:var(--ok);">${esc(targetLabel)}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  if(tamEmpls.length){
+    html += `
+      <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--line);">
+        <div style="font-size:12px; color:var(--mut); margin-bottom:8px;">Emplacements tampon F5 dans ${esc(zgLab(targetZg))} (${tamEmpls.length}) :</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          ${tamEmpls.slice(0, 20).map(e => `<span class="chip k-tam" style="font-size:11.5px;">⏳ ${esc(e.nomEmpl)}</span>`).join('')}
+          ${tamEmpls.length > 20 ? `<span class="chip">+${tamEmpls.length - 20} autres</span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  html += `</div>`;
   box.innerHTML = html;
 }
 
