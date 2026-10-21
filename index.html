@@ -55,6 +55,8 @@ input[type=checkbox]{width:auto;accent-color:var(--acc)}
 #mapTip{position:absolute;display:none;pointer-events:none;background:var(--overlay);border:1px solid var(--acc);border-radius:8px;padding:6px 9px;font-size:12px;max-width:290px;z-index:5;line-height:1.45;color:var(--txt)}
 #mapWrap .row label{min-width:110px}
 #mapInfo{margin-top:8px;font-size:12.5px}
+#mapTam.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:700}
+#mapTamList .chip{cursor:pointer}
 
 #kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:130px}
@@ -207,6 +209,7 @@ summary:hover{background:var(--hover)}
       <option value="zi">ZI / ZE</option>
     </select></label>
     <label>Mettre en avant<select id="mapHl"></select></label>
+    <button id="mapTam" class="fbtn" style="font-size:12.5px;padding:7px 12px" title="1 clic : n'afficher que les emplacements tampon (indicateur TOP_TAMPON du F5, ou ZG / libellé contenant « tampon »). Combiné à « ∗ Tous les magasins » = tous les tampons du site.">⏳ Emplacements tampon</button>
     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="mapFlipY"> inverser l'axe Y</label>
     <label>Image de fond (plan)<input type="file" id="mapImg" accept="image/*"></label>
     <label>Opacité image<input type="range" id="mapImgOp" min="0" max="100" value="35"></label>
@@ -220,6 +223,7 @@ summary:hover{background:var(--hover)}
     <div id="mapTip"></div>
   </div>
   <div id="mapInfo" class="mut"></div>
+  <div id="mapTamList" class="card" hidden style="margin-top:10px;margin-bottom:0"></div>
   <div id="mapSel" class="card" hidden style="margin-top:10px;margin-bottom:0"></div>
 </section>
 
@@ -238,6 +242,7 @@ summary:hover{background:var(--hover)}
 <li><b>Groupe ZG (GZG…)</b> : paquet de ZG utilisé comme point de départ ou d'arrivée des flux. Ex. <code>GZGHUB</code> = « Groupe ZG HUB ».</li>
 <li><b>Tampon</b> : zone d'attente traversée entre un groupe de départ et un groupe d'arrivée. Ex. <code>HUBT/S</code> = « HUB Tampon Sortie ».</li>
 <li><b>Emplacement (F5)</b> : adresse physique = Allée + Face + Colonne + Niveau + Emplacement. Ex. <code>M2_LC006N4E1</code>.</li>
+<li><b>Emplacement tampon (carte 🗺)</b> : emplacement F5 dont l'indicateur <code>TOP_TAMPON</code> est actif, ou dont la ZG / le libellé contient « tampon ».</li>
 <li><b>Séquence (F4)</b> : ordre de priorité du tampon dans un flux.</li>
 <li><b>POSITION_X / POSITION_Y (F5)</b> : coordonnées utilisées pour dessiner la carte du magasin.</li>
 </ul>
@@ -253,7 +258,7 @@ summary:hover{background:var(--hover)}
 <li><b>F4 (tampon)</b> : Dépôt + ZI + ZE + Groupe départ + Groupe arrivée, sinon repli Dépôt + Groupe départ + Groupe arrivée.</li>
 <li><b>F5 (emplacements)</b> : pont = colonne <code>Zone géo</code> (code ZG) ; nom = concaténation Allée+Face+Colonne+Niveau+Emplacement.</li>
 <li><b>Chemins (🧭)</b> : emplacement → ZG (F5) → groupes (F1/F2) → flux (F2) → tampon (F4) → ZG cible → emplacements (F5).</li>
-<li><b>Carte (🗺)</b> : un point par emplacement F5 ayant POSITION_X et POSITION_Y renseignées, groupés par code magasin.</li>
+<li><b>Carte (🗺)</b> : un point par emplacement F5 ayant POSITION_X et POSITION_Y renseignées, groupés par code magasin ; filtre ⏳ = emplacements tampon uniquement.</li>
 </ul>
 </details>
 </main>
@@ -361,7 +366,7 @@ const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel'
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[]},files:{},stats:{},exclRows:[],
   flux:[],depart:[],ref:[],empl:[],filters:{},q:'',tab:'accueil',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
   showDrop:true,posCount:0,mapSel:null,
-  map:{mag:'',mode:'zg',hl:''},
+  map:{mag:'',mode:'zg',hl:'',tamOnly:localStorage.getItem('zgMapTam')==='1'},
   mapCfg:(()=>{try{return JSON.parse(localStorage.getItem('zgMapCfg')||'{}')}catch(e){return{}}})(),
   _imgs:{},_mapXY:[],_mapGrid:new Map(),
   pathView:localStorage.getItem('zgPathView')||'simple',
@@ -385,7 +390,7 @@ usage:'La ZG est-elle utilisée par un groupe ?',_ctl:'État de cohérence de la
 magasin:'Code magasin rattaché (F5).',nbStock:'Supports stockables (F5).',nbDispo:'Supports disponibles (F5).',libEmpl:'Libellé de l’emplacement.',refVia:'ZI/ZE du référentiel (F3).',
 depGroups:'Groupes de départ utilisant cette ZG (F1).',arrGroups:'Groupes d’arrivée utilisant cette ZG (F2).',libZg:'Libellé métier de la ZG (F2).',libGdep:'Libellé du groupe de départ.',
 libGarr:'Libellé du groupe d’arrivée.',_lab:'Chemin tampon complet (séquence + codes + libellé).',typeEmpl:'Type physique de l’emplacement tampon.',_file:'Fichier d’origine de la ligne.',
-topTampon:'Indicateur tampon (F5).',topStock:'Indicateur stockage (F5).',topPick:'Indicateur picking (F5).',active:'Implantation active ? (F5).',zp:'Zone physique ZP (F5).',zs:'Zone physique ZS (F5).',
+topTampon:'Indicateur tampon (F5) : actif = emplacement tampon (filtre ⏳ de la carte).',topStock:'Indicateur stockage (F5).',topPick:'Indicateur picking (F5).',active:'Implantation active ? (F5).',zp:'Zone physique ZP (F5).',zs:'Zone physique ZS (F5).',
 posX:'Coordonnée X (F5) utilisée pour la carte.',posY:'Coordonnée Y (F5) utilisée pour la carte.',taille:'Code taille de l’emplacement (F5).'};
 
 function tamponLabel(r){
@@ -663,7 +668,7 @@ const COLS={
   C('taille','Code taille',{expertOnly:true}),
   C('nbStock','Nb supports stockables',{lSimple:'Places stockables'}),
   C('nbDispo','Nb supports dispo',{lSimple:'Places dispo'}),
-  C('topTampon','Top tampon',{dim:true,expertOnly:true}),
+  C('topTampon','Top tampon',{dim:true}),
   C('topStock','Top stockage',{dim:true,expertOnly:true}),
   C('topPick','Top picking',{dim:true,expertOnly:true}),
   C('active','IMPLANTATION_ACTIVE',{dim:true,expertOnly:true}),
@@ -741,7 +746,7 @@ function renderHome(){
         <button class="homeCard" data-home="flux"><b>📦 Voir les flux</b><small>${fmt(S.flux.length)} lignes de flux enrichies (F1+F2+F3+F4)</small></button>
         <button class="homeCard" data-home="arbre"><b>🌳 Arborescence</b><small>ZI → ZE → Groupe → ZG, avec nb d'emplacements</small></button>
         <button class="homeCard" data-home="chemin"><b>🧭 Chemins</b><small>D'où vient / où va un emplacement, via quels tampons</small></button>
-        <button class="homeCard" data-home="carte"><b>🗺 Carte / plan</b><small>Positions X/Y des emplacements par magasin, avec plan en image de fond</small></button>
+        <button class="homeCard" data-home="carte"><b>🗺 Carte / plan</b><small>Positions X/Y des emplacements par magasin, plan en image de fond, filtre ⏳ tampons en 1 clic</small></button>
         <button class="homeCard" data-home="empl"><b>📍 Emplacements</b><small>${fmt(S.empl.length)} emplacements NE1 (F5)</small></button>
         <button class="homeCard" data-home="ecart"><b>⚠ Écarts</b><small>${fmt(S.controls.reduce((s,c)=>s+c.items.length,0))} anomalie(s) détectée(s)</small></button>
       </div>`;
@@ -822,7 +827,7 @@ function renderPath(){
   });
   const noTam=paths.filter(p=>!p.tams.length).length;
   const totEm=paths.reduce((s,p)=>s+p.emCount,0);
-  const head=`<b>${forward?'🚚 Depuis':'🛬 Vers'} ${esc(startLabel)}</b>
+  const head=`<b>${forward?'🚚 Depuis':' Vers'} ${esc(startLabel)}</b>
     <span class="mut">· ${fmt(paths.length)} chemin(s) · ${fmt(totEm)} emplacements ${forward?'accessibles':'pouvant arriver ici'} · ${noTam?`<span class="warn">${noTam} sans tampon défini</span>`:'tous avec tampon'}</span>`;
   if(S.pathView==='simple'){
     box.innerHTML=head+`<div style="overflow:auto;margin-top:10px"><table><thead><tr>
@@ -862,7 +867,17 @@ function renderPath(){
 const PAL=['#38bdf8','#34d399','#fbbf24','#c084fc','#f472b6','#fb923c','#a3e635','#22d3ee','#f87171','#818cf8','#facc15','#4ade80','#e879f9','#60a5fa'];
 const hash=s=>{let h=0;const t=String(s??'');for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return Math.abs(h);};
 const magOf=r=>r.magasin||'(sans code magasin)';
-function mapPts(mag){return S.empl.filter(r=>r.px!=null&&r.py!=null&&(mag==='*'||magOf(r)===mag));}
+/* Emplacement tampon : indicateur TOP_TAMPON actif, sinon ZG / libellé contenant « tampon » */
+const TAM_YES=new Set(['o','oui','x','1','true','y','yes','t']);
+function isTamEmpl(r){
+  const t=N(r.topTampon);
+  if(t)return TAM_YES.has(t);
+  const lib=N(r.libEmpl)+' '+N(LAB.zg.get(r.zg)||'');
+  return lib.includes('tampon');
+}
+function mapPts(mag){
+  return S.empl.filter(r=>r.px!=null&&r.py!=null&&(mag==='*'||magOf(r)===mag)&&(!S.map.tamOnly||isTamEmpl(r)));
+}
 function ziOf(r){const v=(r.refVia||[])[0]||'';return v.split('/')[0]||'(sans ZI)';}
 function colorFor(r,mode){
   if(mode==='occ'){
@@ -923,9 +938,33 @@ function renderMapControls(){
   $('#mapImgOp').value=cfg.op;$('#mapImgSc').value=cfg.sc;$('#mapImgDx').value=cfg.dx;$('#mapImgDy').value=cfg.dy;
   $('#mapFlipY').checked=!!cfg.flip;
   $('#mapImgDel').disabled=!cfg.img;
+  /* bouton ⏳ tampons : état + compteur */
+  const tb=$('#mapTam'),nTam=S.empl.filter(isTamEmpl).length;
+  tb.classList.toggle('on',S.map.tamOnly);
+  tb.textContent=S.map.tamOnly?`⏳ Emplacements tampon ✓`:`⏳ Emplacements tampon (${fmt(nTam)})`;
   ensureImg(S.map.mag);
 }
-function renderMap(){renderMapControls();drawMap();renderMapSel();}
+function renderMap(){renderMapControls();drawMap();renderTamList();renderMapSel();}
+/* Liste groupée de TOUS les emplacements tampon (sous la carte, quand ⏳ est actif) */
+function renderTamList(){
+  const box=$('#mapTamList');
+  if(!S.map.tamOnly||S.tab!=='carte'){box.hidden=true;box.innerHTML='';return;}
+  const mag=S.map.mag;
+  const rows=S.empl.filter(isTamEmpl).filter(r=>mag==='*'||magOf(r)===mag);
+  const m=new Map();
+  rows.forEach(r=>{const z=r.zg||'?';if(!m.has(z))m.set(z,{n:0,libs:new Set(),withPos:0});
+    const o=m.get(z);o.n++;if(r.libEmpl)o.libs.add(r.libEmpl);if(r.px!=null&&r.py!=null)o.withPos++;});
+  const list=[...m].sort((a,b)=>b[1].n-a[1].n);
+  box.hidden=false;
+  box.innerHTML=`<div class="expHead" style="position:static;background:none">
+      <b>⏳ Tous les emplacements tampon — ${fmt(rows.length)}</b>
+      <small>magasin : ${esc(mag==='*'?'tous (superposition)':mag)} · groupés par ZG · 1 clic sur une ZG = la mettre en avant sur la carte</small>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">`+
+    (list.length?list.map(([z,o])=>`<button class="chip k-tam${S.map.hl==='zg:'+z?' on':''}" data-hl="zg:${esc(z)}" title="${esc([...o.libs].slice(0,4).join(' · ')||z)} — ${o.withPos} sur ${o.n} avec position X/Y">${esc(zgLab(z))} · ${fmt(o.n)}</button>`).join('')
+      :'<span class="warn">Aucun emplacement tampon détecté (indicateur TOP_TAMPON ou ZG / libellé contenant « tampon »).</span>')+
+    `</div>`;
+}
 function drawMap(){
   const box=$('#mapBox'),cv=$('#mapCv'),tip=$('#mapTip');
   tip.style.display='none';
@@ -935,11 +974,13 @@ function drawMap(){
   const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
   const mag=S.map.mag,mode=S.map.mode,hl=S.map.hl,cfg=cfgFor(mag);
   const pts=mapPts(mag);
-  const tot=(mag==='*'?S.empl:S.empl.filter(r=>magOf(r)===mag)).length;
-  const noPos=tot-pts.length;
+  const baseCount=(S.map.tamOnly?S.empl.filter(isTamEmpl):S.empl).filter(r=>mag==='*'||magOf(r)===mag).length;
+  const noPos=baseCount-pts.length;
   if(!pts.length){
     S._mapXY=[];S._mapGrid=new Map();
-    $('#mapInfo').innerHTML=`<span class="warn">Aucun emplacement avec POSITION_X / POSITION_Y renseignées pour « ${esc(mag==='*'?'tous magasins':mag)} ».</span>`;
+    $('#mapInfo').innerHTML=S.map.tamOnly
+      ?`<span class="warn">⏳ Aucun emplacement tampon avec position X/Y pour « ${esc(mag==='*'?'tous magasins':mag)} ».</span>`
+      :`<span class="warn">Aucun emplacement avec POSITION_X / POSITION_Y renseignées pour « ${esc(mag==='*'?'tous magasins':mag)} ».</span>`;
     return;
   }
   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
@@ -955,7 +996,7 @@ function drawMap(){
     ctx.drawImage(im,(W-iw)/2+(+cfg.dx)/100*W,(H-ih)/2+(+cfg.dy)/100*H,iw,ih);
     ctx.restore();
   }
-  /* points (passe 1 : estompés, passe 2 : mis en avant) */
+  /* points */
   S._mapXY=[];S._mapGrid=new Map();const CELL=10;
   const put=(x,y,r)=>{const i=S._mapXY.length;S._mapXY.push({x,y,r});
     const k=Math.floor(x/CELL)+':'+Math.floor(y/CELL);
@@ -985,7 +1026,8 @@ function drawMap(){
     leg=top.map(([k,n])=>`<span class="dot" style="background:${colorFor(mode==='zi'?{refVia:[k+'/']}:({zg:k}),mode)};margin-left:14px"></span>${esc(mode==='zi'?k:zgLab(k))} <small>(${fmt(n)})</small>`).join('')
       +(cnt.size>10?` <span class="mut">· + ${cnt.size-10} autres</span>`:'');
   }
-  $('#mapInfo').innerHTML=`<b>${fmt(pts.length)}</b> emplacements positionnés · magasin : <b>${esc(mag==='*'?'tous (superposition)':mag)}</b>`+
+  $('#mapInfo').innerHTML=(S.map.tamOnly?`⏳ <b>filtre tampon actif</b> — `:'')+
+    `<b>${fmt(pts.length)}</b> ${S.map.tamOnly?'emplacements tampon':'emplacements'} positionné(s) · magasin : <b>${esc(mag==='*'?'tous (superposition)':mag)}</b>`+
     (noPos?` · <span class="warn">${fmt(noPos)} sans position X/Y (ignorés)</span>`:'')+
     (hl?` · mise en avant : <b>${esc(hl.slice(hl.indexOf(':')+1))}</b>`:'')+
     (im&&im.naturalWidth?` · <span class="ok">image de fond active</span>`:'')+
@@ -1004,7 +1046,7 @@ function renderMapSel(){
   const box=$('#mapSel'),r=S.mapSel;
   if(!r||S.tab!=='carte'){box.hidden=true;return;}
   box.hidden=false;
-  box.innerHTML=`<div class="expHead" style="position:static;background:none"><b>📍 Emplacement sélectionné — ${esc(r.nomEmpl)}</b>
+  box.innerHTML=`<div class="expHead" style="position:static;background:none"><b>📍 Emplacement sélectionné — ${esc(r.nomEmpl)}</b>${isTamEmpl(r)?' <span class="chip k-tam" style="cursor:default">⏳ tampon</span>':''}
     <span class="row">
       ${r.zg?`<button class="fbtn" data-fiche="zg:${esc(r.zg)}">📄 Fiche ZG ${esc(r.zg)}</button>`:''}
       <button class="fbtn" data-path="${esc(r.nomEmpl)}">🧭 Chemins</button>
@@ -1013,7 +1055,7 @@ function renderMapSel(){
     </span></div>
     <div class="mut" style="font-size:12.5px">Magasin : ${esc(magOf(r))} · ZG : ${zgLab(r.zg)} · ${esc((r.refVia||[]).join(' / ')||'ZI/ZE inconnue')} ·
     allée ${esc(r.allee||'—')}, face ${esc(r.face||'—')}, colonne ${esc(r.colonne||'—')}, niveau ${esc(r.niveau||'—')}, empl. ${esc(r.empl||'—')} ·
-    places dispo/stock : ${esc(r.nbDispo??'—')}/${esc(r.nbStock??'—')} · position X ${esc(r.posX??'—')} / Y ${esc(r.posY??'—')}</div>`;
+    places dispo/stock : ${esc(r.nbDispo??'—')}/${esc(r.nbStock??'—')} · top tampon : ${esc(r.topTampon||'—')} · position X ${esc(r.posX??'—')} / Y ${esc(r.posY??'—')}</div>`;
 }
 
 function fcard(t,items){return `<div class="fcard"><h4>${esc(t)}</h4><ul>${items.length?items.map(x=>`<li>${x}</li>`).join(''):'<li class="mut">aucun</li>'}</ul></div>`;}
@@ -1254,6 +1296,14 @@ document.addEventListener('click',e=>{
     return;}
   if(b.dataset.mapfilter){S.tab='empl';S.filters={zg:b.dataset.mapfilter};S.q='';$('#q').value='';S.limit=200;render();$('#tableWrap').scrollIntoView({behavior:'smooth'});return;}
   if(b.dataset.selclose){S.mapSel=null;$('#mapSel').hidden=true;return;}
+  if(b.dataset.hl){S.map.hl=b.dataset.hl;$('#mapHl').value=S.map.hl;drawMap();renderTamList();return;}
+  if(b.id==='mapTam'){
+    S.map.tamOnly=!S.map.tamOnly;
+    localStorage.setItem('zgMapTam',S.map.tamOnly?'1':'0');
+    S.map.hl='';
+    renderMapControls();drawMap();renderTamList();
+    return;
+  }
   if(b.id==='dropHide'){S.showDrop=false;render();return;}
   if(b.id==='dropShow'){S.showDrop=true;render();$('#drop').scrollIntoView({behavior:'smooth',block:'nearest'});return;}
   if(b.id==='menuChargement'){
@@ -1324,9 +1374,9 @@ dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');loadFiles([...e.dataTransfer.files]);});
 
 /* ===== Événements de la carte ===== */
-$('#mapMag').addEventListener('change',e=>{S.map.mag=e.target.value;S.map.hl='';renderMapControls();drawMap();});
+$('#mapMag').addEventListener('change',e=>{S.map.mag=e.target.value;S.map.hl='';renderMapControls();drawMap();renderTamList();});
 $('#mapMode').addEventListener('change',e=>{S.map.mode=e.target.value;drawMap();});
-$('#mapHl').addEventListener('change',e=>{S.map.hl=e.target.value;drawMap();});
+$('#mapHl').addEventListener('change',e=>{S.map.hl=e.target.value;drawMap();renderTamList();});
 [['mapImgOp','op'],['mapImgSc','sc'],['mapImgDx','dx'],['mapImgDy','dy']].forEach(([id,k])=>{
   $('#'+id).addEventListener('input',e=>{cfgFor(S.map.mag)[k]=+e.target.value;saveCfg();drawMap();});
 });
@@ -1357,7 +1407,7 @@ cvEl.addEventListener('mousemove',e=>{
   if(!p){tipEl.style.display='none';cvEl.style.cursor='default';return;}
   cvEl.style.cursor='pointer';
   const r=p.r;
-  tipEl.innerHTML=`<b>${esc(r.nomEmpl)}</b><br>ZG : ${zgLab(r.zg)}<br>Magasin : ${esc(magOf(r))}${(r.refVia||[]).length?' · '+esc(r.refVia.join(' / ')):''}<br>Allée ${esc(r.allee||'—')} · Face ${esc(r.face||'—')} · Col. ${esc(r.colonne||'—')} · Niv. ${esc(r.niveau||'—')}<br>Places dispo/stock : ${esc(r.nbDispo??'—')}/${esc(r.nbStock??'—')}<br><span class="mut">X ${esc(r.posX)} · Y ${esc(r.posY)} — cliquer pour la fiche</span>`;
+  tipEl.innerHTML=`<b>${esc(r.nomEmpl)}</b>${isTamEmpl(r)?' <span class="ok">⏳ tampon</span>':''}<br>ZG : ${zgLab(r.zg)}<br>Magasin : ${esc(magOf(r))}${(r.refVia||[]).length?' · '+esc(r.refVia.join(' / ')):''}<br>Allée ${esc(r.allee||'—')} · Face ${esc(r.face||'—')} · Col. ${esc(r.colonne||'—')} · Niv. ${esc(r.niveau||'—')}<br>Places dispo/stock : ${esc(r.nbDispo??'—')}/${esc(r.nbStock??'—')}<br><span class="mut">X ${esc(r.posX)} · Y ${esc(r.posY)} — cliquer pour la fiche</span>`;
   tipEl.style.display='block';
   const bw=tipEl.offsetWidth,bh=tipEl.offsetHeight,W=cvEl.clientWidth,H=cvEl.clientHeight;
   let lx=p.x+14,ly=p.y+14;
