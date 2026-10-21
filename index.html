@@ -766,7 +766,7 @@ function buildModel(){
   });
   S.raw.mattype.forEach(r=>{if(r.typeMatCode&&!LAB.typeMat.has(r.typeMatCode))LAB.typeMat.set(r.typeMatCode,r.libTypeMat||'');});
   S.raw.materiel.forEach(r=>{if(r.typeMat&&!LAB.typeMat.has(r.typeMat))LAB.typeMat.set(r.typeMat,'');});
-  IDX.supByType.forEach(arr=>arr.sort((a,b)=>String(a.c).localeCompare(String(b.c),'fr',{numeric:true}));
+  IDX.supByType.forEach(arr=>arr.sort((a,b)=>String(a.c).localeCompare(String(b.c),'fr',{numeric:true})));
   S.mattypeDes=new Set(S.raw.mattype.filter(r=>TAM_YES.has(N(r.desactive))).map(r=>r.typeMatCode));
   S.matTypes=sortU([...S.raw.mattype.map(r=>r.typeMatCode),...S.raw.materiel.map(r=>r.typeMat),...S.raw.matsup.map(r=>r.typeMatCode)].filter(Boolean));
   S.matSupAll=(()=>{const m=new Map();S.raw.matsup.forEach(r=>{if(r.typeSupCode&&!m.has(r.typeSupCode))m.set(r.typeSupCode,r.typeSupLib||'');});
