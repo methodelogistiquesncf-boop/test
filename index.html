@@ -713,7 +713,7 @@ function makeControls(){
     grp(S.ref.filter(r=>r.zg&&!emplCount(r.depot,r.zg)),r=>({zg:r.zg}),'ref'));
   add('Matériels (F6) rattachés à un type désactivé (F7)','Le type est marqué désactivé dans Réflex : parc potentiellement obsolète.',
     grp(S.materiel.filter(r=>S.mattypeDes.has(r.typeMat)),r=>r.typeMat?{typeMat:r.typeMat}:null,'materiel'));
-  add('Matériels (F6) sans type connu dans F7/F8','Le code type_materiel du matériel n’existe ni dans F7 ni dans F8.',
+  add('Matériels (F6) sans type connu dans F7/F8','Le code type_materiel du matériel est introuvable dans F7 et F8.',
     grp(S.materiel.filter(r=>r.typeMat&&!S.raw.mattype.some(t=>t.typeMatCode===r.typeMat)&&!IDX.supByType.has(r.typeMat)),r=>r.typeMat?{typeMat:r.typeMat}:null,'materiel'));
   add('Types de matériel (F7) sans aucun matériel (F6)','Type déclaré mais aucun engin du parc ne le porte.',
     grp(S.mattype.filter(r=>!r.nbMat),r=>r.typeMatCode?{typeMatCode:r.typeMatCode}:null,'materiel'));
