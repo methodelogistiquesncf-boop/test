@@ -35,15 +35,12 @@ main{padding:18px 22px;max-width:1900px;margin:auto}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
 label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
-select,input[type=search],input[type=file],button,textarea{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
+select,input[type=search],input[type=file],button{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
 button{cursor:pointer}
 button:hover{border-color:var(--acc);color:var(--acc)}
 button:disabled{opacity:.45;cursor:not-allowed}
-button.primary{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
-button.primary:hover{background:#0ea5e9;color:#fff}
 input[type=range]{accent-color:var(--acc);width:130px;padding:2px}
 input[type=checkbox]{width:auto;accent-color:var(--acc)}
-textarea{min-height:80px;resize:vertical;font-family:monospace;font-size:12px}
 
 .fstatusrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .fstatus{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border:1px solid var(--line);border-radius:20px;font-size:12px;background:var(--bg2);cursor:default}
@@ -149,10 +146,10 @@ summary:hover{background:var(--hover)}
 #restoreBanner b{color:var(--ok);display:block;margin-bottom:3px}
 #restoreBanner .mut{font-size:12.5px}
 
-/* Styles pour la configuration visuelle des jointures */
+/* Configuration visuelle */
 #configPanel{position:relative}
 .config-canvas{position:relative;width:100%;height:600px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:auto;margin:12px 0}
-.config-node{position:absolute;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px;min-width:250px;cursor:move;box-shadow:0 4px 12px rgba(0,0,0,0.3);user-select:none}
+.config-node{position:absolute;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px;min-width:280px;cursor:move;box-shadow:0 4px 12px rgba(0,0,0,0.3);user-select:none}
 .config-node.dragging{opacity:0.6;z-index:1000}
 .config-node h4{margin:0 0 8px;font-size:14px;color:var(--acc);display:flex;justify-content:space-between;align-items:center}
 .config-node .close-btn{background:var(--warn);color:#000;border:0;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer}
@@ -162,10 +159,13 @@ summary:hover{background:var(--hover)}
 .config-column.primary{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
 .config-column.connecting{background:var(--warn);border-color:var(--warn)}
 .config-column .pk-icon{font-size:10px}
-.config-connection{position:absolute;pointer-events:none;z-index:5}
-.config-toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.config-toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.config-toolbar button{padding:8px 16px;font-weight:600}
+.config-toolbar button.primary{background:var(--acc);color:#04121f;border-color:var(--acc)}
+.config-toolbar button.primary:hover{background:#0ea5e9;color:#fff}
 .config-info{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:12px;font-size:13px}
 .config-info b{color:var(--acc)}
+#configStatus{margin-top:12px;padding:10px;border-radius:8px;font-size:13px;font-weight:600}
 
 @media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}.file-chip{min-width:140px}.config-node{min-width:200px}}
 @media print{
@@ -186,7 +186,7 @@ summary:hover{background:var(--hover)}
   <div class="loadBox">
     <div class="spin"></div>
     <div id="loadingMsg">Chargement des fichiers…</div>
-    <div id="loadingSub">Merci de patienter — le traitement se fait entièrement dans votre navigateur.</div>
+    <div id="loadingSub">Merci de patienter.</div>
     <div class="progress-bar"><div class="fill" style="width:0%"></div></div>
     <div id="loadProgress"><span id="loadCount">0 / 0</span></div>
     <div id="fileList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"></div>
@@ -259,7 +259,7 @@ summary:hover{background:var(--hover)}
   <div id="matTypeDetail" class="card"></div>
 </section>
 
-<!-- PAGE DE CONFIGURATION VISUELLE DES JOINTURES -->
+<!-- PAGE DE CONFIGURATION VISUELLE -->
 <section id="configPanel" class="panel" hidden>
   <div class="expHead">
     <b>⚙️ Configuration visuelle des jointures</b>
@@ -267,27 +267,29 @@ summary:hover{background:var(--hover)}
   </div>
   
   <div class="config-toolbar">
-    <button id="configAutoDetect" class="primary">🔍 Détecter automatiquement</button>
+    <button id="configAutoDetect" class="primary">🔍 Détecter automatiquement les fichiers</button>
     <button id="configSave">💾 Sauvegarder</button>
     <button id="configReset">🔄 Réinitialiser</button>
     <button id="configClear">🗑 Tout effacer</button>
+    <span class="mut" style="margin-left:auto">💡 Astuce : Chargez d'abord vos fichiers Excel, puis cliquez sur "Détecter automatiquement"</span>
   </div>
 
   <div class="config-info">
     <b>Instructions :</b>
-    <ul style="margin:6px 0;padding-left:20px">
-      <li>Cliquez sur <b>"Détecter automatiquement"</b> pour analyser les fichiers chargés</li>
+    <ol style="margin:6px 0;padding-left:20px">
+      <li><b>Chargez vos fichiers Excel</b> dans la section "📂 Vos fichiers" ci-dessus</li>
+      <li>Cliquez sur <b>"🔍 Détecter automatiquement les fichiers"</b> pour analyser les fichiers chargés</li>
       <li><b>Cliquez</b> sur une colonne pour la marquer comme <b>clé primaire</b> (🔑)</li>
       <li><b>Cliquez-glissez</b> d'une colonne à une autre pour créer une <b>jointure</b></li>
       <li>Déplacez les fichiers en les faisant glisser par leur titre</li>
-    </ul>
+    </ol>
   </div>
 
   <div class="config-canvas" id="configCanvas">
     <svg id="configSvg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"></svg>
   </div>
 
-  <div id="configStatus" style="margin-top:12px"></div>
+  <div id="configStatus"></div>
 </section>
 
 <div class="tableWrap" id="tableWrap"><table id="grid"></table></div>
@@ -330,20 +332,20 @@ let jointuresConfig = { files: [], connections: [] };
 let configNodes = [];
 let draggingNode = null;
 let dragOffset = {x:0, y:0};
-let connecting = null; // {fileId, column, element}
+let connecting = null;
 
 function showConfigStatus(msg, type='success') {
   const status = $('#configStatus');
   if(!status) return;
   status.textContent = msg;
-  status.className = 'config-info';
   status.style.color = type === 'error' ? 'var(--warn)' : 'var(--ok)';
-  setTimeout(() => status.textContent = '', 3000);
+  status.style.background = type === 'error' ? 'rgba(251,191,36,0.1)' : 'rgba(52,211,153,0.1)';
+  setTimeout(() => {status.textContent = '';status.style.background='';}, 4000);
 }
 
 function autoDetectColumns() {
   if(!S.files || Object.keys(S.files).length === 0) {
-    showConfigStatus('Aucun fichier chargé. Chargez d\'abord des fichiers Excel.', 'error');
+    showConfigStatus('❌ Aucun fichier chargé. Chargez d\'abord vos fichiers Excel dans la section "📂 Vos fichiers" ci-dessus.', 'error');
     return;
   }
 
@@ -353,7 +355,7 @@ function autoDetectColumns() {
   const kinds = Object.keys(S.files);
   const startX = 50;
   const startY = 50;
-  const spacingX = 300;
+  const spacingX = 320;
   
   kinds.forEach((kind, idx) => {
     const rows = S.raw[kind] || [];
@@ -368,19 +370,19 @@ function autoDetectColumns() {
       columns: columns,
       primaryKeys: [],
       x: startX + (idx % 3) * spacingX,
-      y: startY + Math.floor(idx / 3) * 300
+      y: startY + Math.floor(idx / 3) * 350
     });
   });
   
   // Détection automatique des clés primaires
   jointuresConfig.files.forEach(file => {
-    const commonPK = ['depot', 'zi', 'ze', 'zg', 'gdep', 'garr', 'code', 'numEmpl'];
+    const commonPK = ['depot', 'zi', 'ze', 'zg', 'gdep', 'garr', 'code', 'numEmpl', 'typeMatCode', 'typeSupCode'];
     file.primaryKeys = file.columns.filter(c => commonPK.includes(c));
   });
   
   saveConfigToStorage();
   renderConfigCanvas();
-  showConfigStatus(`${jointuresConfig.files.length} fichiers détectés avec leurs colonnes`);
+  showConfigStatus(`✅ ${jointuresConfig.files.length} fichiers détectés avec leurs colonnes`);
 }
 
 function renderConfigCanvas() {
@@ -391,6 +393,11 @@ function renderConfigCanvas() {
   // Nettoyer
   canvas.querySelectorAll('.config-node').forEach(n => n.remove());
   svg.innerHTML = '';
+  
+  if(jointuresConfig.files.length === 0) {
+    canvas.innerHTML = '<div style="text-align:center;padding:60px;color:var(--mut)"><b>Aucun fichier détecté</b><br>Cliquez sur "🔍 Détecter automatiquement les fichiers" pour commencer</div>';
+    return;
+  }
   
   // Créer les nœuds
   jointuresConfig.files.forEach(file => {
@@ -495,7 +502,6 @@ function endConnection(e, fileId, col) {
   e.stopPropagation();
   
   if(connecting.fileId !== fileId || connecting.col !== col) {
-    // Créer la connexion
     jointuresConfig.connections.push({
       fromFile: connecting.fileId,
       fromCol: connecting.col,
@@ -504,7 +510,7 @@ function endConnection(e, fileId, col) {
     });
     saveConfigToStorage();
     renderConfigConnections();
-    showConfigStatus(`Jointure créée : ${connecting.col} → ${col}`);
+    showConfigStatus(`✅ Jointure créée : ${connecting.col} → ${col}`);
   }
   
   connecting.element.classList.remove('connecting');
@@ -555,7 +561,6 @@ function loadConfigFromStorage() {
     if(saved) {
       jointuresConfig = JSON.parse(saved);
       renderConfigCanvas();
-      showConfigStatus('Configuration chargée');
     }
   } catch (err) {
     console.error('Erreur de chargement:', err);
@@ -578,7 +583,6 @@ function clearConfig() {
   showConfigStatus('Configuration effacée');
 }
 
-// Drag & drop global
 document.addEventListener('mousemove', (e) => {
   if(!draggingNode) return;
   
@@ -591,7 +595,6 @@ document.addEventListener('mousemove', (e) => {
   draggingNode.style.left = Math.max(0, x) + 'px';
   draggingNode.style.top = Math.max(0, y) + 'px';
   
-  // Mettre à jour la position dans la config
   const fileId = draggingNode.dataset.fileId;
   const file = jointuresConfig.files.find(f => f.id === fileId);
   if(file) {
@@ -821,10 +824,9 @@ const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel'
 materiel:'F6 · Matériel',mattype:'F7 · Types matériel',matsup:'F8 · Types supports'};
 const KIND_ORDER=['depart','flux','ref','tampon','empl','materiel','mattype','matsup'];
 const CORE_KINDS=['depart','flux','ref','tampon','empl'];
-const OPT_KINDS=['materiel','mattype','matsup'];
 
 const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]},files:{},stats:{},exclRows:[],
-  flux:[],depart:[],ref:[],empl:[],materiel:[],mattype:[],filters:{},q:'',tab:'accueil',sort:null,limit=200,controls:[],fiche:null,path:null,loading:false,
+  flux:[],depart:[],ref:[],empl:[],materiel:[],mattype:[],filters:{},q:'',tab:'accueil',sort:null,limit:200,controls:[],fiche:null,path:null,loading:false,
   showDrop:true,hasSession:false,posCount:0,mapSel:null,
   matTypes:[],matSupAll:[],matTypeCount:0,mattypeDes:new Set(),
   map:{mag:'',mode:'zg',hl:'',tamOnly:localStorage.getItem('zgMapTam')==='1'},
@@ -845,25 +847,6 @@ const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map(),typeMat:new Map(),
 const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg,typeMat:LAB.typeMat,typeSup:LAB.typeSup};
 const labOf=(c,v)=>{const m=c&&c.dict?DICT[c.dict]:null;return m?(m.get(v)||''):'';};
 
-const INFO={depot:'Site physique (ici NE1).',zi:'Zone d\'Intervention.',ze:'Zone d\'Évolution.',
-gdep:'Groupe de ZG d\'où part le flux.',garr:'Groupe de ZG où arrive le flux.',zgArr:'Zone géographique de destination.',zgDep:'Zone géographique contenue dans le groupe de départ.',
-zg:'Zone géographique.',tamponList:'Tampon(s) traversé(s).',depZGs:'ZG contenues dans le groupe de départ.',
-refZEs:'ZE du référentiel.',nbEmpl:'Nombre d\'emplacements F5.',numEmpl:'Numéro interne.',
-nomEmpl:'Nom complet.',allee:'Allée.',face:'Face.',colonne:'Colonne.',
-niveau:'Niveau.',empl:'Complément.',sequence:'Ordre de priorité.',empl1:'Code principal.',
-empl2:'Sens.',empl3:'Sous-localisation.',libTampon:'Libellé.',inFlux:'Utilisé ?',
-usage:'Utilisée ?',_ctl:'État.',_phrase:'Explication.',zoneInv:'Zone d\'inventaire.',
-magasin:'Code magasin.',nbStock:'Supports stockables.',nbDispo:'Supports disponibles.',libEmpl:'Libellé.',refVia:'ZI/ZE.',
-depGroups:'Groupes de départ.',arrGroups:'Groupes d\'arrivée.',libZg:'Libellé.',libGdep:'Libellé groupe départ.',
-libGarr:'Libellé groupe arrivée.',_lab:'Chemin tampon.',typeEmpl:'Type.',_file:'Fichier.',
-topTampon:'Indicateur tampon.',topStock:'Indicateur stockage.',topPick:'Indicateur picking.',active:'Implantation active ?',zp:'Zone physique ZP.',zs:'Zone physique ZS.',
-posX:'Coordonnée X.',posY:'Coordonnée Y.',taille:'Code taille.',
-matCode:'Code matériel.',libMat:'Libellé matériel.',typeMat:'Type de matériel.',typeLib:'Libellé type.',
-zoneInt:'ZI d\'intervention.',emplMat:'Emplacement parc.',
-nbSup:'Nombre de supports.',
-typeMatCode:'Code type matériel.',libTypeMat:'Libellé type matériel.',desactive:'Type désactivé ?',
-typeSupCode:'Code type support.',typeSupLib:'Libellé type support.'};
-
 function tamponLabel(r){
   const em=[r.empl1,r.empl2,r.empl3,r.empl4,r.empl5]
     .map(v=>String(v??'').trim()).filter(v=>v&&v!=='.').join('/');
@@ -880,16 +863,6 @@ function buildLabels(){
     if(r.garr&&!LAB.g.has(r.garr))LAB.g.set(r.garr,r.libGarr||'');
     if(r.zgArr&&r.libZg&&!LAB.zg.has(r.zgArr))LAB.zg.set(r.zgArr,r.libZg);
   }));
-}
-
-const gl=(d,v)=>{const l=d.get(v);return l?`${esc(l)} (<b>${esc(v)}</b>)`:`<b>${esc(v)}</b>`;};
-
-function flowHTML(dg,ag,tam,nz,ne){
-  return `<span class="flow"><span class="fbox g">${esc(LAB.g.get(dg)||dg)}</span><span class="farr">→</span>`+
-    `<span class="fbox t">⏳ ${esc(tam||'sans tampon')}</span><span class="farr">→</span>`+
-    `<span class="fbox g">${esc(LAB.g.get(ag)||ag)}</span>`+
-    (nz!=null?`<span class="farr">→</span><span class="fbox z">${fmt(nz)} ZG</span>`:'')+
-    (ne!=null?`<span class="farr">→</span><span class="fbox e">${fmt(ne)} empl.</span>`:'')+`</span>`;
 }
 
 function kindState(k){
@@ -1156,12 +1129,6 @@ const COLS={
   C('zgArr','ZG arrivée',{dim:true,dict:'zg'}),
   FICHE('_fiche',r=>r.zgArr),
   MULTI('tamponList','Tampon',{dict:'tam'}),
-  C('_ctl','Contrôle',{get:r=>{
-    const w=[];
-    if(!r.hasDep)w.push('groupe départ absent');
-    if(!r.hasRef)w.push('ZG sans ZE');
-    if(!(r.tamponList||[]).length)w.push('aucun tampon');
-    return w.length?('À vérifier : '+w.join(' · ')):'OK';},lSimple:'État'}),
  ],
  depart:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
@@ -1254,7 +1221,8 @@ function renderMenu(){
   const has=Object.keys(S.files).length;
   $('#menuBar').innerHTML=
     `<button class="menu-item${S.tab==='accueil'?' active':''}" data-go="accueil">🏠 Accueil</button>`+
-    `<button class="menu-item" id="menuChargement">📂 Chargement <span class="mbadge ${has?'ok':'warn'}">${has}/8</span></button>`;
+    `<button class="menu-item" id="menuChargement">📂 Chargement <span class="mbadge ${has?'ok':'warn'}">${has}/8</span></button>`+
+    `<button class="menu-item${S.tab==='config'?' active':''}" data-go="config">⚙️ Configuration des jointures</button>`;
 }
 
 function renderStats(){
@@ -1355,7 +1323,7 @@ document.addEventListener('click',e=>{
   
   if(b.id==='configClose'){S.tab='accueil';render();return;}
   if(b.id==='configAutoDetect'){autoDetectColumns();return;}
-  if(b.id==='configSave'){saveConfigToStorage();showConfigStatus('Configuration sauvegardée');return;}
+  if(b.id==='configSave'){saveConfigToStorage();showConfigStatus('✅ Configuration sauvegardée');return;}
   if(b.id==='configReset'){resetConfig();return;}
   if(b.id==='configClear'){clearConfig();return;}
   
@@ -1396,10 +1364,6 @@ document.addEventListener('change',e=>{
     if(v)S.filters[k]=v;else delete S.filters[k];
     S.limit=200;render();
   }
-});
-
-document.addEventListener('input',e=>{
-  // Gestion des inputs
 });
 
 $('#q').addEventListener('input',e=>{S.q=e.target.value;S.limit=200;renderFilters();renderGrid();});
