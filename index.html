@@ -35,15 +35,12 @@ main{padding:18px 22px;max-width:1900px;margin:auto}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
 label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
-select,input[type=search],input[type=file],button,textarea{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
+select,input[type=search],input[type=file],button{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
 button{cursor:pointer}
 button:hover{border-color:var(--acc);color:var(--acc)}
 button:disabled{opacity:.45;cursor:not-allowed}
-button.primary{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
-button.primary:hover{background:#0ea5e9;color:#fff}
 input[type=range]{accent-color:var(--acc);width:130px;padding:2px}
 input[type=checkbox]{width:auto;accent-color:var(--acc)}
-textarea{min-height:80px;resize:vertical;font-family:monospace;font-size:12px}
 
 .fstatusrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .fstatus{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border:1px solid var(--line);border-radius:20px;font-size:12px;background:var(--bg2);cursor:default}
@@ -55,27 +52,19 @@ textarea{min-height:80px;resize:vertical;font-family:monospace;font-size:12px}
 .spinmini{width:11px;height:11px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;display:inline-block;animation:rot 1s linear infinite;flex:none}
 #loadList{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px;max-width:560px}
 
-.file-chip{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:8px 14px;margin:3px;
-  border:1.5px solid var(--line);border-radius:20px;
-  font-size:13px;font-weight:500;
-  background:var(--bg2);
-  transition:all 0.4s cubic-bezier(.4,0,.2,1);
-  min-width:200px;max-width:340px;
-}
-.file-chip .fname{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.file-chip .fkind{font-size:10.5px;color:var(--mut);padding:2px 7px;border-radius:8px;background:var(--hover);white-space:nowrap;font-weight:600;}
-.file-chip.done{border-color:var(--ok);background:rgba(52,211,153,0.12);animation:slideIn 0.4s ease;}
+.file-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;margin:3px;border:1.5px solid var(--line);border-radius:20px;font-size:13px;font-weight:500;background:var(--bg2);transition:all 0.4s cubic-bezier(.4,0,.2,1);min-width:200px;max-width:340px}
+.file-chip .fname{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-chip .fkind{font-size:10.5px;color:var(--mut);padding:2px 7px;border-radius:8px;background:var(--hover);white-space:nowrap;font-weight:600}
+.file-chip.done{border-color:var(--ok);background:rgba(52,211,153,0.12);animation:slideIn 0.4s ease}
 .file-chip.done .ic{color:var(--ok);font-size:18px;font-weight:900}
-.file-chip.wait{border-color:var(--acc);background:rgba(56,189,248,0.1);}
+.file-chip.wait{border-color:var(--acc);background:rgba(56,189,248,0.1)}
 .file-chip.wait .ic{color:var(--acc)}
-.file-chip.error{border-color:var(--warn);background:rgba(251,191,36,0.12);}
+.file-chip.error{border-color:var(--warn);background:rgba(251,191,36,0.12)}
 .file-chip.error .ic{color:var(--warn)}
 @keyframes slideIn{0%{opacity:0;transform:translateY(-6px) scale(0.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
-#fileList, #fileListInline{display:flex;flex-wrap:wrap;gap:4px;margin-top:14px;max-width:100%;}
-.progress-bar{width:100%;max-width:560px;height:6px;background:var(--hover);border-radius:3px;margin:10px 0;overflow:hidden;}
-.progress-bar .fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));transition:width 0.4s ease;border-radius:3px;}
+#fileList, #fileListInline{display:flex;flex-wrap:wrap;gap:4px;margin-top:14px;max-width:100%}
+.progress-bar{width:100%;max-width:560px;height:6px;background:var(--hover);border-radius:3px;margin:10px 0;overflow:hidden}
+.progress-bar .fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));transition:width 0.4s ease;border-radius:3px}
 #loadProgress{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut)}
 
 #drop{border-style:dashed}
@@ -149,34 +138,37 @@ summary:hover{background:var(--hover)}
 #loadingMsg{font-size:15px;font-weight:600}
 #loadingSub{font-size:12.5px;color:var(--mut);margin-top:6px}
 
-#restoreBanner{
-  background:rgba(52,211,153,0.1);
-  border:1px dashed var(--ok);
-  border-radius:12px;
-  padding:14px;
-  margin-bottom:14px;
-  display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
-}
-#restoreBanner[hidden]{display:none} 
+#restoreBanner{background:rgba(52,211,153,0.1);border:1px dashed var(--ok);border-radius:12px;padding:14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+#restoreBanner[hidden]{display:none}
 #restoreBanner .info{flex:1;min-width:220px}
 #restoreBanner b{color:var(--ok);display:block;margin-bottom:3px}
 #restoreBanner .mut{font-size:12.5px}
 #cacheInfo{font-size:11.5px;color:var(--mut);margin-top:6px}
 
-/* Styles pour la configuration des jointures */
-.config-section{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
-.config-section h3{color:var(--acc);margin:0 0 12px;font-size:15px}
-.config-row{display:grid;grid-template-columns:200px 1fr 50px 1fr;gap:8px;align-items:center;margin-bottom:8px;padding:8px;background:var(--hover);border-radius:6px}
-.col-chip{padding:3px 8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;font-size:11px;cursor:pointer;display:inline-block;margin:2px}
-.col-chip.key{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
-.col-chip.fk{background:var(--warn);color:#04121f;border-color:var(--warn)}
-.btn-group{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-#configStatus{margin-top:12px;padding:10px;border-radius:8px;display:none;font-size:13px}
+/* ===== CONFIGURATION VISUELLE DES JOINTURES ===== */
+.config-toolbar{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;align-items:center}
+.config-toolbar button{padding:8px 16px;font-weight:600}
+.config-toolbar button.primary{background:var(--acc);color:#04121f;border-color:var(--acc)}
+.config-toolbar button.primary:hover{background:#0ea5e9;color:#fff}
+.config-info{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px}
+.config-info b{color:var(--acc)}
+.config-canvas{position:relative;width:100%;height:640px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:auto}
+#configSvg{position:absolute;top:0;left:0;pointer-events:none}
+#configSvg path{pointer-events:stroke;cursor:pointer}
+#configEmpty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;pointer-events:none}
+.config-node{position:absolute;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px;width:280px;cursor:move;box-shadow:0 4px 12px rgba(0,0,0,0.3);user-select:none;z-index:2}
+.config-node.dragging{opacity:0.6;z-index:1000}
+.config-node h4{margin:0 0 8px;font-size:14px;color:var(--acc);display:flex;justify-content:space-between;align-items:center;cursor:move}
+.config-node .close-btn{background:var(--warn);color:#000;border:0;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;font-weight:700}
+.config-columns{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow:auto}
+.config-column{padding:6px 10px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s}
+.config-column:hover{background:var(--hover);border-color:var(--acc)}
+.config-column.primary{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:700}
+.config-column.connecting{background:var(--warn);color:#04121f;border-color:var(--warn)}
+#configStatus{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;display:none}
 #configStatus.show{display:block}
-#configStatus.success{background:rgba(52,211,153,0.1);border:1px solid var(--ok);color:var(--ok)}
-#configStatus.error{background:rgba(251,191,36,0.1);border:1px solid var(--warn);color:var(--warn)}
 
-@media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}.file-chip{min-width:140px}.config-row{grid-template-columns:1fr;}}
+@media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}.file-chip{min-width:140px}.config-node{width:220px}}
 @media print{
   body{background:#fff!important;color:#000!important}
   body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
@@ -266,7 +258,6 @@ summary:hover{background:var(--hover)}
       <option value="retour">Retour : ce qui peut arriver jusqu'ici</option>
     </select></label>
     <button id="pathGo">Calculer les chemins</button>
-    <button id="pathView">🌳 Version détaillée (arbre)</button>
   </div>
   <div id="pathTree" style="margin-top:12px"></div>
 </section>
@@ -284,7 +275,7 @@ summary:hover{background:var(--hover)}
       <option value="zi">ZI / ZE</option>
     </select></label>
     <label>Mettre en avant<select id="mapHl"></select></label>
-    <button id="mapTam" class="fbtn" style="font-size:12.5px;padding:7px 12px" title="1 clic : n'afficher que les emplacements tampon (indicateur TOP_TAMPON du F5, ou ZG / libellé contenant « tampon »). Combiné à « ∗ Tous les magasins » = tous les tampons du site.">⏳ Emplacements tampon</button>
+    <button id="mapTam" class="fbtn" style="font-size:12.5px;padding:7px 12px">⏳ Emplacements tampon</button>
     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="mapFlipY"> inverser l'axe Y</label>
     <label>Image de fond (plan)<input type="file" id="mapImg" accept="image/*"></label>
     <label>Opacité image<input type="range" id="mapImgOp" min="0" max="100" value="35"></label>
@@ -318,55 +309,37 @@ summary:hover{background:var(--hover)}
   </div>
 </section>
 
-<!-- PAGE DE CONFIGURATION DES JOINTURES -->
+<!-- ===== CONFIGURATION VISUELLE DES JOINTURES ===== -->
 <section id="configPanel" class="panel" hidden>
   <div class="expHead">
-    <b>⚙️ Configuration des jointures entre fichiers</b>
+    <b>⚙️ Configuration visuelle des jointures entre fichiers</b>
     <button id="configClose" class="fbtn">Fermer ×</button>
   </div>
-  
-  <div class="config-section">
-    <h3>💾 Configuration actuelle</h3>
-    <div class="btn-group">
-      <button id="configLoad" class="primary">📥 Charger depuis localStorage</button>
-      <button id="configSave" class="primary">💾 Sauvegarder dans localStorage</button>
-      <button id="configReset">🔄 Réinitialiser</button>
-      <button id="configExport">📤 Exporter JSON</button>
-      <button id="configImport">📥 Importer JSON</button>
-    </div>
-    <div id="configStatus"></div>
+
+  <div class="config-toolbar">
+    <button id="configAutoDetect" class="primary">🔍 Détecter automatiquement les fichiers</button>
+    <button id="configAutoLink">🔗 Auto-relier les colonnes identiques</button>
+    <button id="configSave">💾 Sauvegarder</button>
+    <button id="configReset">🔄 Réinitialiser</button>
+    <span class="mut" style="margin-left:auto">💡 Chargez d'abord vos fichiers Excel (menu 📂), puis cliquez sur « 🔍 Détecter »</span>
   </div>
 
-  <div class="config-section">
-    <h3>📋 Fichiers chargés</h3>
-    <div id="configFilesList"><span class="mut">Aucun fichier configuré. Cliquez sur "Charger depuis localStorage" ou configurez manuellement.</span></div>
+  <div class="config-info">
+    <b>Comment ça marche :</b>
+    <ol style="margin:6px 0;padding-left:20px">
+      <li><b>« 🔍 Détecter »</b> : chaque fichier chargé devient une boîte affichant toutes ses colonnes (détection automatique, rien à saisir).</li>
+      <li><b>Clic simple</b> sur une colonne = la marquer comme <b>clé primaire 🔑</b>.</li>
+      <li><b>Cliquer-glisser</b> d'une colonne vers une colonne d'un autre fichier = créer une <b>jointure</b> (flèche bleue).</li>
+      <li><b>Clic sur une flèche</b> = supprimer la jointure · glissez les boîtes par leur titre pour ranger · tout est sauvegardé automatiquement.</li>
+    </ol>
   </div>
 
-  <div class="config-section">
-    <h3>🔗 Jointures définies</h3>
-    <div id="configJointuresList"><span class="mut">Aucune jointure définie.</span></div>
-    <button id="configAddJointure" style="margin-top:12px">+ Ajouter une jointure</button>
+  <div class="config-canvas" id="configCanvas">
+    <svg id="configSvg"></svg>
+    <div id="configEmpty" class="mut">Aucun fichier détecté.<br>Chargez vos fichiers Excel puis cliquez sur « 🔍 Détecter automatiquement les fichiers ».</div>
   </div>
 
-  <div class="config-section">
-    <h3>📝 Configuration JSON (éditable)</h3>
-    <label>
-      <textarea id="configJson" placeholder='{"files":[...],"jointures":[...]}'></textarea>
-    </label>
-    <div class="btn-group">
-      <button id="configApplyJson" class="primary">✓ Appliquer la configuration</button>
-    </div>
-  </div>
-
-  <div class="config-section">
-    <h3>📖 Aide</h3>
-    <div class="mut">
-      <p><b>Clé primaire</b> : combinaison de colonnes qui identifie de manière unique chaque ligne du fichier.</p>
-      <p><b>Clé étrangère</b> : colonne(s) qui référencent une clé primaire d'un autre fichier.</p>
-      <p><b>Jointure</b> : relation entre deux fichiers via leurs clés.</p>
-      <p>La configuration est automatiquement sauvegardée en localStorage et peut être exportée/importée en JSON.</p>
-    </div>
-  </div>
+  <div id="configStatus"></div>
 </section>
 
 <div class="tableWrap" id="tableWrap"><table id="grid"></table></div>
@@ -428,246 +401,187 @@ const frame=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 const closeMenus=()=>$$('.menu-item.open').forEach(x=>x.classList.remove('open'));
 
 /* ============================================================ */
-/* ============ CONFIGURATION DES JOINTURES ==================== */
+/* ============ CONFIGURATION VISUELLE DES JOINTURES =========== */
 /* ============================================================ */
-const CONFIG_STORAGE_KEY = 'jointures_config';
-let jointuresConfig = { files: [], jointures: [] };
+const CONFIG_STORAGE_KEY='zgJointuresConfig';
+let jointuresConfig={files:[],connections:[]};
+let draggingNode=null,dragGrab={x:0,y:0},connecting=null,suppressPK=false;
 
-function showConfigStatus(msg, type='success') {
-  const status = document.getElementById('configStatus');
-  status.textContent = msg;
-  status.className = 'show ' + type;
-  setTimeout(() => status.className = '', 3000);
+function showConfigStatus(msg,type){
+  const el=$('#configStatus');if(!el)return;
+  el.textContent=msg;
+  el.className='show';
+  el.style.background=type==='error'?'rgba(251,191,36,0.12)':'rgba(52,211,153,0.12)';
+  el.style.color=type==='error'?'var(--warn)':'var(--ok)';
+  el.style.border='1px solid '+(type==='error'?'var(--warn)':'var(--ok)');
+  setTimeout(()=>{el.className='';},4000);
 }
-
-function loadConfigFromStorage() {
-  try {
-    const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
-    if (saved) {
-      jointuresConfig = JSON.parse(saved);
-      renderConfigUI();
-      showConfigStatus('Configuration chargée depuis localStorage');
-    } else {
-      showConfigStatus('Aucune configuration trouvée dans localStorage', 'error');
+function saveConfigToStorage(){
+  try{localStorage.setItem(CONFIG_STORAGE_KEY,JSON.stringify(jointuresConfig));}catch(e){console.warn('[config]',e);}
+}
+function loadConfigFromStorage(){
+  try{
+    const s=localStorage.getItem(CONFIG_STORAGE_KEY);
+    if(s){const c=JSON.parse(s);if(c&&Array.isArray(c.files))jointuresConfig=c;}
+  }catch(e){console.warn('[config]',e);}
+}
+function autoDetectColumns(){
+  const kinds=Object.keys(S.files||{});
+  if(!kinds.length){
+    showConfigStatus('❌ Aucun fichier chargé. Allez dans 📂 Chargement et chargez vos fichiers Excel d\'abord.','error');
+    return;
+  }
+  jointuresConfig={files:[],connections:[]};
+  const PK=['depot','zi','ze','zg','gdep','garr','numEmpl','typeMatCode','typeSupCode','code'];
+  kinds.forEach((kind,idx)=>{
+    const rows=S.raw[kind]||[];
+    if(!rows.length)return;
+    const columns=Object.keys(rows[0]).filter(k=>!k.startsWith('_')&&k!=='extra');
+    jointuresConfig.files.push({
+      id:kind,
+      name:LABELS[kind]||kind,
+      columns:columns,
+      primaryKeys:columns.filter(c=>PK.includes(c)),
+      x:40+(idx%3)*310,
+      y:40+Math.floor(idx/3)*360
+    });
+  });
+  saveConfigToStorage();
+  renderConfigCanvas();
+  showConfigStatus('✅ '+jointuresConfig.files.length+' fichier(s) détecté(s) avec leurs colonnes. Cliquez-glissez entre colonnes pour créer des jointures.');
+}
+function autoLinkColumns(){
+  if(!jointuresConfig.files.length){showConfigStatus('❌ Lancez d\'abord « 🔍 Détecter ».','error');return;}
+  const WL=['zi','ze','zg','gdep','garr','typeMatCode','typeSupCode'];
+  let n=0;
+  for(let i=0;i<jointuresConfig.files.length;i++){
+    for(let j=i+1;j<jointuresConfig.files.length;j++){
+      const a=jointuresConfig.files[i],b=jointuresConfig.files[j];
+      WL.forEach(col=>{
+        if(a.columns.includes(col)&&b.columns.includes(col)){
+          const exists=jointuresConfig.connections.some(c=>
+            (c.fromFile===a.id&&c.fromCol===col&&c.toFile===b.id&&c.toCol===col)||
+            (c.fromFile===b.id&&c.fromCol===col&&c.toFile===a.id&&c.toCol===col));
+          if(!exists){jointuresConfig.connections.push({fromFile:a.id,fromCol:col,toFile:b.id,toCol:col});n++;}
+        }
+      });
     }
-  } catch (err) {
-    showConfigStatus('Erreur de chargement : ' + err.message, 'error');
   }
+  saveConfigToStorage();
+  renderConfigCanvas();
+  showConfigStatus(n?('✅ '+n+' jointure(s) suggérée(s) par noms de colonnes identiques. Clic sur une flèche pour la supprimer.'):'Aucune nouvelle jointure suggérée.',n?'success':'error');
 }
-
-function saveConfigToStorage() {
-  try {
-    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(jointuresConfig));
-    updateConfigJsonView();
-    showConfigStatus('Configuration sauvegardée dans localStorage');
-  } catch (err) {
-    showConfigStatus('Erreur de sauvegarde : ' + err.message, 'error');
-  }
+function renderConfigCanvas(){
+  const canvas=$('#configCanvas'),svg=$('#configSvg'),empty=$('#configEmpty');
+  if(!canvas||!svg)return;
+  canvas.querySelectorAll('.config-node').forEach(n=>n.remove());
+  empty.style.display=jointuresConfig.files.length?'none':'flex';
+  jointuresConfig.files.forEach(file=>{
+    const node=document.createElement('div');
+    node.className='config-node';
+    node.style.left=file.x+'px';
+    node.style.top=file.y+'px';
+    node.dataset.fileId=file.id;
+    node.innerHTML=`<h4>${esc(file.name)} <button class="close-btn" data-cfgdel="${esc(file.id)}" title="Retirer ce fichier">×</button></h4>
+      <div class="config-columns">`+
+      file.columns.map(col=>{
+        const pk=file.primaryKeys&&file.primaryKeys.includes(col);
+        return `<div class="config-column${pk?' primary':''}" data-file="${esc(file.id)}" data-col="${esc(col)}" title="${pk?'Clé primaire — clic pour retirer':'Clic = clé primaire · cliquer-glisser = jointure'}">${pk?'🔑 ':''}${esc(col)}</div>`;
+      }).join('')+
+      `</div>`;
+    canvas.appendChild(node);
+  });
+  renderConfigConnections();
 }
-
-function resetConfig() {
-  if (confirm('Réinitialiser toute la configuration des jointures ?')) {
-    jointuresConfig = { files: [], jointures: [] };
-    localStorage.removeItem(CONFIG_STORAGE_KEY);
-    renderConfigUI();
-    showConfigStatus('Configuration réinitialisée');
-  }
-}
-
-function exportConfigJson() {
-  const blob = new Blob([JSON.stringify(jointuresConfig, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'jointures_config.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  showConfigStatus('Configuration exportée');
-}
-
-function importConfigJson() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json';
-  input.onchange = e => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = evt => {
-      try {
-        jointuresConfig = JSON.parse(evt.target.result);
-        saveConfigToStorage();
-        renderConfigUI();
-        showConfigStatus('Configuration importée avec succès');
-      } catch (err) {
-        showConfigStatus('Erreur d\'import : ' + err.message, 'error');
+function renderConfigConnections(){
+  const canvas=$('#configCanvas'),svg=$('#configSvg');
+  if(!canvas||!svg)return;
+  svg.innerHTML='';
+  svg.style.width=canvas.scrollWidth+'px';
+  svg.style.height=canvas.scrollHeight+'px';
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML='<marker id="cfgArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#38bdf8"/></marker>';
+  svg.appendChild(defs);
+  const cr=canvas.getBoundingClientRect();
+  const sx=canvas.scrollLeft,sy=canvas.scrollTop;
+  jointuresConfig.connections.forEach((conn,idx)=>{
+    const from=document.querySelector('.config-column[data-file="'+conn.fromFile+'"][data-col="'+conn.toCol===conn.fromCol?conn.fromCol:conn.fromCol+'"]');
+    const a=document.querySelector(`.config-column[data-file="${conn.fromFile}"][data-col="${conn.fromCol}"]`);
+    const b=document.querySelector(`.config-column[data-file="${conn.toFile}"][data-col="${conn.toCol}"]`);
+    if(!a||!b)return;
+    const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
+    const x1=ra.right-cr.left+sx, y1=ra.top-cr.top+sy+ra.height/2;
+    const x2=rb.left-cr.left+sx,  y2=rb.top-cr.top+sy+rb.height/2;
+    const mx=(x1+x2)/2;
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',`M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`);
+    p.setAttribute('stroke','#38bdf8');p.setAttribute('stroke-width','2.5');p.setAttribute('fill','none');
+    p.setAttribute('marker-end','url(#cfgArrow)');
+    p.dataset.cfgconn=idx;
+    p.addEventListener('click',()=>{
+      if(confirm('Supprimer la jointure '+conn.fromCol+' → '+conn.toCol+' ?')){
+        jointuresConfig.connections.splice(idx,1);
+        saveConfigToStorage();renderConfigCanvas();
       }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-}
-
-function addConfigFile() {
-  const name = prompt('Nom du fichier (ex: F1_depart.xlsx)');
-  if (!name) return;
-  
-  const colsStr = prompt('Colonnes séparées par des virgules (ex: depot,zi,gdep,zgDep)');
-  if (!colsStr) return;
-  
-  jointuresConfig.files.push({
-    id: Date.now().toString(),
-    name: name,
-    columns: colsStr.split(',').map(c => c.trim()).filter(Boolean),
-    primaryKey: [],
-    foreignKeys: []
+    });
+    svg.appendChild(p);
   });
-  
-  saveConfigToStorage();
-  renderConfigUI();
 }
+function renderConfigAll(){loadConfigFromStorage();renderConfigCanvas();}
 
-function removeConfigFile(id) {
-  if (!confirm('Supprimer ce fichier ?')) return;
-  jointuresConfig.files = jointuresConfig.files.filter(f => f.id !== id);
-  jointuresConfig.jointures = jointuresConfig.jointures.filter(j => j.from !== id && j.to !== id);
-  saveConfigToStorage();
-  renderConfigUI();
-}
-
-function toggleConfigPrimaryKey(fileId, col) {
-  const file = jointuresConfig.files.find(f => f.id === fileId);
-  if (!file) return;
-  
-  const idx = file.primaryKey.indexOf(col);
-  if (idx >= 0) {
-    file.primaryKey.splice(idx, 1);
-  } else {
-    file.primaryKey.push(col);
-  }
-  
-  saveConfigToStorage();
-  renderConfigUI();
-}
-
-function addConfigForeignKey(fileId) {
-  const file = jointuresConfig.files.find(f => f.id === fileId);
-  if (!file) return;
-  
-  const targetFile = jointuresConfig.files.find(f => f.id !== fileId);
-  if (!targetFile) {
-    alert('Il faut au moins 2 fichiers pour créer une jointure');
+/* Drag des boîtes + création de jointures par glisser */
+document.addEventListener('mousedown',e=>{
+  const col=e.target.closest('.config-column');
+  if(col&&$('#configPanel')&&!$('#configPanel').hidden){
+    connecting={file:col.dataset.file,col:col.dataset.col,el:col,moved:false};
+    col.classList.add('connecting');
+    e.preventDefault();
     return;
   }
-  
-  file.foreignKeys.push({
-    column: '',
-    targetFile: targetFile.id,
-    targetColumn: ''
-  });
-  
-  saveConfigToStorage();
-  renderConfigUI();
-}
-
-function updateConfigForeignKey(fileId, fkIdx, field, value) {
-  const file = jointuresConfig.files.find(f => f.id === fileId);
-  if (!file || !file.foreignKeys[fkIdx]) return;
-  
-  file.foreignKeys[fkIdx][field] = value;
-  saveConfigToStorage();
-}
-
-function removeConfigForeignKey(fileId, fkIdx) {
-  const file = jointuresConfig.files.find(f => f.id === fileId);
-  if (!file) return;
-  
-  file.foreignKeys.splice(fkIdx, 1);
-  saveConfigToStorage();
-  renderConfigUI();
-}
-
-function renderConfigFiles() {
-  const container = document.getElementById('configFilesList');
-  
-  if (jointuresConfig.files.length === 0) {
-    container.innerHTML = '<span class="mut">Aucun fichier configuré.</span>';
+  const node=e.target.closest('.config-node');
+  if(node&&!e.target.closest('.config-column')&&!e.target.closest('.close-btn')){
+    draggingNode=node;
+    const r=node.getBoundingClientRect();
+    dragGrab.x=e.clientX-r.left;dragGrab.y=e.clientY-r.top;
+    node.classList.add('dragging');
+    e.preventDefault();
+  }
+});
+document.addEventListener('mousemove',e=>{
+  if(draggingNode){
+    const canvas=$('#configCanvas');
+    const cr=canvas.getBoundingClientRect();
+    const x=e.clientX-dragGrab.x-(cr.left-canvas.scrollLeft);
+    const y=e.clientY-dragGrab.y-(cr.top-canvas.scrollTop);
+    draggingNode.style.left=Math.max(0,x)+'px';
+    draggingNode.style.top=Math.max(0,y)+'px';
+    const f=jointuresConfig.files.find(f=>f.id===draggingNode.dataset.fileId);
+    if(f){f.x=Math.max(0,x);f.y=Math.max(0,y);}
+    renderConfigConnections();
+  }
+});
+document.addEventListener('mouseup',e=>{
+  if(connecting){
+    const col=e.target.closest('.config-column');
+    if(col&&col!==connecting.el){
+      jointuresConfig.connections.push({fromFile:connecting.file,fromCol:connecting.col,toFile:col.dataset.file,toCol:col.dataset.col});
+      saveConfigToStorage();
+      showConfigStatus('✅ Jointure créée : '+connecting.col+' → '+col.dataset.col);
+      suppressPK=true;
+    } else if(col===connecting.el){
+      suppressPK=false;
+    }
+    connecting.el.classList.remove('connecting');
+    connecting=null;
+    renderConfigCanvas();
     return;
   }
-  
-  container.innerHTML = jointuresConfig.files.map(file => `
-    <div class="config-section" style="margin-bottom:12px">
-      <h3>
-        ${esc(file.name)}
-        <button onclick="removeConfigFile('${file.id}')" style="float:right;padding:4px 8px;font-size:11px">🗑 Supprimer</button>
-      </h3>
-      <div class="mut" style="margin-bottom:8px">Colonnes disponibles :</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">
-        ${file.columns.map(col => {
-          const isPK = file.primaryKey.includes(col);
-          const isFK = file.foreignKeys.some(fk => fk.column === col);
-          return `<span class="col-chip ${isPK ? 'key' : ''} ${isFK ? 'fk' : ''}" 
-                       onclick="toggleConfigPrimaryKey('${file.id}', '${col}')"
-                       title="${isPK ? 'Clé primaire' : isFK ? 'Clé étrangère' : 'Cliquer pour ajouter à la clé primaire'}">
-            ${esc(col)}${isPK ? ' 🔑' : ''}${isFK ? ' 🔗' : ''}
-          </span>`;
-        }).join('')}
-      </div>
-      <div>
-        <div class="mut" style="margin-bottom:6px">Clé primaire : <b class="ok">${file.primaryKey.join(' + ') || 'non définie'}</b></div>
-        <div class="mut" style="margin-bottom:8px">Clés étrangères :</div>
-        ${file.foreignKeys.map((fk, idx) => {
-          const targetFile = jointuresConfig.files.find(f => f.id === fk.targetFile);
-          return `
-            <div class="config-row">
-              <select onchange="updateConfigForeignKey('${file.id}', ${idx}, 'column', this.value)">
-                <option value="">Colonne source</option>
-                ${file.columns.map(c => `<option value="${esc(c)}" ${fk.column === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}
-              </select>
-              <span style="text-align:center">→</span>
-              <select onchange="updateConfigForeignKey('${file.id}', ${idx}, 'targetFile', this.value)">
-                <option value="">Fichier cible</option>
-                ${jointuresConfig.files.filter(f => f.id !== file.id).map(f => 
-                  `<option value="${f.id}" ${fk.targetFile === f.id ? 'selected' : ''}>${esc(f.name)}</option>`
-                ).join('')}
-              </select>
-              <select onchange="updateConfigForeignKey('${file.id}', ${idx}, 'targetColumn', this.value)">
-                <option value="">Colonne cible</option>
-                ${targetFile ? targetFile.columns.map(c => 
-                  `<option value="${esc(c)}" ${fk.targetColumn === c ? 'selected' : ''}>${esc(c)}</option>`
-                ).join('') : ''}
-              </select>
-              <button onclick="removeConfigForeignKey('${file.id}', ${idx})" style="padding:4px 8px;font-size:11px">🗑</button>
-            </div>
-          `;
-        }).join('')}
-        <button onclick="addConfigForeignKey('${file.id}')" style="margin-top:8px;padding:6px 12px;font-size:12px">+ Clé étrangère</button>
-      </div>
-    </div>
-  `).join('') + `
-    <button onclick="addConfigFile()" style="margin-top:12px;padding:8px 16px">+ Ajouter un fichier</button>
-  `;
-}
-
-function updateConfigJsonView() {
-  document.getElementById('configJson').value = JSON.stringify(jointuresConfig, null, 2);
-}
-
-function applyConfigJson() {
-  try {
-    const json = document.getElementById('configJson').value;
-    jointuresConfig = JSON.parse(json);
+  if(draggingNode){
+    draggingNode.classList.remove('dragging');
+    draggingNode=null;
     saveConfigToStorage();
-    renderConfigUI();
-    showConfigStatus('Configuration JSON appliquée');
-  } catch (err) {
-    showConfigStatus('JSON invalide : ' + err.message, 'error');
   }
-}
-
-function renderConfigUI() {
-  renderConfigFiles();
-  updateConfigJsonView();
-}
+});
 
 /* ============================================================ */
 /* ============ CACHE IndexedDB ================================= */
@@ -695,24 +609,17 @@ function openCacheDB() {
     }
   });
 }
-
 async function cachePutFile(name, kind, buffer) {
   try {
     const db = await openCacheDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(CACHE_STORE, 'readwrite');
-      tx.objectStore(CACHE_STORE).put({
-        name, kind, buffer, ts: Date.now()
-      });
+      tx.objectStore(CACHE_STORE).put({name, kind, buffer, ts: Date.now()});
       tx.oncomplete = () => resolve(true);
       tx.onerror = e => reject(e.target.error);
     });
-  } catch (err) {
-    console.warn('[cache] Impossible de sauvegarder', name, err);
-    return false;
-  }
+  } catch (err) { console.warn('[cache]', err); return false; }
 }
-
 async function cacheDeleteFile(name) {
   try {
     const db = await openCacheDB();
@@ -722,12 +629,8 @@ async function cacheDeleteFile(name) {
       tx.oncomplete = () => resolve(true);
       tx.onerror = e => reject(e.target.error);
     });
-  } catch (err) {
-    console.warn('[cache] Impossible de supprimer', name, err);
-    return false;
-  }
+  } catch (err) { console.warn('[cache]', err); return false; }
 }
-
 async function cacheGetAll() {
   try {
     const db = await openCacheDB();
@@ -737,12 +640,8 @@ async function cacheGetAll() {
       req.onsuccess = () => resolve(req.result || []);
       req.onerror = e => reject(e.target.error);
     });
-  } catch (err) {
-    console.warn('[cache] Impossible de lire', err);
-    return [];
-  }
+  } catch (err) { console.warn('[cache]', err); return []; }
 }
-
 async function cacheClearAll() {
   try {
     const db = await openCacheDB();
@@ -752,12 +651,8 @@ async function cacheClearAll() {
       tx.oncomplete = () => resolve(true);
       tx.onerror = e => reject(e.target.error);
     });
-  } catch (err) {
-    console.warn('[cache] Impossible de vider', err);
-    return false;
-  }
+  } catch (err) { console.warn('[cache]', err); return false; }
 }
-
 async function readBuffer(f) {
   if (f.buffer instanceof ArrayBuffer) return f.buffer;
   return await f.arrayBuffer();
@@ -938,7 +833,6 @@ function flowHTML(dg,ag,tam,nz,ne){
     (ne!=null?`<span class="farr">→</span><span class="fbox e">${fmt(ne)} empl.</span>`:'')+`</span>`;
 }
 
-/* ===== SUIVI VISUEL PAR FICHIER INDIVIDUEL ===== */
 function kindState(k){
   if(S.files[k])return 'done';
   if(S.loading)return 'wait';
@@ -963,26 +857,15 @@ function renderFileStatus(){
   const el=$('#fileStatus');if(el)el.innerHTML=html;
   const ll=$('#loadList');if(ll)ll.innerHTML=html;
 }
-
 function renderFileChips(container){
   if(!container) return;
   const html = [...S.pendingFiles, ...S.loadedFiles].map(f => {
-    const icon = f.status === 'done' 
-      ? '<span class="ic">✓</span>'
-      : f.status === 'error' 
-      ? '<span class="ic">✗</span>'
-      : '<span class="spinmini"></span>';
+    const icon = f.status === 'done' ? '<span class="ic">✓</span>' : f.status === 'error' ? '<span class="ic">✗</span>' : '<span class="spinmini"></span>';
     const kindLabel = f.kind ? LABELS[f.kind] : '...';
-    const cls = f.status;
-    return `<div class="file-chip ${cls}" title="${esc(f.name)}">
-      ${icon}
-      <span class="fname">${esc(f.name)}</span>
-      <span class="fkind">${esc(kindLabel)}</span>
-    </div>`;
+    return `<div class="file-chip ${f.status}" title="${esc(f.name)}">${icon}<span class="fname">${esc(f.name)}</span><span class="fkind">${esc(kindLabel)}</span></div>`;
   }).join('');
   container.innerHTML = html;
 }
-
 function updateProgress(done, total){
   const pct = total > 0 ? (done/total*100) : 0;
   const fill = document.querySelector('#loadProgress .fill');
@@ -990,25 +873,16 @@ function updateProgress(done, total){
   if(fill) fill.style.width = pct + '%';
   if(count) count.textContent = `${done} / ${total}`;
 }
-
 function addLoadedFile(name, kind, status='done'){
   const existing = S.loadedFiles.find(f => f.name === name);
-  if(existing){
-    existing.status = status;
-    existing.kind = kind;
-  } else {
-    S.loadedFiles.push({name, kind, status});
-  }
-  renderFileChips($('#fileList'));
-  renderFileChips($('#fileListInline'));
+  if(existing){existing.status = status;existing.kind = kind;}
+  else{S.loadedFiles.push({name, kind, status});}
+  renderFileChips($('#fileList'));renderFileChips($('#fileListInline'));
 }
-
 function setPendingFiles(files){
   S.pendingFiles = files.map(f => ({name: f.name, status: 'wait', kind: null}));
-  renderFileChips($('#fileList'));
-  renderFileChips($('#fileListInline'));
+  renderFileChips($('#fileList'));renderFileChips($('#fileListInline'));
 }
-
 function store(kind,rows,name){
   if(kind==='empl')rows.forEach(r=>{
     if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}
@@ -1042,15 +916,12 @@ async function processFiles(files){
   S.loading=true;
   S.loadedFiles = [];
   setPendingFiles(files);
-  
   showLoad('Préparation du chargement…','0 / '+files.length+' fichier(s)');
   updateProgress(0, files.length);
   await frame();
-  
   S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};
   S.files={};S.stats={};S.exclRows=[];
   renderFileStatus();
-  
   let done=0;let i=0;
   for(const f of files){
     i++;
@@ -1061,9 +932,7 @@ async function processFiles(files){
       const wb=XLSX.read(buf,{type:'array'});
       let rows=[];wb.SheetNames.forEach(sn=>{rows=rows.concat(parseSheet(wb.Sheets[sn],f.name,sn));});
       const kind=detectKind(rows)||detectByName(f.name);
-      
       S.pendingFiles = S.pendingFiles.filter(p => p.name !== f.name);
-      
       if(!kind){
         addLoadedFile(f.name, null, 'error');
         cacheDeleteFile(f.name);
@@ -1075,7 +944,6 @@ async function processFiles(files){
         showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+fmt(rows.length)+' lignes reconnues → '+LABELS[kind]);
         renderFileStatus();
       }
-      
       done++;
       updateProgress(done, files.length);
       await frame();
@@ -1102,17 +970,10 @@ async function processFiles(files){
     renderRestoreBanner();
   }
 }
-
-async function loadFiles(files){
-  return processFiles([...files]);
-}
-
+async function loadFiles(files){return processFiles([...files]);}
 async function restoreFromCache() {
   const cached = await cacheGetAll();
-  if (!cached.length) {
-    renderRestoreBanner();
-    return;
-  }
+  if (!cached.length) { renderRestoreBanner(); return; }
   S.cachedFiles = cached;
   return processFiles(cached);
 }
@@ -1408,14 +1269,6 @@ function chipHTML(c,v){
   return `<button class="chip${kc}${on?' on':''}" data-dim="${c.k}" data-val="${esc(v)}" title="${esc(title)} — double-clic : fiche">${txt}</button>`;
 }
 
-function loadStatusHTML(){
-  const ks=Object.keys(LABELS).filter(k=>S.files[k]);
-  const miss=Object.keys(LABELS).filter(k=>!S.files[k]);
-  let s=ks.length?`<span class="ok">✓ ${ks.length}/8 fichier(s) chargé(s)</span> : ${ks.map(k=>LABELS[k]+' ('+fmt(S.stats[k].n)+' lignes)').join(' · ')}`
-                 :'<span class="warn">Aucun fichier chargé</span>';
-  if(miss.length)s+=` <span class="mut">· non chargés : ${miss.map(k=>LABELS[k]).join(', ')}</span>`;
-  return s;
-}
 function loadStatusText(){
   const ks=Object.keys(LABELS).filter(k=>S.files[k]);
   return ks.length?ks.map(k=>LABELS[k]+' : '+S.stats[k].n+' lignes').join(' · '):'Aucun fichier chargé';
@@ -1448,7 +1301,7 @@ function renderHome(){
         <button class="homeCard" data-home="materiel"><b>🚜 Parc matériel</b><small>${fmt(S.materiel.length)} engin(s) : type, ZI d'intervention, emplacement parc</small></button>
         <button class="homeCard" data-home="mattype"><b>🏷 Types & supports</b><small>${fmt(S.matTypeCount)} types de matériel · quels supports chacun peut transporter</small></button>
         <button class="homeCard" data-home="empl"><b>📍 Emplacements</b><small>${fmt(S.empl.length)} emplacements NE1 (F5)</small></button>
-        <button class="homeCard" data-home="config"><b>⚙️ Configuration</b><small>Configurer les jointures entre fichiers</small></button>
+        <button class="homeCard" data-home="config"><b>⚙️ Jointures visuelles</b><small>Détecter les colonnes et relier les fichiers graphiquement</small></button>
         <button class="homeCard" data-home="ecart"><b>⚠ Écarts</b><small>${fmt(S.controls.reduce((s,c)=>s+c.items.length,0))} anomalie(s) détectée(s)</small></button>
       </div>`;
   }
@@ -1518,7 +1371,6 @@ function renderPath(){
   $('#pathQ').value=q;
   $('#pathQArr').value=qArr;
   $('#pathDir').value=dir;
-  $('#pathView').textContent=S.pathView==='simple'?'🌳 Version détaillée (arbre)':'📄 Version simplifiée (tableau)';
   fillPathList(q || qArr);
 
   if(!q && !qArr){
@@ -1571,10 +1423,9 @@ function renderPath(){
       </div>`;
       return;
     }
-
     let html = `<div style="padding:16px; background:var(--bg2); border-radius:10px; border:1px solid var(--line);">
       <div style="border-left: 3px solid var(--acc); padding-left: 12px; margin-bottom:16px;">
-        <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;"> Départ</div>
+        <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;">📍 Départ</div>
         <div style="font-size:16px; font-weight:600; margin: 4px 0;">${esc(startLabel)}</div>
         <div style="font-size:12px; color:var(--mut);">
           ${startZi ? `ZI: ${esc(LAB.zi.get(startZi)||startZi)} · ` : ''}
@@ -1584,7 +1435,6 @@ function renderPath(){
         </div>
       </div>
       <div style="font-size:13px; color:var(--mut); margin-bottom:12px;"><b>${nextGroups.length} destination(s) directe(s) :</b></div>`;
-
     nextGroups.forEach(g => {
       const pairKey = K(D, startG, g);
       const tams = IDX.tam4.get(pairKey) || [];
@@ -1593,14 +1443,13 @@ function renderPath(){
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <span style="font-weight:600;">${esc(startLabel)}</span>
           <span style="color:var(--mut);">⇒</span>
-          ${tams.length ? tams.map(t => `<span class="chip k-tam" style="margin:0; font-size:11.5px;"> ${esc(t)}</span>`).join('') : '<span class="warn">sans tampon</span>'}
+          ${tams.length ? tams.map(t => `<span class="chip k-tam" style="margin:0; font-size:11.5px;">⏳ ${esc(t)}</span>`).join('') : '<span class="warn">sans tampon</span>'}
           <span style="color:var(--mut);">⇒</span>
           <span style="font-weight:600; color:var(--ok);">Groupe ${esc(LAB.g.get(g)||g)}</span>
           <span class="mut">(${zgs.length} ZG)</span>
         </div>
       </div>`;
     });
-
     html += `</div>`;
     box.innerHTML = html;
     return;
@@ -1615,7 +1464,6 @@ function renderPath(){
       </div>`;
       return;
     }
-
     let html = `<div style="padding:16px; background:var(--bg2); border-radius:10px; border:1px solid var(--line);">
       <div style="border-left: 3px solid var(--ok); padding-left: 12px; margin-bottom:16px;">
         <div style="color:var(--ok); font-weight:700; font-size:12px; text-transform:uppercase;">🏁 Arrivée</div>
@@ -1628,7 +1476,6 @@ function renderPath(){
         </div>
       </div>
       <div style="font-size:13px; color:var(--mut); margin-bottom:12px;"><b>${prevGroups.length} origine(s) directe(s) :</b></div>`;
-
     prevGroups.forEach(g => {
       const pairKey = K(D, g, targetG);
       const tams = IDX.tam4.get(pairKey) || [];
@@ -1642,7 +1489,6 @@ function renderPath(){
         </div>
       </div>`;
     });
-
     html += `</div>`;
     box.innerHTML = html;
     return;
@@ -1650,7 +1496,6 @@ function renderPath(){
 
   const allPaths = [];
   const MAX_DEPTH = 4;
-
   function findPaths(currentGroup, targetGroup, depth, currentChain, visited){
     if(depth > MAX_DEPTH) return;
     const nextGroups = [...(IDX.fluxDep.get(K(D, currentGroup))||[])];
@@ -1666,27 +1511,23 @@ function renderPath(){
       }
     }
   }
-
   if(startG && targetG){
     findPaths(startG, targetG, 1, [], new Set([startG]));
   }
-
   if(allPaths.length === 0){
     box.innerHTML = `<div style="padding:16px; background:var(--bg2); border-radius:10px; border:1px solid var(--line);">
       <span class="warn">⚠ Aucun chemin trouvé entre ${esc(startLabel)} et ${esc(targetLabel)}.</span>
     </div>`;
     return;
   }
-
   allPaths.sort((a, b) => a.chain.length - b.chain.length);
-
   const targetEmpls = IDX.empl.get(K(D, targetZg)) || [];
   const tamEmpls = targetEmpls.filter(e => isTamEmpl(e));
 
   let html = `<div style="padding:16px; background:var(--bg2); border-radius:10px; border:1px solid var(--line);">
     <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
       <div style="border-left: 3px solid var(--acc); padding-left: 12px; flex: 1; min-width: 200px;">
-        <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;"> Départ</div>
+        <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;">📍 Départ</div>
         <div style="font-size:16px; font-weight:600; margin: 4px 0;">${esc(startLabel)}</div>
         <div style="font-size:12px; color:var(--mut);">
           ${startZi ? `ZI: ${esc(LAB.zi.get(startZi)||startZi)} · ` : ''}
@@ -1706,7 +1547,6 @@ function renderPath(){
         </div>
       </div>
     </div>
-
     <div style="font-size:13px; color:var(--mut); margin-bottom:12px; border-top:1px solid var(--line); padding-top:12px;">
       <b>${allPaths.length} chemin(s) trouvé(s) :</b>
     </div>`;
@@ -1743,7 +1583,6 @@ function renderPath(){
       </div>
     </div>`;
   }
-
   html += `</div>`;
   box.innerHTML = html;
 }
@@ -2083,8 +1922,7 @@ function renderMenu(){
        mi('depart','Départ · F1')+mi('ref','Référentiel · F3')+mi('tampon','Tampon · F4'))+
     dd('qual','✅','Qualité',['ecart','excl'].includes(S.tab),
        mi('ecart','⚠ Écarts')+mi('excl','Exclus (≠NE1)'))+
-    dd('config','⚙️','Configuration',S.tab==='config',
-       mi('config','Configuration des jointures'))+
+    `<button class="menu-item${S.tab==='config'?' active':''}" data-go="config">⚙️ Jointures visuelles</button>`+
     dd('autre','⚙️','Autre',false,
        `<button data-act="export">📥 Exporter CSV</button>
         <button data-act="reset">🔄 Réinitialiser les filtres</button>
@@ -2197,11 +2035,9 @@ function render(){
   const valid=new Set(cols().filter(c=>c.dim).map(c=>c.k));
   Object.keys(S.filters).forEach(k=>{if(!valid.has(k))delete S.filters[k];});
   const hasFiles=Object.keys(S.files).length>0;
-  
   const showLoadUI = (!hasFiles || S.showDrop) && !S.loading;
   $('#drop').hidden = !showLoadUI;
   $('#dropHide').hidden = !hasFiles;
-  
   renderRestoreBanner();
   renderMenu();renderStats();
   $('#kpis').hidden = hasFiles;
@@ -2221,7 +2057,7 @@ function render(){
   else if(isPath){renderPath();$('#more').hidden=true;}
   else if(isMap){renderMap();$('#more').hidden=true;}
   else if(isMat){renderMattype();$('#more').hidden=true;}
-  else if(isConfig){renderConfigUI();$('#more').hidden=true;}
+  else if(isConfig){renderConfigAll();$('#more').hidden=true;}
   else if(!isHome)renderGrid();
 }
 
@@ -2267,14 +2103,6 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('.menu-bar'))closeMenus();
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='closeExp'){$('#explorer').hidden=true;return;}
-  if(b.id==='configClose'){S.tab='accueil';render();return;}
-  if(b.id==='configLoad'){loadConfigFromStorage();return;}
-  if(b.id==='configSave'){saveConfigToStorage();return;}
-  if(b.id==='configReset'){resetConfig();return;}
-  if(b.id==='configExport'){exportConfigJson();return;}
-  if(b.id==='configImport'){importConfigJson();return;}
-  if(b.id==='configAddJointure'){addConfigFile();return;}
-  if(b.id==='configApplyJson'){applyConfigJson();return;}
   if(b.dataset.ficheclose){S.fiche=null;renderFiche();return;}
   if(b.dataset.printfiche){window.print();return;}
   if(b.dataset.fiche){const [t,c]=b.dataset.fiche.split(':');S.fiche={type:t,code:c};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});return;}
@@ -2304,6 +2132,31 @@ document.addEventListener('click',e=>{
     if(S.showDrop)$('#drop').scrollIntoView({behavior:'smooth',block:'nearest'});
     return;
   }
+  /* ===== Boutons de la config visuelle ===== */
+  if(b.id==='configClose'){S.tab='accueil';render();return;}
+  if(b.id==='configAutoDetect'){autoDetectColumns();return;}
+  if(b.id==='configAutoLink'){autoLinkColumns();return;}
+  if(b.id==='configSave'){saveConfigToStorage();showConfigStatus('✅ Configuration sauvegardée dans le navigateur.');return;}
+  if(b.id==='configReset'){
+    if(confirm('Réinitialiser la configuration des jointures ?')){
+      jointuresConfig={files:[],connections:[]};
+      localStorage.removeItem(CONFIG_STORAGE_KEY);
+      renderConfigCanvas();
+      showConfigStatus('Configuration réinitialisée.');
+    }
+    return;
+  }
+  if(b.dataset.cfgdel){
+    if(confirm('Retirer ce fichier de la configuration ?')){
+      const id=b.dataset.cfgdel;
+      jointuresConfig.files=jointuresConfig.files.filter(f=>f.id!==id);
+      jointuresConfig.connections=jointuresConfig.connections.filter(c=>c.fromFile!==id&&c.toFile!==id);
+      saveConfigToStorage();renderConfigCanvas();
+    }
+    return;
+  }
+  /* ===== Clic simple sur colonne = clé primaire ===== */
+  const colEl=b.closest?null:null;
   if(b.dataset.act){
     const a=b.dataset.act;closeMenus();
     if(a==='export')exportCSV();
@@ -2324,7 +2177,6 @@ document.addEventListener('click',e=>{
     S.tab=h;render();return;
   }
   if(b.id==='pathGo'){S.path={q:$('#pathQ').value, qArr:$('#pathQArr').value, dir:$('#pathDir').value};renderPath();return;}
-  if(b.id==='pathView'){S.pathView=S.pathView==='simple'?'detail':'simple';localStorage.setItem('zgPathView',S.pathView);renderPath();return;}
   if(b.id==='more'){S.limit+=200;renderGrid();return;}
   if(b.dataset.dim){
     const k=b.dataset.dim,v=b.dataset.val;
@@ -2353,6 +2205,22 @@ document.addEventListener('click',e=>{
     return;
   }
 });
+
+/* Clic simple sur une colonne = clé primaire (géré ici pour éviter le conflit avec le glisser) */
+document.addEventListener('click',e=>{
+  const col=e.target.closest('.config-column');
+  if(!col)return;
+  if(suppressPK){suppressPK=false;return;}
+  const fileId=col.dataset.file,column=col.dataset.col;
+  const file=jointuresConfig.files.find(f=>f.id===fileId);
+  if(!file)return;
+  file.primaryKeys=file.primaryKeys||[];
+  const i=file.primaryKeys.indexOf(column);
+  if(i>=0)file.primaryKeys.splice(i,1);else file.primaryKeys.push(column);
+  saveConfigToStorage();
+  renderConfigCanvas();
+});
+
 document.addEventListener('dblclick',e=>{
   const b=e.target.closest('button[data-dim]');if(!b)return;
   const k=b.dataset.dim,v=b.dataset.val;
@@ -2444,6 +2312,7 @@ cvEl.addEventListener('click',e=>{
   if(p){S.mapSel=p.r;renderMapSel();}
 });
 window.addEventListener('resize',()=>{if(S.tab==='carte')drawMap();});
+window.addEventListener('scroll',()=>{if(S.tab==='config')renderConfigConnections();},true);
 
 if(typeof XLSX==='undefined'){
   $('#notice').hidden=false;
