@@ -145,7 +145,7 @@ summary:hover{background:var(--hover)}
 #restoreBanner .mut{font-size:12.5px}
 #cacheInfo{font-size:11.5px;color:var(--mut);margin-top:6px}
 
-/* ===== CONFIGURATION VISUELLE DES JOINTURES ===== */
+/* ===== CONFIGURATION VISUELLE ===== */
 .config-toolbar{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;align-items:center}
 .config-toolbar button{padding:8px 16px;font-weight:600}
 .config-toolbar button.primary{background:var(--acc);color:#04121f;border-color:var(--acc)}
@@ -153,15 +153,16 @@ summary:hover{background:var(--hover)}
 .config-info{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px}
 .config-info b{color:var(--acc)}
 .config-canvas{position:relative;width:100%;height:640px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:auto}
-#configSvg{position:absolute;top:0;left:0;pointer-events:none}
-#configSvg path{pointer-events:stroke;cursor:pointer}
+#configSvg{position:absolute;top:0;left:0;pointer-events:none;z-index:1}
+#configSvg path.cfgLink{pointer-events:stroke;cursor:pointer}
+#configSvg path.cfgLink:hover{stroke:var(--warn)!important;stroke-width:4}
 #configEmpty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;pointer-events:none}
 .config-node{position:absolute;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px;width:280px;cursor:move;box-shadow:0 4px 12px rgba(0,0,0,0.3);user-select:none;z-index:2}
 .config-node.dragging{opacity:0.6;z-index:1000}
 .config-node h4{margin:0 0 8px;font-size:14px;color:var(--acc);display:flex;justify-content:space-between;align-items:center;cursor:move}
 .config-node .close-btn{background:var(--warn);color:#000;border:0;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;font-weight:700}
 .config-columns{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow:auto}
-.config-column{padding:6px 10px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s}
+.config-column{padding:6px 10px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s,border-color .15s}
 .config-column:hover{background:var(--hover);border-color:var(--acc)}
 .config-column.primary{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:700}
 .config-column.connecting{background:var(--warn);color:#04121f;border-color:var(--warn)}
@@ -325,12 +326,12 @@ summary:hover{background:var(--hover)}
   </div>
 
   <div class="config-info">
-    <b>Comment ça marche :</b>
+    <b>Comment créer une jointure :</b>
     <ol style="margin:6px 0;padding-left:20px">
-      <li><b>« 🔍 Détecter »</b> : chaque fichier chargé devient une boîte affichant toutes ses colonnes (détection automatique, rien à saisir).</li>
-      <li><b>Clic simple</b> sur une colonne = la marquer comme <b>clé primaire 🔑</b>.</li>
-      <li><b>Cliquer-glisser</b> d'une colonne vers une colonne d'un autre fichier = créer une <b>jointure</b> (flèche bleue).</li>
-      <li><b>Clic sur une flèche</b> = supprimer la jointure · glissez les boîtes par leur titre pour ranger · tout est sauvegardé automatiquement.</li>
+      <li><b>« 🔍 Détecter »</b> : chaque fichier chargé devient une boîte avec toutes ses colonnes (rien à saisir).</li>
+      <li><b>Cliquer-glisser</b> d'une colonne vers une colonne d'un <b>autre fichier</b> : une ligne pointillée suit la souris, puis une <b>flèche bleue</b> est créée au relâchement.</li>
+      <li><b>Clic simple</b> sur une colonne = clé primaire 🔑.</li>
+      <li><b>Clic sur une flèche</b> = supprimer la jointure · glissez les boîtes par leur titre pour ranger.</li>
     </ol>
   </div>
 
@@ -405,7 +406,8 @@ const closeMenus=()=>$$('.menu-item.open').forEach(x=>x.classList.remove('open')
 /* ============================================================ */
 const CONFIG_STORAGE_KEY='zgJointuresConfig';
 let jointuresConfig={files:[],connections:[]};
-let draggingNode=null,dragGrab={x:0,y:0},connecting=null,suppressPK=false;
+let draggingNode=null,dragGrab={x:0,y:0};
+let connecting=null,previewPath=null,suppressPK=false;
 
 function showConfigStatus(msg,type){
   const el=$('#configStatus');if(!el)return;
@@ -414,7 +416,8 @@ function showConfigStatus(msg,type){
   el.style.background=type==='error'?'rgba(251,191,36,0.12)':'rgba(52,211,153,0.12)';
   el.style.color=type==='error'?'var(--warn)':'var(--ok)';
   el.style.border='1px solid '+(type==='error'?'var(--warn)':'var(--ok)');
-  setTimeout(()=>{el.className='';},4000);
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>{el.className='';},5000);
 }
 function saveConfigToStorage(){
   try{localStorage.setItem(CONFIG_STORAGE_KEY,JSON.stringify(jointuresConfig));}catch(e){console.warn('[config]',e);}
@@ -424,6 +427,16 @@ function loadConfigFromStorage(){
     const s=localStorage.getItem(CONFIG_STORAGE_KEY);
     if(s){const c=JSON.parse(s);if(c&&Array.isArray(c.files))jointuresConfig=c;}
   }catch(e){console.warn('[config]',e);}
+}
+function ensureSvg(){
+  let svg=$('#configSvg');
+  const canvas=$('#configCanvas');
+  if(!svg&&canvas){
+    svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.id='configSvg';
+    canvas.prepend(svg);
+  }
+  return svg;
 }
 function autoDetectColumns(){
   const kinds=Object.keys(S.files||{});
@@ -448,7 +461,7 @@ function autoDetectColumns(){
   });
   saveConfigToStorage();
   renderConfigCanvas();
-  showConfigStatus('✅ '+jointuresConfig.files.length+' fichier(s) détecté(s) avec leurs colonnes. Cliquez-glissez entre colonnes pour créer des jointures.');
+  showConfigStatus('✅ '+jointuresConfig.files.length+' fichier(s) détecté(s). Cliquez-glissez d\'une colonne vers une colonne d\'un AUTRE fichier pour créer une flèche.');
 }
 function autoLinkColumns(){
   if(!jointuresConfig.files.length){showConfigStatus('❌ Lancez d\'abord « 🔍 Détecter ».','error');return;}
@@ -469,32 +482,42 @@ function autoLinkColumns(){
   }
   saveConfigToStorage();
   renderConfigCanvas();
-  showConfigStatus(n?('✅ '+n+' jointure(s) suggérée(s) par noms de colonnes identiques. Clic sur une flèche pour la supprimer.'):'Aucune nouvelle jointure suggérée.',n?'success':'error');
+  showConfigStatus(n?('✅ '+n+' jointure(s) suggérée(s) (colonnes identiques). Clic sur une flèche pour la supprimer.'):'Aucune nouvelle jointure suggérée.',n?'success':'error');
 }
 function renderConfigCanvas(){
-  const canvas=$('#configCanvas'),svg=$('#configSvg'),empty=$('#configEmpty');
-  if(!canvas||!svg)return;
+  const canvas=$('#configCanvas'),empty=$('#configEmpty');
+  const svg=ensureSvg();
+  if(!canvas)return;
   canvas.querySelectorAll('.config-node').forEach(n=>n.remove());
-  empty.style.display=jointuresConfig.files.length?'none':'flex';
+  if(empty)empty.style.display=jointuresConfig.files.length?'none':'flex';
   jointuresConfig.files.forEach(file=>{
     const node=document.createElement('div');
     node.className='config-node';
-    node.style.left=file.x+'px';
-    node.style.top=file.y+'px';
+    node.style.left=(file.x||40)+'px';
+    node.style.top=(file.y||40)+'px';
     node.dataset.fileId=file.id;
     node.innerHTML=`<h4>${esc(file.name)} <button class="close-btn" data-cfgdel="${esc(file.id)}" title="Retirer ce fichier">×</button></h4>
       <div class="config-columns">`+
-      file.columns.map(col=>{
-        const pk=file.primaryKeys&&file.primaryKeys.includes(col);
-        return `<div class="config-column${pk?' primary':''}" data-file="${esc(file.id)}" data-col="${esc(col)}" title="${pk?'Clé primaire — clic pour retirer':'Clic = clé primaire · cliquer-glisser = jointure'}">${pk?'🔑 ':''}${esc(col)}</div>`;
+      (file.columns||[]).map(col=>{
+        const pk=(file.primaryKeys||[]).includes(col);
+        return `<div class="config-column${pk?' primary':''}" data-file="${esc(file.id)}" data-col="${esc(col)}" title="${pk?'Clé primaire — clic pour retirer':'Cliquer-glisser vers une autre colonne = jointure · clic simple = clé primaire'}">${pk?'🔑 ':''}${esc(col)}</div>`;
       }).join('')+
       `</div>`;
     canvas.appendChild(node);
   });
   renderConfigConnections();
 }
+function cfgPoint(el,side){
+  const canvas=$('#configCanvas');
+  const cr=canvas.getBoundingClientRect();
+  const r=el.getBoundingClientRect();
+  const x=(side==='right'?r.right:r.left)-cr.left+canvas.scrollLeft;
+  const y=r.top-cr.top+canvas.scrollTop+r.height/2;
+  return {x,y};
+}
 function renderConfigConnections(){
-  const canvas=$('#configCanvas'),svg=$('#configSvg');
+  const canvas=$('#configCanvas');
+  const svg=ensureSvg();
   if(!canvas||!svg)return;
   svg.innerHTML='';
   svg.style.width=canvas.scrollWidth+'px';
@@ -502,44 +525,53 @@ function renderConfigConnections(){
   const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
   defs.innerHTML='<marker id="cfgArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#38bdf8"/></marker>';
   svg.appendChild(defs);
-  const cr=canvas.getBoundingClientRect();
-  const sx=canvas.scrollLeft,sy=canvas.scrollTop;
   jointuresConfig.connections.forEach((conn,idx)=>{
-    const from=document.querySelector('.config-column[data-file="'+conn.fromFile+'"][data-col="'+conn.toCol===conn.fromCol?conn.fromCol:conn.fromCol+'"]');
-    const a=document.querySelector(`.config-column[data-file="${conn.fromFile}"][data-col="${conn.fromCol}"]`);
-    const b=document.querySelector(`.config-column[data-file="${conn.toFile}"][data-col="${conn.toCol}"]`);
+    const a=canvas.querySelector(`.config-column[data-file="${conn.fromFile}"][data-col="${conn.fromCol}"]`);
+    const b=canvas.querySelector(`.config-column[data-file="${conn.toFile}"][data-col="${conn.toCol}"]`);
     if(!a||!b)return;
-    const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
-    const x1=ra.right-cr.left+sx, y1=ra.top-cr.top+sy+ra.height/2;
-    const x2=rb.left-cr.left+sx,  y2=rb.top-cr.top+sy+rb.height/2;
-    const mx=(x1+x2)/2;
+    const p1=cfgPoint(a,'right'),p2=cfgPoint(b,'left');
+    const mx=(p1.x+p2.x)/2;
     const p=document.createElementNS('http://www.w3.org/2000/svg','path');
-    p.setAttribute('d',`M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`);
-    p.setAttribute('stroke','#38bdf8');p.setAttribute('stroke-width','2.5');p.setAttribute('fill','none');
+    p.setAttribute('d',`M ${p1.x} ${p1.y} C ${mx} ${p1.y}, ${mx} ${p2.y}, ${p2.x} ${p2.y}`);
+    p.setAttribute('stroke','#38bdf8');
+    p.setAttribute('stroke-width','2.5');
+    p.setAttribute('fill','none');
     p.setAttribute('marker-end','url(#cfgArrow)');
+    p.setAttribute('class','cfgLink');
     p.dataset.cfgconn=idx;
     p.addEventListener('click',()=>{
-      if(confirm('Supprimer la jointure '+conn.fromCol+' → '+conn.toCol+' ?')){
+      if(confirm('Supprimer la jointure '+conn.fromFile+'.'+conn.fromCol+' → '+conn.toFile+'.'+conn.toCol+' ?')){
         jointuresConfig.connections.splice(idx,1);
-        saveConfigToStorage();renderConfigCanvas();
+        saveConfigToStorage();
+        renderConfigCanvas();
+        showConfigStatus('Jointure supprimée.');
       }
     });
     svg.appendChild(p);
   });
 }
-function renderConfigAll(){loadConfigFromStorage();renderConfigCanvas();}
 
-/* Drag des boîtes + création de jointures par glisser */
-document.addEventListener('mousedown',e=>{
+/* --- Interactions : glisser-déposer des boîtes + création de jointures --- */
+document.addEventListener('pointerdown',e=>{
+  const panel=$('#configPanel');
+  if(!panel||panel.hidden)return;
   const col=e.target.closest('.config-column');
-  if(col&&$('#configPanel')&&!$('#configPanel').hidden){
-    connecting={file:col.dataset.file,col:col.dataset.col,el:col,moved:false};
+  if(col){
+    connecting={file:col.dataset.file,col:col.dataset.col,el:col,x0:e.clientX,y0:e.clientY,moved:false};
     col.classList.add('connecting');
+    const svg=ensureSvg();
+    previewPath=document.createElementNS('http://www.w3.org/2000/svg','path');
+    previewPath.setAttribute('stroke','#fbbf24');
+    previewPath.setAttribute('stroke-width','2');
+    previewPath.setAttribute('stroke-dasharray','6 4');
+    previewPath.setAttribute('fill','none');
+    previewPath.style.pointerEvents='none';
+    svg.appendChild(previewPath);
     e.preventDefault();
     return;
   }
   const node=e.target.closest('.config-node');
-  if(node&&!e.target.closest('.config-column')&&!e.target.closest('.close-btn')){
+  if(node&&!e.target.closest('.close-btn')){
     draggingNode=node;
     const r=node.getBoundingClientRect();
     dragGrab.x=e.clientX-r.left;dragGrab.y=e.clientY-r.top;
@@ -547,7 +579,16 @@ document.addEventListener('mousedown',e=>{
     e.preventDefault();
   }
 });
-document.addEventListener('mousemove',e=>{
+document.addEventListener('pointermove',e=>{
+  if(connecting&&previewPath){
+    if(Math.abs(e.clientX-connecting.x0)+Math.abs(e.clientY-connecting.y0)>4)connecting.moved=true;
+    const p1=cfgPoint(connecting.el,'right');
+    const canvas=$('#configCanvas');
+    const cr=canvas.getBoundingClientRect();
+    const x2=e.clientX-cr.left+canvas.scrollLeft;
+    const y2=e.clientY-cr.top+canvas.scrollTop;
+    previewPath.setAttribute('d',`M ${p1.x} ${p1.y} L ${x2} ${y2}`);
+  }
   if(draggingNode){
     const canvas=$('#configCanvas');
     const cr=canvas.getBoundingClientRect();
@@ -560,19 +601,36 @@ document.addEventListener('mousemove',e=>{
     renderConfigConnections();
   }
 });
-document.addEventListener('mouseup',e=>{
+document.addEventListener('pointerup',e=>{
   if(connecting){
-    const col=e.target.closest('.config-column');
-    if(col&&col!==connecting.el){
-      jointuresConfig.connections.push({fromFile:connecting.file,fromCol:connecting.col,toFile:col.dataset.file,toCol:col.dataset.col});
-      saveConfigToStorage();
-      showConfigStatus('✅ Jointure créée : '+connecting.col+' → '+col.dataset.col);
+    let target=null;
+    if(connecting.moved){
+      const el=document.elementFromPoint(e.clientX,e.clientY);
+      target=el?el.closest('.config-column'):null;
+    }
+    if(connecting.moved&&target&&target!==connecting.el){
+      if(target.dataset.file===connecting.file){
+        showConfigStatus('⚠ Une jointure doit relier deux FICHIERS différents (pas deux colonnes du même fichier).','error');
+        suppressPK=true;
+      }else{
+        const dup=jointuresConfig.connections.some(c=>c.fromFile===connecting.file&&c.fromCol===connecting.col&&c.toFile===target.dataset.file&&c.toCol===target.dataset.col);
+        if(dup){
+          showConfigStatus('⚠ Cette jointure existe déjà.','error');
+        }else{
+          jointuresConfig.connections.push({fromFile:connecting.file,fromCol:connecting.col,toFile:target.dataset.file,toCol:target.dataset.col});
+          saveConfigToStorage();
+          showConfigStatus('✅ Jointure créée : '+connecting.file+'.'+connecting.col+' → '+target.dataset.file+'.'+target.dataset.col);
+        }
+        suppressPK=true;
+      }
+    }else if(!connecting.moved){
+      suppressPK=false; /* clic simple → toggle clé primaire */
+    }else{
       suppressPK=true;
-    } else if(col===connecting.el){
-      suppressPK=false;
     }
     connecting.el.classList.remove('connecting');
     connecting=null;
+    if(previewPath){previewPath.remove();previewPath=null;}
     renderConfigCanvas();
     return;
   }
@@ -581,6 +639,20 @@ document.addEventListener('mouseup',e=>{
     draggingNode=null;
     saveConfigToStorage();
   }
+});
+/* Clic simple sur une colonne = clé primaire */
+document.addEventListener('click',e=>{
+  const col=e.target.closest('.config-column');
+  if(!col)return;
+  if(suppressPK){suppressPK=false;return;}
+  const fileId=col.dataset.file,column=col.dataset.col;
+  const file=jointuresConfig.files.find(f=>f.id===fileId);
+  if(!file)return;
+  file.primaryKeys=file.primaryKeys||[];
+  const i=file.primaryKeys.indexOf(column);
+  if(i>=0)file.primaryKeys.splice(i,1);else file.primaryKeys.push(column);
+  saveConfigToStorage();
+  renderConfigCanvas();
 });
 
 /* ============================================================ */
@@ -2060,6 +2132,10 @@ function render(){
   else if(isConfig){renderConfigAll();$('#more').hidden=true;}
   else if(!isHome)renderGrid();
 }
+function renderConfigAll(){
+  loadConfigFromStorage();
+  renderConfigCanvas();
+}
 
 const FS=['14.5px','16px','17.5px'],FL=['A','A+','A++'];
 function applyTheme(){
@@ -2132,7 +2208,6 @@ document.addEventListener('click',e=>{
     if(S.showDrop)$('#drop').scrollIntoView({behavior:'smooth',block:'nearest'});
     return;
   }
-  /* ===== Boutons de la config visuelle ===== */
   if(b.id==='configClose'){S.tab='accueil';render();return;}
   if(b.id==='configAutoDetect'){autoDetectColumns();return;}
   if(b.id==='configAutoLink'){autoLinkColumns();return;}
@@ -2155,8 +2230,6 @@ document.addEventListener('click',e=>{
     }
     return;
   }
-  /* ===== Clic simple sur colonne = clé primaire ===== */
-  const colEl=b.closest?null:null;
   if(b.dataset.act){
     const a=b.dataset.act;closeMenus();
     if(a==='export')exportCSV();
@@ -2205,22 +2278,6 @@ document.addEventListener('click',e=>{
     return;
   }
 });
-
-/* Clic simple sur une colonne = clé primaire (géré ici pour éviter le conflit avec le glisser) */
-document.addEventListener('click',e=>{
-  const col=e.target.closest('.config-column');
-  if(!col)return;
-  if(suppressPK){suppressPK=false;return;}
-  const fileId=col.dataset.file,column=col.dataset.col;
-  const file=jointuresConfig.files.find(f=>f.id===fileId);
-  if(!file)return;
-  file.primaryKeys=file.primaryKeys||[];
-  const i=file.primaryKeys.indexOf(column);
-  if(i>=0)file.primaryKeys.splice(i,1);else file.primaryKeys.push(column);
-  saveConfigToStorage();
-  renderConfigCanvas();
-});
-
 document.addEventListener('dblclick',e=>{
   const b=e.target.closest('button[data-dim]');if(!b)return;
   const k=b.dataset.dim,v=b.dataset.val;
@@ -2311,7 +2368,7 @@ cvEl.addEventListener('click',e=>{
   const p=mapHit(e.clientX-rect.left,e.clientY-rect.top);
   if(p){S.mapSel=p.r;renderMapSel();}
 });
-window.addEventListener('resize',()=>{if(S.tab==='carte')drawMap();});
+window.addEventListener('resize',()=>{if(S.tab==='carte')drawMap();if(S.tab==='config')renderConfigConnections();});
 window.addEventListener('scroll',()=>{if(S.tab==='config')renderConfigConnections();},true);
 
 if(typeof XLSX==='undefined'){
