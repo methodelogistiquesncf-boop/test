@@ -145,27 +145,43 @@ summary:hover{background:var(--hover)}
 #restoreBanner .mut{font-size:12.5px}
 #cacheInfo{font-size:11.5px;color:var(--mut);margin-top:6px}
 
-/* ===== CONFIGURATION VISUELLE ===== */
+/* ===== CONFIGURATION VISUELLE DES JOINTURES ===== */
 .config-toolbar{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;align-items:center}
 .config-toolbar button{padding:8px 16px;font-weight:600}
 .config-toolbar button.primary{background:var(--acc);color:#04121f;border-color:var(--acc)}
 .config-toolbar button.primary:hover{background:#0ea5e9;color:#fff}
+.zoomgrp{display:inline-flex;align-items:center;gap:4px;margin-left:12px;padding:3px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg2)}
+.zoomgrp button{padding:4px 9px;font-size:13px}
+.zoomgrp span{min-width:46px;text-align:center;font-size:12px;color:var(--mut)}
 .config-info{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px}
 .config-info b{color:var(--acc)}
-.config-canvas{position:relative;width:100%;height:640px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:auto}
+.config-canvas{position:relative;width:100%;height:680px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:auto}
 #configSvg{position:absolute;top:0;left:0;pointer-events:none;z-index:1}
 #configSvg path.cfgLink{pointer-events:stroke;cursor:pointer}
 #configSvg path.cfgLink:hover{stroke:var(--warn)!important;stroke-width:4}
 #configEmpty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;pointer-events:none}
-.config-node{position:absolute;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px;width:280px;cursor:move;box-shadow:0 4px 12px rgba(0,0,0,0.3);user-select:none;z-index:2}
+.config-node{position:absolute;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px;width:340px;cursor:move;box-shadow:0 4px 12px rgba(0,0,0,0.3);user-select:none;z-index:2}
+.config-canvas.z0 .config-node{width:255px}
+.config-canvas.z0 .config-node h4{font-size:12px}
+.config-canvas.z0 .config-column{font-size:10.5px;padding:3px 6px}
+.config-canvas.z2 .config-node{width:430px}
+.config-canvas.z2 .config-node h4{font-size:15px}
+.config-canvas.z2 .config-column{font-size:13px;padding:7px 10px}
 .config-node.dragging{opacity:0.6;z-index:1000}
-.config-node h4{margin:0 0 8px;font-size:14px;color:var(--acc);display:flex;justify-content:space-between;align-items:center;cursor:move}
+.config-node h4{margin:0 0 8px;font-size:13.5px;color:var(--acc);display:flex;justify-content:space-between;align-items:center;cursor:move;gap:6px}
+.config-node h4 .htitle{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.config-node h4 small{font-weight:400;color:var(--mut);font-size:11px}
 .config-node .close-btn{background:var(--warn);color:#000;border:0;border-radius:4px;padding:2px 7px;font-size:11px;cursor:pointer;font-weight:700}
-.config-columns{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow:auto}
-.config-column{padding:6px 10px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s,border-color .15s}
+.tog-btn{background:var(--hover);color:var(--txt);border:1px solid var(--line);border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;font-weight:700}
+.tog-btn:hover{border-color:var(--acc);color:var(--acc)}
+.config-columns{display:flex;flex-direction:column;gap:3px}
+.config-column{padding:4px 8px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;font-size:11.5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background .15s,border-color .15s}
 .config-column:hover{background:var(--hover);border-color:var(--acc)}
 .config-column.primary{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:700}
 .config-column.connecting{background:var(--warn);color:#04121f;border-color:var(--warn)}
+.config-column.linked{border-color:var(--acc);box-shadow:inset 3px 0 0 var(--acc)}
+.config-more{margin-top:4px;padding:5px 8px;border:1px dashed var(--line);border-radius:6px;font-size:11px;color:var(--mut);cursor:pointer;text-align:center;width:100%;background:none}
+.config-more:hover{border-color:var(--acc);color:var(--acc)}
 #configStatus{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;display:none}
 #configStatus.show{display:block}
 
@@ -322,20 +338,25 @@ summary:hover{background:var(--hover)}
     <button id="configAutoLink">🔗 Auto-relier les colonnes identiques</button>
     <button id="configSave">💾 Sauvegarder</button>
     <button id="configReset">🔄 Réinitialiser</button>
+    <button id="cfgCompactAll">🗂 Vue compacte</button>
+    <span class="zoomgrp" title="Zoom du plan">
+      <button id="cfgZoomOut">➖</button><span id="cfgZoomLab">100%</span><button id="cfgZoomIn">➕</button>
+    </span>
     <span class="mut" style="margin-left:auto">💡 Chargez d'abord vos fichiers Excel (menu 📂), puis cliquez sur « 🔍 Détecter »</span>
   </div>
 
   <div class="config-info">
     <b>Comment créer une jointure :</b>
     <ol style="margin:6px 0;padding-left:20px">
-      <li><b>« 🔍 Détecter »</b> : chaque fichier chargé devient une boîte avec toutes ses colonnes (rien à saisir).</li>
-      <li><b>Cliquer-glisser</b> d'une colonne vers une colonne d'un <b>autre fichier</b> : une ligne pointillée suit la souris, puis une <b>flèche bleue</b> est créée au relâchement.</li>
-      <li><b>Clic simple</b> sur une colonne = clé primaire 🔑.</li>
-      <li><b>Clic sur une flèche</b> = supprimer la jointure · glissez les boîtes par leur titre pour ranger.</li>
+      <li><b>« 🔍 Détecter »</b> : chaque fichier chargé devient une carte avec toutes ses colonnes (rien à saisir).</li>
+      <li><b>Cliquer-glisser</b> d'une colonne vers une colonne d'un <b>autre fichier</b> : ligne pointillée pendant le glisser, puis <b>flèche bleue</b> au relâchement.</li>
+      <li><b>Clic simple</b> sur une colonne = clé primaire 🔑 · colonne avec <b>liseré bleu</b> = déjà jointe 🔗.</li>
+      <li><b>▾ / ▸</b> dans le titre d'une carte = replier (clés + jointures seulement) / déplier · <b>➖ </b> = zoom · <b>🗂</b> = compacter tout.</li>
+      <li><b>Clic sur une flèche</b> = supprimer la jointure · glissez les cartes par leur titre pour ranger.</li>
     </ol>
   </div>
 
-  <div class="config-canvas" id="configCanvas">
+  <div class="config-canvas z1" id="configCanvas">
     <svg id="configSvg"></svg>
     <div id="configEmpty" class="mut">Aucun fichier détecté.<br>Chargez vos fichiers Excel puis cliquez sur « 🔍 Détecter automatiquement les fichiers ».</div>
   </div>
@@ -408,6 +429,7 @@ const CONFIG_STORAGE_KEY='zgJointuresConfig';
 let jointuresConfig={files:[],connections:[]};
 let draggingNode=null,dragGrab={x:0,y:0};
 let connecting=null,previewPath=null,suppressPK=false;
+let cfgZoom=+(localStorage.getItem('zgCfgZoom')||1);
 
 function showConfigStatus(msg,type){
   const el=$('#configStatus');if(!el)return;
@@ -438,6 +460,14 @@ function ensureSvg(){
   }
   return svg;
 }
+function applyCfgZoom(){
+  const canvas=$('#configCanvas');if(!canvas)return;
+  canvas.classList.remove('z0','z1','z2');
+  canvas.classList.add('z'+cfgZoom);
+  const lab=$('#cfgZoomLab');if(lab)lab.textContent=['80%','100%','125%'][cfgZoom];
+  try{localStorage.setItem('zgCfgZoom',String(cfgZoom));}catch(e){}
+  renderConfigConnections();
+}
 function autoDetectColumns(){
   const kinds=Object.keys(S.files||{});
   if(!kinds.length){
@@ -455,8 +485,9 @@ function autoDetectColumns(){
       name:LABELS[kind]||kind,
       columns:columns,
       primaryKeys:columns.filter(c=>PK.includes(c)),
-      x:40+(idx%3)*310,
-      y:40+Math.floor(idx/3)*360
+      collapsed:false,
+      x:40+(idx%3)*370,
+      y:40+Math.floor(idx/3)*420
     });
   });
   saveConfigToStorage();
@@ -490,18 +521,35 @@ function renderConfigCanvas(){
   if(!canvas)return;
   canvas.querySelectorAll('.config-node').forEach(n=>n.remove());
   if(empty)empty.style.display=jointuresConfig.files.length?'none':'flex';
+  /* colonnes jointes (tous fichiers) pour le liseré bleu */
+  const linkedByFile={};
+  jointuresConfig.connections.forEach(c=>{
+    (linkedByFile[c.fromFile]=linkedByFile[c.fromFile]||new Set()).add(c.fromCol);
+    (linkedByFile[c.toFile]=linkedByFile[c.toFile]||new Set()).add(c.toCol);
+  });
   jointuresConfig.files.forEach(file=>{
+    const linked=linkedByFile[file.id]||new Set();
+    const pk=file.primaryKeys||[];
+    const essSet=new Set([...pk,...linked]);
+    const shown=file.collapsed?(file.columns||[]).filter(c=>essSet.has(c)):(file.columns||[]);
+    const hiddenCount=(file.columns||[]).length-shown.length;
     const node=document.createElement('div');
     node.className='config-node';
     node.style.left=(file.x||40)+'px';
     node.style.top=(file.y||40)+'px';
     node.dataset.fileId=file.id;
-    node.innerHTML=`<h4>${esc(file.name)} <button class="close-btn" data-cfgdel="${esc(file.id)}" title="Retirer ce fichier">×</button></h4>
+    node.innerHTML=`<h4>
+        <span class="htitle">${esc(file.name)} <small>· ${(file.columns||[]).length} col.</small></span>
+        <button class="tog-btn" data-cfgtoggle="${esc(file.id)}" title="${file.collapsed?'Déplier toutes les colonnes':'Replier (clés primaires + colonnes jointes seulement)'}">${file.collapsed?'▸':'▾'}</button>
+        <button class="close-btn" data-cfgdel="${esc(file.id)}" title="Retirer ce fichier">×</button>
+      </h4>
       <div class="config-columns">`+
-      (file.columns||[]).map(col=>{
-        const pk=(file.primaryKeys||[]).includes(col);
-        return `<div class="config-column${pk?' primary':''}" data-file="${esc(file.id)}" data-col="${esc(col)}" title="${pk?'Clé primaire — clic pour retirer':'Cliquer-glisser vers une autre colonne = jointure · clic simple = clé primaire'}">${pk?'🔑 ':''}${esc(col)}</div>`;
+      shown.map(col=>{
+        const isPK=pk.includes(col);
+        const isL=linked.has(col);
+        return `<div class="config-column${isPK?' primary':''}${isL?' linked':''}" data-file="${esc(file.id)}" data-col="${esc(col)}" title="${esc(file.name)} · ${esc(col)}${isPK?' · clé primaire':''}${isL?' · colonne jointe':''}">${isPK?'🔑 ':''}${isL&&!isPK?'🔗 ':''}${esc(col)}</div>`;
       }).join('')+
+      (file.collapsed&&hiddenCount>0?`<button class="config-more" data-cfgtoggle="${esc(file.id)}">＋ ${hiddenCount} autre(s) colonne(s) — cliquer pour déplier</button>`:'')+
       `</div>`;
     canvas.appendChild(node);
   });
@@ -551,7 +599,7 @@ function renderConfigConnections(){
   });
 }
 
-/* --- Interactions : glisser-déposer des boîtes + création de jointures --- */
+/* --- Interactions : glisser des cartes, création de jointures, zoom, repliage --- */
 document.addEventListener('pointerdown',e=>{
   const panel=$('#configPanel');
   if(!panel||panel.hidden)return;
@@ -571,7 +619,7 @@ document.addEventListener('pointerdown',e=>{
     return;
   }
   const node=e.target.closest('.config-node');
-  if(node&&!e.target.closest('.close-btn')){
+  if(node&&!e.target.closest('.close-btn')&&!e.target.closest('.tog-btn')&&!e.target.closest('.config-more')){
     draggingNode=node;
     const r=node.getBoundingClientRect();
     dragGrab.x=e.clientX-r.left;dragGrab.y=e.clientY-r.top;
@@ -624,7 +672,7 @@ document.addEventListener('pointerup',e=>{
         suppressPK=true;
       }
     }else if(!connecting.moved){
-      suppressPK=false; /* clic simple → toggle clé primaire */
+      suppressPK=false;
     }else{
       suppressPK=true;
     }
@@ -2134,6 +2182,7 @@ function render(){
 }
 function renderConfigAll(){
   loadConfigFromStorage();
+  applyCfgZoom();
   renderConfigCanvas();
 }
 
@@ -2219,6 +2268,21 @@ document.addEventListener('click',e=>{
       renderConfigCanvas();
       showConfigStatus('Configuration réinitialisée.');
     }
+    return;
+  }
+  if(b.id==='cfgZoomIn'){cfgZoom=Math.min(2,cfgZoom+1);applyCfgZoom();return;}
+  if(b.id==='cfgZoomOut'){cfgZoom=Math.max(0,cfgZoom-1);applyCfgZoom();return;}
+  if(b.id==='cfgCompactAll'){
+    const anyExpanded=jointuresConfig.files.some(f=>!f.collapsed);
+    jointuresConfig.files.forEach(f=>f.collapsed=anyExpanded);
+    saveConfigToStorage();
+    renderConfigCanvas();
+    showConfigStatus(anyExpanded?'🗂 Vue compacte : seules les clés 🔑 et colonnes jointes 🔗 restent visibles.':'Vue complète : toutes les colonnes sont visibles.');
+    return;
+  }
+  if(b.dataset.cfgtoggle){
+    const f=jointuresConfig.files.find(f=>f.id===b.dataset.cfgtoggle);
+    if(f){f.collapsed=!f.collapsed;saveConfigToStorage();renderConfigCanvas();}
     return;
   }
   if(b.dataset.cfgdel){
