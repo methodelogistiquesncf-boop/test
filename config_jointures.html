@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configuration des jointures</title>
+<style>
+:root{--bg:#0f172a;--bg2:#0b1220;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;--hover:#172944}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:14.5px/1.55 system-ui,Segoe UI,Roboto,sans-serif;padding:20px}
+h1{font-size:20px;margin:0 0 20px;color:var(--acc)}
+h2{font-size:16px;margin:20px 0 10px;color:var(--txt);border-bottom:1px solid var(--line);padding-bottom:6px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut);flex:1;min-width:200px}
+select,input,button,textarea{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:inherit}
+button{cursor:pointer;font-weight:600}
+button:hover{border-color:var(--acc);color:var(--acc)}
+button.primary{background:var(--acc);color:#04121f;border-color:var(--acc)}
+button.primary:hover{background:#0ea5e9;color:#fff}
+.mut{color:var(--mut);font-size:12.5px}
+.ok{color:var(--ok)}
+.warn{color:var(--warn)}
+.file-card{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px}
+.file-card h3{margin:0 0 8px;font-size:14px;color:var(--acc)}
+.jointure-row{display:grid;grid-template-columns:200px 1fr 50px 1fr;gap:8px;align-items:center;margin-bottom:8px;padding:8px;background:var(--hover);border-radius:6px}
+.col-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.col-chip{padding:3px 8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;font-size:11px;cursor:pointer}
+.col-chip.key{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
+.col-chip.fk{background:var(--warn);color:#04121f;border-color:var(--warn)}
+textarea{min-height:60px;resize:vertical;font-family:monospace;font-size:12px}
+.btn-group{display:flex;gap:8px;margin-top:16px}
+#status{margin-top:12px;padding:12px;border-radius:8px;display:none}
+#status.show{display:block}
+#status.success{background:rgba(52,211,153,0.1);border:1px solid var(--ok);color:var(--ok)}
+#status.error{background:rgba(251,191,36,0.1);border:1px solid var(--warn);color:var(--warn)}
+</style>
+</head>
+<body>
+
+<h1>🔧 Configuration des jointures entre fichiers</h1>
+
+<div class="panel">
+  <h2>💾 Configuration actuelle</h2>
+  <div class="btn-group">
+    <button id="loadBtn">📥 Charger depuis localStorage</button>
+    <button id="saveBtn" class="primary">💾 Sauvegarder dans localStorage</button>
+    <button id="resetBtn">🔄 Réinitialiser</button>
+    <button id="exportBtn">📤 Exporter JSON</button>
+    <button id="importBtn">📥 Importer JSON</button>
+  </div>
+  <div id="status"></div>
+</div>
+
+<div class="panel">
+  <h2>📋 Fichiers chargés</h2>
+  <div id="filesList"><span class="mut">Aucun fichier chargé. Cliquez sur "Charger depuis localStorage" ou configurez manuellement.</span></div>
+</div>
+
+<div class="panel">
+  <h2>🔗 Jointures définies</h2>
+  <div id="jointuresList"><span class="mut">Aucune jointure définie.</span></div>
+  <button id="addJointure" style="margin-top:12px">+ Ajouter une jointure</button>
+</div>
+
+<div class="panel">
+  <h2>⚙️ Configuration manuelle (JSON)</h2>
+  <label>
+    Configuration JSON (éditable)
+    <textarea id="jsonConfig" placeholder='{"files":[...],"jointures":[...]}'></textarea>
+  </label>
+  <div class="btn-group">
+    <button id="applyJsonBtn" class="primary">✓ Appliquer la configuration</button>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>📖 Aide</h2>
+  <div class="mut">
+    <p><b>Clé primaire</b> : combinaison de colonnes qui identifie de manière unique chaque ligne du fichier.</p>
+    <p><b>Clé étrangère</b> : colonne(s) qui référencent une clé primaire d'un autre fichier.</p>
+    <p><b>Jointure</b> : relation entre deux fichiers via leurs clés.</p>
+    <p>La configuration est automatiquement sauvegardée en localStorage et peut être exportée/importée en JSON.</p>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'jointures_config';
+
+let config = {
+  files: [],
+  jointures: []
+};
+
+function showStatus(msg, type='success') {
+  const status = document.getElementById('status');
+  status.textContent = msg;
+  status.className = 'show ' + type;
+  setTimeout(() => status.className = '', 3000);
+}
+
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      config = JSON.parse(saved);
+      renderAll();
+      showStatus('Configuration chargée depuis localStorage');
+    } else {
+      showStatus('Aucune configuration trouvée dans localStorage', 'error');
+    }
+  } catch (err) {
+    showStatus('Erreur de chargement : ' + err.message, 'error');
+  }
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    updateJsonView();
+    showStatus('Configuration sauvegardée dans localStorage');
+  } catch (err) {
+    showStatus('Erreur de sauvegarde : ' + err.message, 'error');
+  }
+}
+
+function resetConfig() {
+  if (confirm('Réinitialiser toute la configuration ?')) {
+    config = { files: [], jointures: [] };
+    localStorage.removeItem(STORAGE_KEY);
+    renderAll();
+    showStatus('Configuration réinitialisée');
+  }
+}
+
+function exportJson() {
+  const blob = new Blob([JSON.stringify(config, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'jointures_config.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showStatus('Configuration exportée');
+}
+
+function importJson() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = evt => {
+      try {
+        config = JSON.parse(evt.target.result);
+        saveToStorage();
+        renderAll();
+        showStatus('Configuration importée avec succès');
+      } catch (err) {
+        showStatus('Erreur d\'import : ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function addFile() {
+  const name = prompt('Nom du fichier (ex: F1_depart.xlsx)');
+  if (!name) return;
+  
+  const colsStr = prompt('Colonnes séparées par des virgules (ex: depot,zi,gdep,zgDep)');
+  if (!colsStr) return;
+  
+  config.files.push({
+    id: Date.now().toString(),
+    name: name,
+    columns: colsStr.split(',').map(c => c.trim()).filter(Boolean),
+    primaryKey: [],
+    foreignKeys: []
+  });
+  
+  saveToStorage();
+  renderAll();
+}
+
+function removeFile(id) {
+  if (!confirm('Supprimer ce fichier ?')) return;
+  config.files = config.files.filter(f => f.id !== id);
+  config.jointures = config.jointures.filter(j => j.from !== id && j.to !== id);
+  saveToStorage();
+  renderAll();
+}
+
+function togglePrimaryKey(fileId, col) {
+  const file = config.files.find(f => f.id === fileId);
+  if (!file) return;
+  
+  const idx = file.primaryKey.indexOf(col);
+  if (idx >= 0) {
+    file.primaryKey.splice(idx, 1);
+  } else {
+    file.primaryKey.push(col);
+  }
+  
+  saveToStorage();
+  renderAll();
+}
+
+function addForeignKey(fileId) {
+  const file = config.files.find(f => f.id === fileId);
+  if (!file) return;
+  
+  const targetFile = config.files.find(f => f.id !== fileId);
+  if (!targetFile) {
+    alert('Il faut au moins 2 fichiers pour créer une jointure');
+    return;
+  }
+  
+  file.foreignKeys.push({
+    column: '',
+    targetFile: targetFile.id,
+    targetColumn: ''
+  });
+  
+  saveToStorage();
+  renderAll();
+}
+
+function updateForeignKey(fileId, fkIdx, field, value) {
+  const file = config.files.find(f => f.id === fileId);
+  if (!file || !file.foreignKeys[fkIdx]) return;
+  
+  file.foreignKeys[fkIdx][field] = value;
+  saveToStorage();
+}
+
+function removeForeignKey(fileId, fkIdx) {
+  const file = config.files.find(f => f.id === fileId);
+  if (!file) return;
+  
+  file.foreignKeys.splice(fkIdx, 1);
+  saveToStorage();
+  renderAll();
+}
+
+function renderFiles() {
+  const container = document.getElementById('filesList');
+  
+  if (config.files.length === 0) {
+    container.innerHTML = '<span class="mut">Aucun fichier configuré.</span>';
+    return;
+  }
+  
+  container.innerHTML = config.files.map(file => `
+    <div class="file-card">
+      <h3>
+        ${file.name}
+        <button onclick="removeFile('${file.id}')" style="float:right;padding:4px 8px;font-size:11px">🗑 Supprimer</button>
+      </h3>
+      <div class="mut">Colonnes disponibles :</div>
+      <div class="col-list">
+        ${file.columns.map(col => {
+          const isPK = file.primaryKey.includes(col);
+          const isFK = file.foreignKeys.some(fk => fk.column === col);
+          return `<span class="col-chip ${isPK ? 'key' : ''} ${isFK ? 'fk' : ''}" 
+                       onclick="togglePrimaryKey('${file.id}', '${col}')"
+                       title="${isPK ? 'Clé primaire' : isFK ? 'Clé étrangère' : 'Cliquer pour ajouter à la clé primaire'}">
+            ${col}${isPK ? ' 🔑' : ''}${isFK ? ' 🔗' : ''}
+          </span>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:12px">
+        <div class="mut" style="margin-bottom:6px">Clé primaire : <b class="ok">${file.primaryKey.join(' + ') || 'non définie'}</b></div>
+        <div class="mut" style="margin-bottom:8px">Clés étrangères :</div>
+        ${file.foreignKeys.map((fk, idx) => {
+          const targetFile = config.files.find(f => f.id === fk.targetFile);
+          return `
+            <div class="jointure-row">
+              <select onchange="updateForeignKey('${file.id}', ${idx}, 'column', this.value)">
+                <option value="">Colonne source</option>
+                ${file.columns.map(c => `<option value="${c}" ${fk.column === c ? 'selected' : ''}>${c}</option>`).join('')}
+              </select>
+              <span style="text-align:center">→</span>
+              <select onchange="updateForeignKey('${file.id}', ${idx}, 'targetFile', this.value)">
+                <option value="">Fichier cible</option>
+                ${config.files.filter(f => f.id !== file.id).map(f => 
+                  `<option value="${f.id}" ${fk.targetFile === f.id ? 'selected' : ''}>${f.name}</option>`
+                ).join('')}
+              </select>
+              <select onchange="updateForeignKey('${file.id}', ${idx}, 'targetColumn', this.value)">
+                <option value="">Colonne cible</option>
+                ${targetFile ? targetFile.columns.map(c => 
+                  `<option value="${c}" ${fk.targetColumn === c ? 'selected' : ''}>${c}</option>`
+                ).join('') : ''}
+              </select>
+              <button onclick="removeForeignKey('${file.id}', ${idx})" style="padding:4px 8px;font-size:11px">🗑</button>
+            </div>
+          `;
+        }).join('')}
+        <button onclick="addForeignKey('${file.id}')" style="margin-top:8px;padding:6px 12px;font-size:12px">+ Clé étrangère</button>
+      </div>
+    </div>
+  `).join('') + `
+    <button onclick="addFile()" style="margin-top:12px;padding:8px 16px">+ Ajouter un fichier</button>
+  `;
+}
+
+function updateJsonView() {
+  document.getElementById('jsonConfig').value = JSON.stringify(config, null, 2);
+}
+
+function applyJson() {
+  try {
+    const json = document.getElementById('jsonConfig').value;
+    config = JSON.parse(json);
+    saveToStorage();
+    renderAll();
+    showStatus('Configuration JSON appliquée');
+  } catch (err) {
+    showStatus('JSON invalide : ' + err.message, 'error');
+  }
+}
+
+function renderAll() {
+  renderFiles();
+  updateJsonView();
+}
+
+// Event listeners
+document.getElementById('loadBtn').addEventListener('click', loadFromStorage);
+document.getElementById('saveBtn').addEventListener('click', saveToStorage);
+document.getElementById('resetBtn').addEventListener('click', resetConfig);
+document.getElementById('exportBtn').addEventListener('click', exportJson);
+document.getElementById('importBtn').addEventListener('click', importJson);
+document.getElementById('applyJsonBtn').addEventListener('click', applyJson);
+
+// Initial render
+renderAll();
+</script>
+
+</body>
+</html>
