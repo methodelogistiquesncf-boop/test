@@ -35,12 +35,15 @@ main{padding:18px 22px;max-width:1900px;margin:auto}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
 label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
-select,input[type=search],input[type=file],button{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
+select,input[type=search],input[type=file],button,textarea{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
 button{cursor:pointer}
 button:hover{border-color:var(--acc);color:var(--acc)}
 button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
+button.primary:hover{background:#0ea5e9;color:#fff}
 input[type=range]{accent-color:var(--acc);width:130px;padding:2px}
 input[type=checkbox]{width:auto;accent-color:var(--acc)}
+textarea{min-height:80px;resize:vertical;font-family:monospace;font-size:12px}
 
 .fstatusrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .fstatus{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border:1px solid var(--line);border-radius:20px;font-size:12px;background:var(--bg2);cursor:default}
@@ -160,11 +163,24 @@ summary:hover{background:var(--hover)}
 #restoreBanner .mut{font-size:12.5px}
 #cacheInfo{font-size:11.5px;color:var(--mut);margin-top:6px}
 
-@media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}.file-chip{min-width:140px}}
+/* Styles pour la configuration des jointures */
+.config-section{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.config-section h3{color:var(--acc);margin:0 0 12px;font-size:15px}
+.config-row{display:grid;grid-template-columns:200px 1fr 50px 1fr;gap:8px;align-items:center;margin-bottom:8px;padding:8px;background:var(--hover);border-radius:6px}
+.col-chip{padding:3px 8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;font-size:11px;cursor:pointer;display:inline-block;margin:2px}
+.col-chip.key{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
+.col-chip.fk{background:var(--warn);color:#04121f;border-color:var(--warn)}
+.btn-group{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+#configStatus{margin-top:12px;padding:10px;border-radius:8px;display:none;font-size:13px}
+#configStatus.show{display:block}
+#configStatus.success{background:rgba(52,211,153,0.1);border:1px solid var(--ok);color:var(--ok)}
+#configStatus.error{background:rgba(251,191,36,0.1);border:1px solid var(--warn);color:var(--warn)}
+
+@media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}.file-chip{min-width:140px}.config-row{grid-template-columns:1fr;}}
 @media print{
   body{background:#fff!important;color:#000!important}
   body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
-  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header,#mapWrap .row,#mapTip,#mapSel,#matWrap .row,#matTypeChips,#restoreBanner{display:none!important}
+  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header,#mapWrap .row,#mapTip,#mapSel,#matWrap .row,#matTypeChips,#restoreBanner,#configPanel{display:none!important}
   .panel,.card,.fcard,.fbox,.chip{background:#fff!important;border-color:#999!important;color:#000!important}
   th{background:#eee!important;color:#000!important}
   tbody tr:nth-child(even){background:#f5f5f5!important}
@@ -302,6 +318,57 @@ summary:hover{background:var(--hover)}
   </div>
 </section>
 
+<!-- PAGE DE CONFIGURATION DES JOINTURES -->
+<section id="configPanel" class="panel" hidden>
+  <div class="expHead">
+    <b>⚙️ Configuration des jointures entre fichiers</b>
+    <button id="configClose" class="fbtn">Fermer ×</button>
+  </div>
+  
+  <div class="config-section">
+    <h3>💾 Configuration actuelle</h3>
+    <div class="btn-group">
+      <button id="configLoad" class="primary">📥 Charger depuis localStorage</button>
+      <button id="configSave" class="primary">💾 Sauvegarder dans localStorage</button>
+      <button id="configReset">🔄 Réinitialiser</button>
+      <button id="configExport">📤 Exporter JSON</button>
+      <button id="configImport">📥 Importer JSON</button>
+    </div>
+    <div id="configStatus"></div>
+  </div>
+
+  <div class="config-section">
+    <h3>📋 Fichiers chargés</h3>
+    <div id="configFilesList"><span class="mut">Aucun fichier configuré. Cliquez sur "Charger depuis localStorage" ou configurez manuellement.</span></div>
+  </div>
+
+  <div class="config-section">
+    <h3>🔗 Jointures définies</h3>
+    <div id="configJointuresList"><span class="mut">Aucune jointure définie.</span></div>
+    <button id="configAddJointure" style="margin-top:12px">+ Ajouter une jointure</button>
+  </div>
+
+  <div class="config-section">
+    <h3>📝 Configuration JSON (éditable)</h3>
+    <label>
+      <textarea id="configJson" placeholder='{"files":[...],"jointures":[...]}'></textarea>
+    </label>
+    <div class="btn-group">
+      <button id="configApplyJson" class="primary">✓ Appliquer la configuration</button>
+    </div>
+  </div>
+
+  <div class="config-section">
+    <h3>📖 Aide</h3>
+    <div class="mut">
+      <p><b>Clé primaire</b> : combinaison de colonnes qui identifie de manière unique chaque ligne du fichier.</p>
+      <p><b>Clé étrangère</b> : colonne(s) qui référencent une clé primaire d'un autre fichier.</p>
+      <p><b>Jointure</b> : relation entre deux fichiers via leurs clés.</p>
+      <p>La configuration est automatiquement sauvegardée en localStorage et peut être exportée/importée en JSON.</p>
+    </div>
+  </div>
+</section>
+
 <div class="tableWrap" id="tableWrap"><table id="grid"></table></div>
 <div id="tableInfo"></div>
 <button id="more" hidden>Afficher 200 lignes de plus</button>
@@ -359,6 +426,248 @@ const EMPL_NAME_FIELDS=['allee','face','colonne','niveau','empl'];
 const EMPL_NAME_SEP='';
 const frame=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 const closeMenus=()=>$$('.menu-item.open').forEach(x=>x.classList.remove('open'));
+
+/* ============================================================ */
+/* ============ CONFIGURATION DES JOINTURES ==================== */
+/* ============================================================ */
+const CONFIG_STORAGE_KEY = 'jointures_config';
+let jointuresConfig = { files: [], jointures: [] };
+
+function showConfigStatus(msg, type='success') {
+  const status = document.getElementById('configStatus');
+  status.textContent = msg;
+  status.className = 'show ' + type;
+  setTimeout(() => status.className = '', 3000);
+}
+
+function loadConfigFromStorage() {
+  try {
+    const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
+    if (saved) {
+      jointuresConfig = JSON.parse(saved);
+      renderConfigUI();
+      showConfigStatus('Configuration chargée depuis localStorage');
+    } else {
+      showConfigStatus('Aucune configuration trouvée dans localStorage', 'error');
+    }
+  } catch (err) {
+    showConfigStatus('Erreur de chargement : ' + err.message, 'error');
+  }
+}
+
+function saveConfigToStorage() {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(jointuresConfig));
+    updateConfigJsonView();
+    showConfigStatus('Configuration sauvegardée dans localStorage');
+  } catch (err) {
+    showConfigStatus('Erreur de sauvegarde : ' + err.message, 'error');
+  }
+}
+
+function resetConfig() {
+  if (confirm('Réinitialiser toute la configuration des jointures ?')) {
+    jointuresConfig = { files: [], jointures: [] };
+    localStorage.removeItem(CONFIG_STORAGE_KEY);
+    renderConfigUI();
+    showConfigStatus('Configuration réinitialisée');
+  }
+}
+
+function exportConfigJson() {
+  const blob = new Blob([JSON.stringify(jointuresConfig, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'jointures_config.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showConfigStatus('Configuration exportée');
+}
+
+function importConfigJson() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = evt => {
+      try {
+        jointuresConfig = JSON.parse(evt.target.result);
+        saveConfigToStorage();
+        renderConfigUI();
+        showConfigStatus('Configuration importée avec succès');
+      } catch (err) {
+        showConfigStatus('Erreur d\'import : ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function addConfigFile() {
+  const name = prompt('Nom du fichier (ex: F1_depart.xlsx)');
+  if (!name) return;
+  
+  const colsStr = prompt('Colonnes séparées par des virgules (ex: depot,zi,gdep,zgDep)');
+  if (!colsStr) return;
+  
+  jointuresConfig.files.push({
+    id: Date.now().toString(),
+    name: name,
+    columns: colsStr.split(',').map(c => c.trim()).filter(Boolean),
+    primaryKey: [],
+    foreignKeys: []
+  });
+  
+  saveConfigToStorage();
+  renderConfigUI();
+}
+
+function removeConfigFile(id) {
+  if (!confirm('Supprimer ce fichier ?')) return;
+  jointuresConfig.files = jointuresConfig.files.filter(f => f.id !== id);
+  jointuresConfig.jointures = jointuresConfig.jointures.filter(j => j.from !== id && j.to !== id);
+  saveConfigToStorage();
+  renderConfigUI();
+}
+
+function toggleConfigPrimaryKey(fileId, col) {
+  const file = jointuresConfig.files.find(f => f.id === fileId);
+  if (!file) return;
+  
+  const idx = file.primaryKey.indexOf(col);
+  if (idx >= 0) {
+    file.primaryKey.splice(idx, 1);
+  } else {
+    file.primaryKey.push(col);
+  }
+  
+  saveConfigToStorage();
+  renderConfigUI();
+}
+
+function addConfigForeignKey(fileId) {
+  const file = jointuresConfig.files.find(f => f.id === fileId);
+  if (!file) return;
+  
+  const targetFile = jointuresConfig.files.find(f => f.id !== fileId);
+  if (!targetFile) {
+    alert('Il faut au moins 2 fichiers pour créer une jointure');
+    return;
+  }
+  
+  file.foreignKeys.push({
+    column: '',
+    targetFile: targetFile.id,
+    targetColumn: ''
+  });
+  
+  saveConfigToStorage();
+  renderConfigUI();
+}
+
+function updateConfigForeignKey(fileId, fkIdx, field, value) {
+  const file = jointuresConfig.files.find(f => f.id === fileId);
+  if (!file || !file.foreignKeys[fkIdx]) return;
+  
+  file.foreignKeys[fkIdx][field] = value;
+  saveConfigToStorage();
+}
+
+function removeConfigForeignKey(fileId, fkIdx) {
+  const file = jointuresConfig.files.find(f => f.id === fileId);
+  if (!file) return;
+  
+  file.foreignKeys.splice(fkIdx, 1);
+  saveConfigToStorage();
+  renderConfigUI();
+}
+
+function renderConfigFiles() {
+  const container = document.getElementById('configFilesList');
+  
+  if (jointuresConfig.files.length === 0) {
+    container.innerHTML = '<span class="mut">Aucun fichier configuré.</span>';
+    return;
+  }
+  
+  container.innerHTML = jointuresConfig.files.map(file => `
+    <div class="config-section" style="margin-bottom:12px">
+      <h3>
+        ${esc(file.name)}
+        <button onclick="removeConfigFile('${file.id}')" style="float:right;padding:4px 8px;font-size:11px">🗑 Supprimer</button>
+      </h3>
+      <div class="mut" style="margin-bottom:8px">Colonnes disponibles :</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">
+        ${file.columns.map(col => {
+          const isPK = file.primaryKey.includes(col);
+          const isFK = file.foreignKeys.some(fk => fk.column === col);
+          return `<span class="col-chip ${isPK ? 'key' : ''} ${isFK ? 'fk' : ''}" 
+                       onclick="toggleConfigPrimaryKey('${file.id}', '${col}')"
+                       title="${isPK ? 'Clé primaire' : isFK ? 'Clé étrangère' : 'Cliquer pour ajouter à la clé primaire'}">
+            ${esc(col)}${isPK ? ' 🔑' : ''}${isFK ? ' 🔗' : ''}
+          </span>`;
+        }).join('')}
+      </div>
+      <div>
+        <div class="mut" style="margin-bottom:6px">Clé primaire : <b class="ok">${file.primaryKey.join(' + ') || 'non définie'}</b></div>
+        <div class="mut" style="margin-bottom:8px">Clés étrangères :</div>
+        ${file.foreignKeys.map((fk, idx) => {
+          const targetFile = jointuresConfig.files.find(f => f.id === fk.targetFile);
+          return `
+            <div class="config-row">
+              <select onchange="updateConfigForeignKey('${file.id}', ${idx}, 'column', this.value)">
+                <option value="">Colonne source</option>
+                ${file.columns.map(c => `<option value="${esc(c)}" ${fk.column === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+              </select>
+              <span style="text-align:center">→</span>
+              <select onchange="updateConfigForeignKey('${file.id}', ${idx}, 'targetFile', this.value)">
+                <option value="">Fichier cible</option>
+                ${jointuresConfig.files.filter(f => f.id !== file.id).map(f => 
+                  `<option value="${f.id}" ${fk.targetFile === f.id ? 'selected' : ''}>${esc(f.name)}</option>`
+                ).join('')}
+              </select>
+              <select onchange="updateConfigForeignKey('${file.id}', ${idx}, 'targetColumn', this.value)">
+                <option value="">Colonne cible</option>
+                ${targetFile ? targetFile.columns.map(c => 
+                  `<option value="${esc(c)}" ${fk.targetColumn === c ? 'selected' : ''}>${esc(c)}</option>`
+                ).join('') : ''}
+              </select>
+              <button onclick="removeConfigForeignKey('${file.id}', ${idx})" style="padding:4px 8px;font-size:11px">🗑</button>
+            </div>
+          `;
+        }).join('')}
+        <button onclick="addConfigForeignKey('${file.id}')" style="margin-top:8px;padding:6px 12px;font-size:12px">+ Clé étrangère</button>
+      </div>
+    </div>
+  `).join('') + `
+    <button onclick="addConfigFile()" style="margin-top:12px;padding:8px 16px">+ Ajouter un fichier</button>
+  `;
+}
+
+function updateConfigJsonView() {
+  document.getElementById('configJson').value = JSON.stringify(jointuresConfig, null, 2);
+}
+
+function applyConfigJson() {
+  try {
+    const json = document.getElementById('configJson').value;
+    jointuresConfig = JSON.parse(json);
+    saveConfigToStorage();
+    renderConfigUI();
+    showConfigStatus('Configuration JSON appliquée');
+  } catch (err) {
+    showConfigStatus('JSON invalide : ' + err.message, 'error');
+  }
+}
+
+function renderConfigUI() {
+  renderConfigFiles();
+  updateConfigJsonView();
+}
 
 /* ============================================================ */
 /* ============ CACHE IndexedDB ================================= */
@@ -951,7 +1260,7 @@ const FICHE=(k,getCode)=>C(k,'📄',{btn:r=>{const v=getCode(r);return v?`<butto
 const zgLab=z=>(LAB.zg.get(z)?LAB.zg.get(z)+' ('+z+')':z);
 const gLab=g=>(LAB.g.get(g)||g);
 const COLS={
- accueil:[],carte:[],mattype:[],
+ accueil:[],carte:[],mattype:[],config:[],
  flux:[
   C('depot','Dépôt',{dim:true,expertOnly:true}),
   C('zi','ZI',{dim:true,dict:'zi',lSimple:'ZI'}),
@@ -1081,7 +1390,7 @@ function cols(){
 }
 const lbl=c=>(S.simple&&c.lSimple)?c.lSimple:c.l;
 function colDef(k){return cols().find(c=>c.k===k);}
-function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,materiel:S.materiel,excl:S.exclRows,ecart:[],arbre:[],chemin:[],accueil:[],carte:[],mattype:[]})[S.tab]||[];}
+function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,materiel:S.materiel,excl:S.exclRows,ecart:[],arbre:[],chemin:[],accueil:[],carte:[],mattype:[],config:[]})[S.tab]||[];}
 function withSearch(rows){if(!S.q)return rows;const q=N(S.q);return rows.filter(r=>N(JSON.stringify(r)).includes(q));}
 function matchRow(c,r,v){return c.has?c.has(r,v):String(c.get(r))===v;}
 function filtered(){
@@ -1139,6 +1448,7 @@ function renderHome(){
         <button class="homeCard" data-home="materiel"><b>🚜 Parc matériel</b><small>${fmt(S.materiel.length)} engin(s) : type, ZI d'intervention, emplacement parc</small></button>
         <button class="homeCard" data-home="mattype"><b>🏷 Types & supports</b><small>${fmt(S.matTypeCount)} types de matériel · quels supports chacun peut transporter</small></button>
         <button class="homeCard" data-home="empl"><b>📍 Emplacements</b><small>${fmt(S.empl.length)} emplacements NE1 (F5)</small></button>
+        <button class="homeCard" data-home="config"><b>⚙️ Configuration</b><small>Configurer les jointures entre fichiers</small></button>
         <button class="homeCard" data-home="ecart"><b>⚠ Écarts</b><small>${fmt(S.controls.reduce((s,c)=>s+c.items.length,0))} anomalie(s) détectée(s)</small></button>
       </div>`;
   }
@@ -1211,13 +1521,11 @@ function renderPath(){
   $('#pathView').textContent=S.pathView==='simple'?'🌳 Version détaillée (arbre)':'📄 Version simplifiée (tableau)';
   fillPathList(q || qArr);
 
-  // Si rien du tout, message d'aide
   if(!q && !qArr){
     box.innerHTML='<span class="mut">Saisissez au moins un emplacement de départ ou d\'arrivée, puis « Calculer les chemins ».</span>';
     return;
   }
 
-  // --- RÉSOLUTION DÉPART (optionnel) ---
   let startZg=null, startLabel='', startEmpl=null, startZi='', startZe='', startG='';
   if(q){
     const nq=N(q);
@@ -1236,7 +1544,6 @@ function renderPath(){
     }
   }
 
-  // --- RÉSOLUTION ARRIVÉE (optionnelle) ---
   let targetZg=null, targetLabel='', targetEmpl=null, targetZi='', targetZe='', targetG='';
   if(qArr){
     const nqArr=N(qArr);
@@ -1255,7 +1562,6 @@ function renderPath(){
     }
   }
 
-  // --- CAS 1 : DÉPART SEUL → afficher tous les chemins depuis ce départ ---
   if(startG && !targetG){
     const nextGroups = [...(IDX.fluxDep.get(K(D, startG))||[])];
     if(nextGroups.length === 0){
@@ -1300,7 +1606,6 @@ function renderPath(){
     return;
   }
 
-  // --- CAS 2 : ARRIVÉE SEULE → afficher tous les chemins vers cette arrivée ---
   if(!startG && targetG){
     const prevGroups = [...(IDX.fluxArr.get(K(D, targetG))||[])];
     if(prevGroups.length === 0){
@@ -1343,7 +1648,6 @@ function renderPath(){
     return;
   }
 
-  // --- CAS 3 : DÉPART + ARRIVÉE → trouver tous les chemins entre les deux ---
   const allPaths = [];
   const MAX_DEPTH = 4;
 
@@ -1374,7 +1678,6 @@ function renderPath(){
     return;
   }
 
-  // Trier par longueur
   allPaths.sort((a, b) => a.chain.length - b.chain.length);
 
   const targetEmpls = IDX.empl.get(K(D, targetZg)) || [];
@@ -1383,7 +1686,7 @@ function renderPath(){
   let html = `<div style="padding:16px; background:var(--bg2); border-radius:10px; border:1px solid var(--line);">
     <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
       <div style="border-left: 3px solid var(--acc); padding-left: 12px; flex: 1; min-width: 200px;">
-        <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;">📍 Départ</div>
+        <div style="color:var(--acc); font-weight:700; font-size:12px; text-transform:uppercase;"> Départ</div>
         <div style="font-size:16px; font-weight:600; margin: 4px 0;">${esc(startLabel)}</div>
         <div style="font-size:12px; color:var(--mut);">
           ${startZi ? `ZI: ${esc(LAB.zi.get(startZi)||startZi)} · ` : ''}
@@ -1780,6 +2083,8 @@ function renderMenu(){
        mi('depart','Départ · F1')+mi('ref','Référentiel · F3')+mi('tampon','Tampon · F4'))+
     dd('qual','✅','Qualité',['ecart','excl'].includes(S.tab),
        mi('ecart','⚠ Écarts')+mi('excl','Exclus (≠NE1)'))+
+    dd('config','⚙️','Configuration',S.tab==='config',
+       mi('config','Configuration des jointures'))+
     dd('autre','⚙️','Autre',false,
        `<button data-act="export">📥 Exporter CSV</button>
         <button data-act="reset">🔄 Réinitialiser les filtres</button>
@@ -1875,7 +2180,6 @@ function renderControls(){
     :'<div class="card">Aucun écart détecté sur les fichiers chargés. 🎉</div>';
 }
 
-/* === Bannière de restauration === */
 function renderRestoreBanner() {
   const banner = $('#restoreBanner');
   if (!banner) return;
@@ -1903,19 +2207,21 @@ function render(){
   $('#kpis').hidden = hasFiles;
   renderHome();renderFilters();renderControls();renderFiche();renderFileStatus();
   renderFileChips($('#fileListInline'));
-  const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte',isMat=S.tab==='mattype';
-  const hideTable=isTree||isPath||isHome||isMap||isMat;
+  const isHome=S.tab==='accueil',isTree=S.tab==='arbre',isPath=S.tab==='chemin',isMap=S.tab==='carte',isMat=S.tab==='mattype',isConfig=S.tab==='config';
+  const hideTable=isTree||isPath||isHome||isMap||isMat||isConfig;
   $('#treeWrap').hidden=!isTree;
   $('#pathWrap').hidden=!isPath;
   $('#mapWrap').hidden=!isMap;
   $('#matWrap').hidden=!isMat;
+  $('#configPanel').hidden=!isConfig;
   $('#tableWrap').style.display=hideTable?'none':'';
   $('#tableInfo').style.display=hideTable?'none':'';
-  $('#filterPanel').style.display=(isHome||isMap||isMat)?'none':'';
+  $('#filterPanel').style.display=(isHome||isMap||isMat||isConfig)?'none':'';
   if(isTree){renderTree();$('#more').hidden=true;}
   else if(isPath){renderPath();$('#more').hidden=true;}
   else if(isMap){renderMap();$('#more').hidden=true;}
   else if(isMat){renderMattype();$('#more').hidden=true;}
+  else if(isConfig){renderConfigUI();$('#more').hidden=true;}
   else if(!isHome)renderGrid();
 }
 
@@ -1961,6 +2267,14 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('.menu-bar'))closeMenus();
   const b=e.target.closest('button');if(!b)return;
   if(b.id==='closeExp'){$('#explorer').hidden=true;return;}
+  if(b.id==='configClose'){S.tab='accueil';render();return;}
+  if(b.id==='configLoad'){loadConfigFromStorage();return;}
+  if(b.id==='configSave'){saveConfigToStorage();return;}
+  if(b.id==='configReset'){resetConfig();return;}
+  if(b.id==='configExport'){exportConfigJson();return;}
+  if(b.id==='configImport'){importConfigJson();return;}
+  if(b.id==='configAddJointure'){addConfigFile();return;}
+  if(b.id==='configApplyJson'){applyConfigJson();return;}
   if(b.dataset.ficheclose){S.fiche=null;renderFiche();return;}
   if(b.dataset.printfiche){window.print();return;}
   if(b.dataset.fiche){const [t,c]=b.dataset.fiche.split(':');S.fiche={type:t,code:c};renderFiche();$('#fiche').scrollIntoView({behavior:'smooth'});return;}
