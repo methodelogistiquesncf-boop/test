@@ -3,342 +3,1445 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Configuration des jointures</title>
+<title>Explorateur ZI · ZE · ZG · Tampons · Emplacements · Matériel</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#0f172a;--bg2:#0b1220;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;--hover:#172944}
+:root{--bg:#0f172a;--bg2:#0b1220;--panel:#16213a;--line:#2b3a55;--txt:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;--zebra:#131e33;--hover:#172944;--overlay:rgba(4,10,20,.78);--fs:14.5px}
+body.light{--bg:#eef1f6;--bg2:#ffffff;--panel:#ffffff;--line:#d8dee9;--txt:#1c2b3a;--mut:#5c6b7a;--acc:#0284c7;--ok:#059669;--warn:#b45309;--zebra:#f2f5f9;--hover:#e8eef7;--overlay:rgba(255,255,255,.82)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font:14.5px/1.55 system-ui,Segoe UI,Roboto,sans-serif;padding:20px}
-h1{font-size:20px;margin:0 0 20px;color:var(--acc)}
-h2{font-size:16px;margin:20px 0 10px;color:var(--txt);border-bottom:1px solid var(--line);padding-bottom:6px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
-.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut);flex:1;min-width:200px}
-select,input,button,textarea{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:inherit}
-button{cursor:pointer;font-weight:600}
+body{margin:0;background:var(--bg);color:var(--txt);font:var(--fs)/1.55 system-ui,Segoe UI,Roboto,sans-serif}
+
+.menu-bar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;background:var(--bg2);border-bottom:2px solid var(--line)}
+.menu-item{position:relative;display:flex;align-items:center;gap:7px;padding:12px 18px;background:none;border:0;border-right:1px solid var(--line);color:var(--txt);font:inherit;font-size:14.5px;font-weight:600;cursor:pointer}
+.menu-item:hover{background:var(--hover);color:var(--acc)}
+.menu-item.active{background:var(--acc);color:#04121f}
+.menu-item.cur{color:var(--acc)}
+.menu-dropdown{position:absolute;top:100%;left:0;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:0 0 10px 10px;box-shadow:0 10px 26px rgba(0,0,0,.35);display:none;padding:4px 0;z-index:60}
+.menu-item.open .menu-dropdown{display:block}
+.menu-dropdown button{display:block;width:100%;text-align:left;padding:9px 16px;background:none;border:0;color:var(--txt);font:inherit;font-size:13.5px;cursor:pointer}
+.menu-dropdown button:hover{background:var(--hover);color:var(--acc)}
+.menu-dropdown button.on{color:var(--acc);font-weight:700;background:var(--hover)}
+.menu-dropdown button small{color:var(--mut);float:right;margin-left:12px}
+.menu-sep{height:1px;background:var(--line);margin:4px 0}
+.mbadge{margin-left:4px;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;background:var(--hover);border:1px solid var(--line)}
+.mbadge.ok{color:var(--ok)} .mbadge.warn{color:var(--warn)}
+
+header{padding:10px 22px;background:var(--bg2);border-bottom:1px solid var(--line)}
+h1{font-size:17px;margin:0;font-weight:600}
+h3{margin:0 0 6px}
+main{padding:18px 22px;max-width:1900px;margin:auto}
+.mut,small{color:var(--mut)}
+.warn{color:var(--warn)} .ok{color:var(--ok)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
+select,input[type=search],input[type=file],button,textarea{background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
+button{cursor:pointer}
 button:hover{border-color:var(--acc);color:var(--acc)}
-button.primary{background:var(--acc);color:#04121f;border-color:var(--acc)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
 button.primary:hover{background:#0ea5e9;color:#fff}
-.mut{color:var(--mut);font-size:12.5px}
-.ok{color:var(--ok)}
-.warn{color:var(--warn)}
-.file-card{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px}
-.file-card h3{margin:0 0 8px;font-size:14px;color:var(--acc)}
-.jointure-row{display:grid;grid-template-columns:200px 1fr 50px 1fr;gap:8px;align-items:center;margin-bottom:8px;padding:8px;background:var(--hover);border-radius:6px}
-.col-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
-.col-chip{padding:3px 8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;font-size:11px;cursor:pointer}
-.col-chip.key{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
-.col-chip.fk{background:var(--warn);color:#04121f;border-color:var(--warn)}
-textarea{min-height:60px;resize:vertical;font-family:monospace;font-size:12px}
-.btn-group{display:flex;gap:8px;margin-top:16px}
-#status{margin-top:12px;padding:12px;border-radius:8px;display:none}
-#status.show{display:block}
-#status.success{background:rgba(52,211,153,0.1);border:1px solid var(--ok);color:var(--ok)}
-#status.error{background:rgba(251,191,36,0.1);border:1px solid var(--warn);color:var(--warn)}
+input[type=range]{accent-color:var(--acc);width:130px;padding:2px}
+input[type=checkbox]{width:auto;accent-color:var(--acc)}
+textarea{min-height:80px;resize:vertical;font-family:monospace;font-size:12px}
+
+.fstatusrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.fstatus{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border:1px solid var(--line);border-radius:20px;font-size:12px;background:var(--bg2);cursor:default}
+.fstatus small{color:var(--mut)}
+.ic{font-weight:800;line-height:1}
+.ic.ok{color:var(--ok)}
+.ic.warn{color:var(--warn)}
+.ic.no{color:var(--mut);opacity:.65}
+.spinmini{width:11px;height:11px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;display:inline-block;animation:rot 1s linear infinite;flex:none}
+
+.file-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;margin:3px;border:1.5px solid var(--line);border-radius:20px;font-size:13px;font-weight:500;background:var(--bg2);transition:all 0.4s cubic-bezier(.4,0,.2,1);min-width:200px;max-width:340px}
+.file-chip .fname{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-chip .fkind{font-size:10.5px;color:var(--mut);padding:2px 7px;border-radius:8px;background:var(--hover);white-space:nowrap;font-weight:600}
+.file-chip.done{border-color:var(--ok);background:rgba(52,211,153,0.12)}
+.file-chip.done .ic{color:var(--ok);font-size:18px;font-weight:900}
+.file-chip.wait{border-color:var(--acc);background:rgba(56,189,248,0.1)}
+.file-chip.wait .ic{color:var(--acc)}
+.file-chip.error{border-color:var(--warn);background:rgba(251,191,36,0.12)}
+.file-chip.error .ic{color:var(--warn)}
+
+.progress-bar{width:100%;max-width:560px;height:6px;background:var(--hover);border-radius:3px;margin:10px 0;overflow:hidden}
+.progress-bar .fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));transition:width 0.4s ease;border-radius:3px}
+
+#drop{border-style:dashed}
+#drop.over{border-color:var(--acc);background:var(--hover)}
+
+#mapBox{position:relative;height:62vh;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg2)}
+#mapCv{position:absolute;inset:0;display:block}
+#mapTip{position:absolute;display:none;pointer-events:none;background:var(--overlay);border:1px solid var(--acc);border-radius:8px;padding:6px 9px;font-size:12px;max-width:290px;z-index:5;line-height:1.45;color:var(--txt)}
+
+#kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+#kpis[hidden]{display:none}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:130px}
+.kpi b{display:block;font-size:20px;color:var(--acc)}
+
+#fselects{display:flex;flex-wrap:wrap;gap:10px}
+#fselects select{min-width:170px;max-width:300px}
+
+#explorer,#treeWrap,#pathTree{margin-bottom:6px;max-height:60vh;overflow:auto}
+.expHead{display:flex;gap:12px;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--panel);padding-bottom:8px;z-index:1;flex-wrap:wrap}
+.expList{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px}
+.expItem{display:flex;gap:8px;align-items:center;justify-content:space-between;position:relative;overflow:hidden;text-align:left}
+.expItem i{position:absolute;left:0;bottom:0;height:3px;background:var(--acc);opacity:.5}
+
+.tableWrap{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{position:sticky;top:0;background:var(--bg2);z-index:2;text-align:left;border-bottom:1px solid var(--line)}
+.th{border:0;background:none;border-radius:0;padding:10px 8px;font-weight:600}
+.th span.lk{color:var(--acc);font-size:11px}
+.ib{color:var(--acc);cursor:help;font-size:11px;margin-left:4px}
+.sort{border:0;background:none;padding:4px 8px;color:var(--mut)}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:hover{background:var(--hover)}
+
+.chip{padding:2px 8px;margin:1px;border-radius:20px;font-size:12.5px;white-space:normal;text-align:left;max-width:300px;border-left-width:3px;border-left-style:solid}
+.chip.on{background:var(--acc);color:#04121f;border-color:var(--acc)}
+.chip small{opacity:.75}
+.k-zi{border-left-color:#38bdf8}.k-ze{border-left-color:#34d399}.k-g{border-left-color:#fbbf24}.k-zg{border-left-color:#c084fc}.k-tam{border-left-color:#f472b6}
+
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 5px -1px 10px}
+.plain{color:var(--mut)}
+.phrase{white-space:normal;max-width:560px;color:var(--txt)}
+
+#notice{border-color:var(--warn);color:var(--warn)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+details{font-size:13.5px;color:var(--mut)}
+#tableInfo{margin:10px 0;color:var(--mut);font-size:12.5px}
+summary{cursor:pointer;padding:3px 6px;border-radius:6px;color:var(--txt)}
+summary:hover{background:var(--hover)}
+.tin{margin-left:20px;border-left:1px solid var(--line);padding-left:10px}
+.trow{margin:2px 0;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.trow>details{flex:1;min-width:260px}
+.fbtn{padding:1px 7px;font-size:11px;border-radius:6px}
+
+.ficheGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-top:10px}
+.fcard{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.fcard h4{margin:0 0 6px;font-size:13px;color:var(--acc)}
+.fcard ul{margin:0;padding-left:16px;font-size:12.5px;max-height:220px;overflow:auto}
+
+.flow{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0}
+.fbox{border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12.5px;background:var(--bg2)}
+.fbox.g{border-left:4px solid #fbbf24}.fbox.t{border-left:4px solid #f472b6}.fbox.z{border-left:4px solid #c084fc}.fbox.e{border-left:4px solid #34d399}
+.farr{color:var(--mut)}
+
+.homeGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.homeCard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;text-align:left}
+.homeCard:hover{border-color:var(--acc)}
+.homeCard b{display:block;font-size:16px;margin-bottom:6px}
+.homeCard small{color:var(--mut)}
+
+#loading{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;z-index:60}
+#loading[hidden]{display:none}
+.loadBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 36px;text-align:center;max-width:860px;box-shadow:0 10px 40px rgba(0,0,0,.35);width:90vw}
+.spin{width:44px;height:44px;margin:0 auto 14px;border:4px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:rot 1s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+#loadingMsg{font-size:15px;font-weight:600}
+#loadingSub{font-size:12.5px;color:var(--mut);margin-top:6px}
+
+#restoreBanner{background:rgba(52,211,153,0.1);border:1px dashed var(--ok);border-radius:12px;padding:14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+#restoreBanner[hidden]{display:none}
+#restoreBanner .info{flex:1;min-width:220px}
+#restoreBanner b{color:var(--ok);display:block;margin-bottom:3px}
+#restoreBanner .mut{font-size:12.5px}
+
+/* Styles pour la configuration visuelle des jointures */
+#configPanel{position:relative}
+.config-canvas{position:relative;width:100%;height:600px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:auto;margin:12px 0}
+.config-node{position:absolute;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px;min-width:250px;cursor:move;box-shadow:0 4px 12px rgba(0,0,0,0.3);user-select:none}
+.config-node.dragging{opacity:0.6;z-index:1000}
+.config-node h4{margin:0 0 8px;font-size:14px;color:var(--acc);display:flex;justify-content:space-between;align-items:center}
+.config-node .close-btn{background:var(--warn);color:#000;border:0;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer}
+.config-columns{display:flex;flex-direction:column;gap:4px}
+.config-column{padding:6px 10px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s}
+.config-column:hover{background:var(--hover);border-color:var(--acc)}
+.config-column.primary{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
+.config-column.connecting{background:var(--warn);border-color:var(--warn)}
+.config-column .pk-icon{font-size:10px}
+.config-connection{position:absolute;pointer-events:none;z-index:5}
+.config-toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.config-info{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:12px;font-size:13px}
+.config-info b{color:var(--acc)}
+
+@media (max-width:760px){.menu-item{padding:10px 12px;font-size:13.5px}.menu-dropdown{min-width:220px}.file-chip{min-width:140px}.config-node{min-width:200px}}
+@media print{
+  body{background:#fff!important;color:#000!important}
+  body.light,body{--bg:#fff;--bg2:#fff;--panel:#fff;--line:#999;--txt:#000;--mut:#444;--zebra:#f2f2f2;--hover:#fff;--acc:#000;--ok:#000;--warn:#000}
+  #drop,#fselects,#explorer,#controls,#more,.panel.mut,#loading,#home,.menu-bar,header,#mapWrap .row,#mapTip,#mapSel,#matWrap .row,#matTypeChips,#restoreBanner,#configPanel{display:none!important}
+  .panel,.card,.fcard,.fbox,.chip{background:#fff!important;border-color:#999!important;color:#000!important}
+  th{background:#eee!important;color:#000!important}
+  tbody tr:nth-child(even){background:#f5f5f5!important}
+  .tableWrap{max-height:none;overflow:visible;border:0}
+  #fiche .fcard ul,#matTypeDetail .fcard ul{max-height:none;overflow:visible}
+  #mapBox{height:45vh;border-color:#999}
+}
 </style>
 </head>
 <body>
-
-<h1>🔧 Configuration des jointures entre fichiers</h1>
-
-<div class="panel">
-  <h2>💾 Configuration actuelle</h2>
-  <div class="btn-group">
-    <button id="loadBtn">📥 Charger depuis localStorage</button>
-    <button id="saveBtn" class="primary">💾 Sauvegarder dans localStorage</button>
-    <button id="resetBtn">🔄 Réinitialiser</button>
-    <button id="exportBtn">📤 Exporter JSON</button>
-    <button id="importBtn">📥 Importer JSON</button>
-  </div>
-  <div id="status"></div>
-</div>
-
-<div class="panel">
-  <h2>📋 Fichiers chargés</h2>
-  <div id="filesList"><span class="mut">Aucun fichier chargé. Cliquez sur "Charger depuis localStorage" ou configurez manuellement.</span></div>
-</div>
-
-<div class="panel">
-  <h2>🔗 Jointures définies</h2>
-  <div id="jointuresList"><span class="mut">Aucune jointure définie.</span></div>
-  <button id="addJointure" style="margin-top:12px">+ Ajouter une jointure</button>
-</div>
-
-<div class="panel">
-  <h2>⚙️ Configuration manuelle (JSON)</h2>
-  <label>
-    Configuration JSON (éditable)
-    <textarea id="jsonConfig" placeholder='{"files":[...],"jointures":[...]}'></textarea>
-  </label>
-  <div class="btn-group">
-    <button id="applyJsonBtn" class="primary">✓ Appliquer la configuration</button>
+<div id="loading" hidden>
+  <div class="loadBox">
+    <div class="spin"></div>
+    <div id="loadingMsg">Chargement des fichiers…</div>
+    <div id="loadingSub">Merci de patienter — le traitement se fait entièrement dans votre navigateur.</div>
+    <div class="progress-bar"><div class="fill" style="width:0%"></div></div>
+    <div id="loadProgress"><span id="loadCount">0 / 0</span></div>
+    <div id="fileList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"></div>
   </div>
 </div>
 
-<div class="panel">
-  <h2>📖 Aide</h2>
-  <div class="mut">
-    <p><b>Clé primaire</b> : combinaison de colonnes qui identifie de manière unique chaque ligne du fichier.</p>
-    <p><b>Clé étrangère</b> : colonne(s) qui référencent une clé primaire d'un autre fichier.</p>
-    <p><b>Jointure</b> : relation entre deux fichiers via leurs clés.</p>
-    <p>La configuration est automatiquement sauvegardée en localStorage et peut être exportée/importée en JSON.</p>
+<div class="menu-bar" id="menuBar"></div>
+
+<header>
+  <h1>Explorateur ZI · ZE · Groupes ZG · Tampons · Emplacements · Matériel</h1>
+  <small>8 fichiers reliés dans votre navigateur — aucune donnée envoyée sur Internet — seul le dépôt NE1 est conservé</small>
+</header>
+
+<main>
+<section id="restoreBanner" class="panel" hidden>
+  <div class="info">
+    <b>💾 Fichiers précédents disponibles</b>
+    <div class="mut" id="restoreList">Des fichiers ont été conservés depuis votre dernière session.</div>
   </div>
-</div>
+  <div class="row">
+    <button id="restoreBtn" class="fbtn" style="padding:7px 14px">⚡ Restaurer</button>
+    <button id="cacheClearBtn" class="fbtn" style="padding:7px 14px">🗑 Effacer le cache</button>
+  </div>
+</section>
+
+<section id="drop" class="panel">
+  <div id="dropFull">
+    <div class="expHead"><b>📂 Vos fichiers — chargement en masse</b><button id="dropHide" class="fbtn">Masquer ▲</button></div>
+    <span class="mut">— glissez-déposez <b>tous vos classeurs d'un coup</b> ici. Chaque fichier est reconnu automatiquement. Les fichiers sont conservés en mémoire locale.</span>
+    <div class="row" style="margin-top:10px">
+      <label>Charger 1 à 8 fichiers Excel<input type="file" accept=".xlsx,.xls" multiple id="bulk"></label>
+      <span class="mut" id="bulkState">Aucun fichier chargé</span>
+    </div>
+  </div>
+  <div id="fileStatus" class="fstatusrow"></div>
+</section>
+
+<div id="notice" class="panel" hidden></div>
+<div id="kpis"></div>
+<section id="home" class="panel" hidden></section>
+
+<section class="panel" id="filterPanel">
+  <div id="fselects"></div>
+  <div style="margin-top:10px"><label>Recherche libre<input type="search" id="q" placeholder="Ex : ZGMAG3, HUBT, LAVAGE…"></label></div>
+</section>
+
+<section id="fiche" class="panel" hidden></section>
+<section id="explorer" class="panel" hidden></section>
+<div id="treeWrap" class="panel" hidden></div>
+
+<section id="pathWrap" class="panel" hidden>
+  <b>🧭 Chemins entre emplacements</b>
+  <div class="row" style="margin-top:10px">
+    <label>Emplacement ou ZG de départ<input id="pathQ" list="pathList"><datalist id="pathList"></datalist></label>
+    <label>Emplacement ou ZG d'arrivée (optionnel)<input id="pathQArr" list="pathList"></label>
+    <label>Sens<select id="pathDir"><option value="aller">Aller</option><option value="retour">Retour</option></select></label>
+    <button id="pathGo">Calculer</button>
+  </div>
+  <div id="pathTree" style="margin-top:12px"></div>
+</section>
+
+<section id="mapWrap" class="panel" hidden>
+  <b>🗺 Carte / plan par magasin</b>
+  <div id="mapBox"><canvas id="mapCv"></canvas><div id="mapTip"></div></div>
+</section>
+
+<section id="matWrap" class="panel" hidden>
+  <b>🏷 Types de matériel & supports</b>
+  <div id="matTypeChips" style="display:flex;flex-wrap:wrap;gap:4px;margin:12px 0"></div>
+  <div id="matTypeDetail" class="card"></div>
+</section>
+
+<!-- PAGE DE CONFIGURATION VISUELLE DES JOINTURES -->
+<section id="configPanel" class="panel" hidden>
+  <div class="expHead">
+    <b>⚙️ Configuration visuelle des jointures</b>
+    <button id="configClose" class="fbtn">Fermer ×</button>
+  </div>
+  
+  <div class="config-toolbar">
+    <button id="configAutoDetect" class="primary">🔍 Détecter automatiquement</button>
+    <button id="configSave">💾 Sauvegarder</button>
+    <button id="configReset">🔄 Réinitialiser</button>
+    <button id="configClear">🗑 Tout effacer</button>
+  </div>
+
+  <div class="config-info">
+    <b>Instructions :</b>
+    <ul style="margin:6px 0;padding-left:20px">
+      <li>Cliquez sur <b>"Détecter automatiquement"</b> pour analyser les fichiers chargés</li>
+      <li><b>Cliquez</b> sur une colonne pour la marquer comme <b>clé primaire</b> (🔑)</li>
+      <li><b>Cliquez-glissez</b> d'une colonne à une autre pour créer une <b>jointure</b></li>
+      <li>Déplacez les fichiers en les faisant glisser par leur titre</li>
+    </ul>
+  </div>
+
+  <div class="config-canvas" id="configCanvas">
+    <svg id="configSvg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"></svg>
+  </div>
+
+  <div id="configStatus" style="margin-top:12px"></div>
+</section>
+
+<div class="tableWrap" id="tableWrap"><table id="grid"></table></div>
+<div id="tableInfo"></div>
+<button id="more" hidden>Afficher 200 lignes de plus</button>
+
+<details class="panel" style="margin-top:16px">
+<summary>📖 Glossaire</summary>
+<ul>
+<li><b>Dépôt (NE1)</b> : le site physique</li>
+<li><b>ZI</b> : Zone d'Intervention</li>
+<li><b>ZE</b> : Zone d'Évolution</li>
+<li><b>ZG</b> : Zone Géographique</li>
+<li><b>Groupe ZG</b> : paquet de ZG pour les flux</li>
+<li><b>Tampon</b> : zone d'attente entre groupes</li>
+</ul>
+</details>
+</main>
 
 <script>
-const STORAGE_KEY = 'jointures_config';
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const N=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const K=(...a)=>a.map(x=>String(x??'').trim()).join('|');
+const uniq=a=>[...new Set(a.filter(x=>x!==undefined&&x!==null&&x!==''))];
+const sortU=a=>uniq(a).sort((x,y)=>String(x).localeCompare(String(y),'fr',{numeric:true}));
+const fmt=n=>Number(n||0).toLocaleString('fr-FR');
+const pf=v=>{const n=parseFloat(String(v??'').replace(',','.'));return isFinite(n)?n:null;};
+const DEPOT_KEEP='NE1';
+const EMPL_NAME_FIELDS=['allee','face','colonne','niveau','empl'];
+const frame=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
+const closeMenus=()=>$$('.menu-item.open').forEach(x=>x.classList.remove('open'));
 
-let config = {
-  files: [],
-  jointures: []
-};
+/* ============================================================ */
+/* ============ CONFIGURATION VISUELLE DES JOINTURES =========== */
+/* ============================================================ */
+const CONFIG_STORAGE_KEY = 'jointures_config';
+let jointuresConfig = { files: [], connections: [] };
+let configNodes = [];
+let draggingNode = null;
+let dragOffset = {x:0, y:0};
+let connecting = null; // {fileId, column, element}
 
-function showStatus(msg, type='success') {
-  const status = document.getElementById('status');
+function showConfigStatus(msg, type='success') {
+  const status = $('#configStatus');
+  if(!status) return;
   status.textContent = msg;
-  status.className = 'show ' + type;
-  setTimeout(() => status.className = '', 3000);
+  status.className = 'config-info';
+  status.style.color = type === 'error' ? 'var(--warn)' : 'var(--ok)';
+  setTimeout(() => status.textContent = '', 3000);
 }
 
-function loadFromStorage() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      config = JSON.parse(saved);
-      renderAll();
-      showStatus('Configuration chargée depuis localStorage');
-    } else {
-      showStatus('Aucune configuration trouvée dans localStorage', 'error');
-    }
-  } catch (err) {
-    showStatus('Erreur de chargement : ' + err.message, 'error');
+function autoDetectColumns() {
+  if(!S.files || Object.keys(S.files).length === 0) {
+    showConfigStatus('Aucun fichier chargé. Chargez d\'abord des fichiers Excel.', 'error');
+    return;
+  }
+
+  jointuresConfig.files = [];
+  jointuresConfig.connections = [];
+  
+  const kinds = Object.keys(S.files);
+  const startX = 50;
+  const startY = 50;
+  const spacingX = 300;
+  
+  kinds.forEach((kind, idx) => {
+    const rows = S.raw[kind] || [];
+    if(rows.length === 0) return;
+    
+    // Extraire les colonnes de la première ligne
+    const columns = Object.keys(rows[0]).filter(k => !k.startsWith('_'));
+    
+    jointuresConfig.files.push({
+      id: kind,
+      name: LABELS[kind] || kind,
+      columns: columns,
+      primaryKeys: [],
+      x: startX + (idx % 3) * spacingX,
+      y: startY + Math.floor(idx / 3) * 300
+    });
+  });
+  
+  // Détection automatique des clés primaires
+  jointuresConfig.files.forEach(file => {
+    const commonPK = ['depot', 'zi', 'ze', 'zg', 'gdep', 'garr', 'code', 'numEmpl'];
+    file.primaryKeys = file.columns.filter(c => commonPK.includes(c));
+  });
+  
+  saveConfigToStorage();
+  renderConfigCanvas();
+  showConfigStatus(`${jointuresConfig.files.length} fichiers détectés avec leurs colonnes`);
+}
+
+function renderConfigCanvas() {
+  const canvas = $('#configCanvas');
+  const svg = $('#configSvg');
+  if(!canvas || !svg) return;
+  
+  // Nettoyer
+  canvas.querySelectorAll('.config-node').forEach(n => n.remove());
+  svg.innerHTML = '';
+  
+  // Créer les nœuds
+  jointuresConfig.files.forEach(file => {
+    const node = document.createElement('div');
+    node.className = 'config-node';
+    node.style.left = file.x + 'px';
+    node.style.top = file.y + 'px';
+    node.dataset.fileId = file.id;
+    
+    node.innerHTML = `
+      <h4>
+        ${esc(file.name)}
+        <button class="close-btn" onclick="removeConfigFile('${file.id}')">×</button>
+      </h4>
+      <div class="config-columns">
+        ${file.columns.map(col => {
+          const isPK = file.primaryKeys.includes(col);
+          return `<div class="config-column ${isPK ? 'primary' : ''}" 
+                       data-file="${file.id}" 
+                       data-col="${col}"
+                       onclick="toggleConfigPK('${file.id}', '${col}')"
+                       onmousedown="startConnection(event, '${file.id}', '${col}')"
+                       onmouseup="endConnection(event, '${file.id}', '${col}')">
+            ${isPK ? '<span class="pk-icon">🔑</span>' : ''}
+            ${esc(col)}
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+    
+    // Drag du nœud
+    node.addEventListener('mousedown', (e) => {
+      if(e.target.classList.contains('config-column') || e.target.classList.contains('close-btn')) return;
+      draggingNode = node;
+      const rect = node.getBoundingClientRect();
+      dragOffset.x = e.clientX - rect.left;
+      dragOffset.y = e.clientY - rect.top;
+      node.classList.add('dragging');
+    });
+    
+    canvas.appendChild(node);
+  });
+  
+  // Dessiner les connexions
+  renderConfigConnections();
+}
+
+function renderConfigConnections() {
+  const svg = $('#configSvg');
+  if(!svg) return;
+  
+  svg.innerHTML = '';
+  
+  jointuresConfig.connections.forEach((conn, idx) => {
+    const fromCol = document.querySelector(`[data-file="${conn.fromFile}"][data-col="${conn.fromCol}"]`);
+    const toCol = document.querySelector(`[data-file="${conn.toFile}"][data-col="${conn.toCol}"]`);
+    
+    if(!fromCol || !toCol) return;
+    
+    const fromRect = fromCol.getBoundingClientRect();
+    const toRect = toCol.getBoundingClientRect();
+    const canvasRect = $('#configCanvas').getBoundingClientRect();
+    
+    const x1 = fromRect.right - canvasRect.left;
+    const y1 = fromRect.top + fromRect.height/2 - canvasRect.top;
+    const x2 = toRect.left - canvasRect.left;
+    const y2 = toRect.top + toRect.height/2 - canvasRect.top;
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const midX = (x1 + x2) / 2;
+    path.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+    path.setAttribute('stroke', 'var(--acc)');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('marker-end', 'url(#arrowhead)');
+    path.style.cursor = 'pointer';
+    path.onclick = () => removeConfigConnection(idx);
+    
+    svg.appendChild(path);
+  });
+  
+  // Ajouter le marqueur de flèche
+  if(!svg.querySelector('defs')) {
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    defs.innerHTML = `
+      <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <polygon points="0 0, 10 3, 0 6" fill="var(--acc)" />
+      </marker>
+    `;
+    svg.insertBefore(defs, svg.firstChild);
   }
 }
 
-function saveToStorage() {
+function startConnection(e, fileId, col) {
+  e.stopPropagation();
+  connecting = {fileId, col, element: e.target};
+  e.target.classList.add('connecting');
+}
+
+function endConnection(e, fileId, col) {
+  if(!connecting) return;
+  e.stopPropagation();
+  
+  if(connecting.fileId !== fileId || connecting.col !== col) {
+    // Créer la connexion
+    jointuresConfig.connections.push({
+      fromFile: connecting.fileId,
+      fromCol: connecting.col,
+      toFile: fileId,
+      toCol: col
+    });
+    saveConfigToStorage();
+    renderConfigConnections();
+    showConfigStatus(`Jointure créée : ${connecting.col} → ${col}`);
+  }
+  
+  connecting.element.classList.remove('connecting');
+  connecting = null;
+}
+
+function toggleConfigPK(fileId, col) {
+  const file = jointuresConfig.files.find(f => f.id === fileId);
+  if(!file) return;
+  
+  const idx = file.primaryKeys.indexOf(col);
+  if(idx >= 0) {
+    file.primaryKeys.splice(idx, 1);
+  } else {
+    file.primaryKeys.push(col);
+  }
+  
+  saveConfigToStorage();
+  renderConfigCanvas();
+}
+
+function removeConfigFile(fileId) {
+  if(!confirm('Supprimer ce fichier de la configuration ?')) return;
+  jointuresConfig.files = jointuresConfig.files.filter(f => f.id !== fileId);
+  jointuresConfig.connections = jointuresConfig.connections.filter(c => c.fromFile !== fileId && c.toFile !== fileId);
+  saveConfigToStorage();
+  renderConfigCanvas();
+}
+
+function removeConfigConnection(idx) {
+  if(!confirm('Supprimer cette jointure ?')) return;
+  jointuresConfig.connections.splice(idx, 1);
+  saveConfigToStorage();
+  renderConfigConnections();
+}
+
+function saveConfigToStorage() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-    updateJsonView();
-    showStatus('Configuration sauvegardée dans localStorage');
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(jointuresConfig));
   } catch (err) {
-    showStatus('Erreur de sauvegarde : ' + err.message, 'error');
+    console.error('Erreur de sauvegarde:', err);
+  }
+}
+
+function loadConfigFromStorage() {
+  try {
+    const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
+    if(saved) {
+      jointuresConfig = JSON.parse(saved);
+      renderConfigCanvas();
+      showConfigStatus('Configuration chargée');
+    }
+  } catch (err) {
+    console.error('Erreur de chargement:', err);
   }
 }
 
 function resetConfig() {
-  if (confirm('Réinitialiser toute la configuration ?')) {
-    config = { files: [], jointures: [] };
-    localStorage.removeItem(STORAGE_KEY);
-    renderAll();
-    showStatus('Configuration réinitialisée');
+  if(!confirm('Réinitialiser toute la configuration ?')) return;
+  jointuresConfig = {files: [], connections: []};
+  localStorage.removeItem(CONFIG_STORAGE_KEY);
+  renderConfigCanvas();
+  showConfigStatus('Configuration réinitialisée');
+}
+
+function clearConfig() {
+  if(!confirm('Effacer complètement la configuration ?')) return;
+  jointuresConfig = {files: [], connections: []};
+  localStorage.removeItem(CONFIG_STORAGE_KEY);
+  renderConfigCanvas();
+  showConfigStatus('Configuration effacée');
+}
+
+// Drag & drop global
+document.addEventListener('mousemove', (e) => {
+  if(!draggingNode) return;
+  
+  const canvas = $('#configCanvas');
+  const canvasRect = canvas.getBoundingClientRect();
+  
+  const x = e.clientX - canvasRect.left - dragOffset.x;
+  const y = e.clientY - canvasRect.top - dragOffset.y;
+  
+  draggingNode.style.left = Math.max(0, x) + 'px';
+  draggingNode.style.top = Math.max(0, y) + 'px';
+  
+  // Mettre à jour la position dans la config
+  const fileId = draggingNode.dataset.fileId;
+  const file = jointuresConfig.files.find(f => f.id === fileId);
+  if(file) {
+    file.x = Math.max(0, x);
+    file.y = Math.max(0, y);
   }
-}
-
-function exportJson() {
-  const blob = new Blob([JSON.stringify(config, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'jointures_config.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  showStatus('Configuration exportée');
-}
-
-function importJson() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json';
-  input.onchange = e => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = evt => {
-      try {
-        config = JSON.parse(evt.target.result);
-        saveToStorage();
-        renderAll();
-        showStatus('Configuration importée avec succès');
-      } catch (err) {
-        showStatus('Erreur d\'import : ' + err.message, 'error');
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-}
-
-function addFile() {
-  const name = prompt('Nom du fichier (ex: F1_depart.xlsx)');
-  if (!name) return;
   
-  const colsStr = prompt('Colonnes séparées par des virgules (ex: depot,zi,gdep,zgDep)');
-  if (!colsStr) return;
-  
-  config.files.push({
-    id: Date.now().toString(),
-    name: name,
-    columns: colsStr.split(',').map(c => c.trim()).filter(Boolean),
-    primaryKey: [],
-    foreignKeys: []
+  renderConfigConnections();
+});
+
+document.addEventListener('mouseup', () => {
+  if(draggingNode) {
+    draggingNode.classList.remove('dragging');
+    draggingNode = null;
+    saveConfigToStorage();
+  }
+  if(connecting) {
+    connecting.element.classList.remove('connecting');
+    connecting = null;
+  }
+});
+
+/* ============================================================ */
+/* ============ CACHE IndexedDB ================================= */
+/* ============================================================ */
+const CACHE_DB_NAME = 'explorateurCache';
+const CACHE_DB_VERSION = 1;
+const CACHE_STORE = 'files';
+let cacheDB = null;
+
+function openCacheDB() {
+  return new Promise((resolve, reject) => {
+    if (cacheDB) { resolve(cacheDB); return; }
+    try {
+      const req = indexedDB.open(CACHE_DB_NAME, CACHE_DB_VERSION);
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(CACHE_STORE)) {
+          d.createObjectStore(CACHE_STORE, { keyPath: 'name' });
+        }
+      };
+      req.onsuccess = e => { cacheDB = e.target.result; resolve(cacheDB); };
+      req.onerror = e => reject(e.target.error);
+    } catch (err) {
+      reject(err);
+    }
   });
-  
-  saveToStorage();
-  renderAll();
 }
 
-function removeFile(id) {
-  if (!confirm('Supprimer ce fichier ?')) return;
-  config.files = config.files.filter(f => f.id !== id);
-  config.jointures = config.jointures.filter(j => j.from !== id && j.to !== id);
-  saveToStorage();
-  renderAll();
-}
-
-function togglePrimaryKey(fileId, col) {
-  const file = config.files.find(f => f.id === fileId);
-  if (!file) return;
-  
-  const idx = file.primaryKey.indexOf(col);
-  if (idx >= 0) {
-    file.primaryKey.splice(idx, 1);
-  } else {
-    file.primaryKey.push(col);
-  }
-  
-  saveToStorage();
-  renderAll();
-}
-
-function addForeignKey(fileId) {
-  const file = config.files.find(f => f.id === fileId);
-  if (!file) return;
-  
-  const targetFile = config.files.find(f => f.id !== fileId);
-  if (!targetFile) {
-    alert('Il faut au moins 2 fichiers pour créer une jointure');
-    return;
-  }
-  
-  file.foreignKeys.push({
-    column: '',
-    targetFile: targetFile.id,
-    targetColumn: ''
-  });
-  
-  saveToStorage();
-  renderAll();
-}
-
-function updateForeignKey(fileId, fkIdx, field, value) {
-  const file = config.files.find(f => f.id === fileId);
-  if (!file || !file.foreignKeys[fkIdx]) return;
-  
-  file.foreignKeys[fkIdx][field] = value;
-  saveToStorage();
-}
-
-function removeForeignKey(fileId, fkIdx) {
-  const file = config.files.find(f => f.id === fileId);
-  if (!file) return;
-  
-  file.foreignKeys.splice(fkIdx, 1);
-  saveToStorage();
-  renderAll();
-}
-
-function renderFiles() {
-  const container = document.getElementById('filesList');
-  
-  if (config.files.length === 0) {
-    container.innerHTML = '<span class="mut">Aucun fichier configuré.</span>';
-    return;
-  }
-  
-  container.innerHTML = config.files.map(file => `
-    <div class="file-card">
-      <h3>
-        ${file.name}
-        <button onclick="removeFile('${file.id}')" style="float:right;padding:4px 8px;font-size:11px">🗑 Supprimer</button>
-      </h3>
-      <div class="mut">Colonnes disponibles :</div>
-      <div class="col-list">
-        ${file.columns.map(col => {
-          const isPK = file.primaryKey.includes(col);
-          const isFK = file.foreignKeys.some(fk => fk.column === col);
-          return `<span class="col-chip ${isPK ? 'key' : ''} ${isFK ? 'fk' : ''}" 
-                       onclick="togglePrimaryKey('${file.id}', '${col}')"
-                       title="${isPK ? 'Clé primaire' : isFK ? 'Clé étrangère' : 'Cliquer pour ajouter à la clé primaire'}">
-            ${col}${isPK ? ' 🔑' : ''}${isFK ? ' 🔗' : ''}
-          </span>`;
-        }).join('')}
-      </div>
-      <div style="margin-top:12px">
-        <div class="mut" style="margin-bottom:6px">Clé primaire : <b class="ok">${file.primaryKey.join(' + ') || 'non définie'}</b></div>
-        <div class="mut" style="margin-bottom:8px">Clés étrangères :</div>
-        ${file.foreignKeys.map((fk, idx) => {
-          const targetFile = config.files.find(f => f.id === fk.targetFile);
-          return `
-            <div class="jointure-row">
-              <select onchange="updateForeignKey('${file.id}', ${idx}, 'column', this.value)">
-                <option value="">Colonne source</option>
-                ${file.columns.map(c => `<option value="${c}" ${fk.column === c ? 'selected' : ''}>${c}</option>`).join('')}
-              </select>
-              <span style="text-align:center">→</span>
-              <select onchange="updateForeignKey('${file.id}', ${idx}, 'targetFile', this.value)">
-                <option value="">Fichier cible</option>
-                ${config.files.filter(f => f.id !== file.id).map(f => 
-                  `<option value="${f.id}" ${fk.targetFile === f.id ? 'selected' : ''}>${f.name}</option>`
-                ).join('')}
-              </select>
-              <select onchange="updateForeignKey('${file.id}', ${idx}, 'targetColumn', this.value)">
-                <option value="">Colonne cible</option>
-                ${targetFile ? targetFile.columns.map(c => 
-                  `<option value="${c}" ${fk.targetColumn === c ? 'selected' : ''}>${c}</option>`
-                ).join('') : ''}
-              </select>
-              <button onclick="removeForeignKey('${file.id}', ${idx})" style="padding:4px 8px;font-size:11px">🗑</button>
-            </div>
-          `;
-        }).join('')}
-        <button onclick="addForeignKey('${file.id}')" style="margin-top:8px;padding:6px 12px;font-size:12px">+ Clé étrangère</button>
-      </div>
-    </div>
-  `).join('') + `
-    <button onclick="addFile()" style="margin-top:12px;padding:8px 16px">+ Ajouter un fichier</button>
-  `;
-}
-
-function updateJsonView() {
-  document.getElementById('jsonConfig').value = JSON.stringify(config, null, 2);
-}
-
-function applyJson() {
+async function cachePutFile(name, kind, buffer) {
   try {
-    const json = document.getElementById('jsonConfig').value;
-    config = JSON.parse(json);
-    saveToStorage();
-    renderAll();
-    showStatus('Configuration JSON appliquée');
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readwrite');
+      tx.objectStore(CACHE_STORE).put({name, kind, buffer, ts: Date.now()});
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = e => reject(e.target.error);
+    });
   } catch (err) {
-    showStatus('JSON invalide : ' + err.message, 'error');
+    console.warn('[cache] Impossible de sauvegarder', name, err);
+    return false;
   }
 }
 
-function renderAll() {
-  renderFiles();
-  updateJsonView();
+async function cacheDeleteFile(name) {
+  try {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readwrite');
+      tx.objectStore(CACHE_STORE).delete(name);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = e => reject(e.target.error);
+    });
+  } catch (err) {
+    console.warn('[cache] Impossible de supprimer', name, err);
+    return false;
+  }
 }
 
-// Event listeners
-document.getElementById('loadBtn').addEventListener('click', loadFromStorage);
-document.getElementById('saveBtn').addEventListener('click', saveToStorage);
-document.getElementById('resetBtn').addEventListener('click', resetConfig);
-document.getElementById('exportBtn').addEventListener('click', exportJson);
-document.getElementById('importBtn').addEventListener('click', importJson);
-document.getElementById('applyJsonBtn').addEventListener('click', applyJson);
+async function cacheGetAll() {
+  try {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readonly');
+      const req = tx.objectStore(CACHE_STORE).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = e => reject(e.target.error);
+    });
+  } catch (err) {
+    console.warn('[cache] Impossible de lire', err);
+    return [];
+  }
+}
 
-// Initial render
-renderAll();
+async function cacheClearAll() {
+  try {
+    const db = await openCacheDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readwrite');
+      tx.objectStore(CACHE_STORE).clear();
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = e => reject(e.target.error);
+    });
+  } catch (err) {
+    console.warn('[cache] Impossible de vider', err);
+    return false;
+  }
+}
+
+async function readBuffer(f) {
+  if (f.buffer instanceof ArrayBuffer) return f.buffer;
+  return await f.arrayBuffer();
+}
+
+/* ========== Reconnaissance des en-têtes ========== */
+const EXACT={depot:'depot',zi:'zi',ze:'ze',zg:'zg',zonegeo:'zg',zonegeoographique:'zg',
+libellezi:'libZI',libellecourtzi:'courtZI',libelleze:'libZE',libellezg:'libZg',
+groupezgdepart:'gdep',groupezgarrivee:'garr',
+libellegroupezgdepart:'libGdep',libellegroupzgdepart:'libGdep',
+libellegroupezgarrivee:'libGarr',libellegroupzgarrivee:'libGarr',
+libellegroupezg:'libGarr',libellegroupzg:'libGarr',
+sequence:'sequence',ordre:'sequence',rang:'sequence',typeemplacement:'typeEmpl',
+libelle:'libTampon',tampon:'tampon',emplacement:'empl',
+empl1:'empl1',empl2:'empl2',empl3:'empl3',empl4:'empl4',empl5:'empl5',
+numeroemplacement:'numEmpl',allee:'allee',face:'face',colonne:'colonne',niveau:'niveau',
+libelletypeemplacement:'libTypeEmpl',zoneinventaire:'zoneInv',codemagasin:'magasin',
+nbsupportsstockable:'nbStock',nbsupportsdispo:'nbDispo',codetaille:'taille',
+topemplstockage:'topStock',topemplpicking:'topPick',toptampon:'topTampon',
+implantationactive:'active',zp:'zp',zs:'zs',positionx:'posX',positiony:'posY',
+code:'code',libellereduit:'libRed',
+emplacement1allee:'allee',emplacement2face:'face',emplacement3colonne:'colonne',
+typemateriel:'typeMat',zoneintervention:'zoneInt',
+typematerielcode:'typeMatCode',typemateriellibelle:'typeMatLib',
+typesupportcode:'typeSupCode',typesupportlibelle:'typeSupLib',
+desactive:'desactive',controle:'controle'};
+
+function guess(raw){
+  const t=N(raw);
+  if(EXACT[t])return EXACT[t];
+  if(/^empl[1-5]$/.test(t))return t;
+  if(t.includes('affecte')&&t.includes('depart'))return 'zgDep';
+  if(t.includes('affecte')&&t.includes('arrive'))return 'zgArr';
+  if(t.includes('libelle')&&t.includes('groupe')&&t.includes('depart'))return 'libGdep';
+  if(t.includes('libelle')&&t.includes('groupe')&&t.includes('arrive'))return 'libGarr';
+  if(t.includes('libelle')&&t.includes('tampon'))return 'libTampon';
+  if(t.includes('groupe')&&t.includes('depart'))return 'gdep';
+  if(t.includes('groupe')&&t.includes('arrive'))return 'garr';
+  if(t.includes('support')&&t.includes('code'))return 'typeSupCode';
+  if(t.includes('support')&&t.includes('libelle'))return 'typeSupLib';
+  if(t.includes('materiel')&&t.includes('code'))return 'typeMatCode';
+  if(t.includes('materiel')&&t.includes('libelle'))return 'typeMatLib';
+  if(t.includes('typemateriel'))return 'typeMat';
+  if(t.includes('zone')&&t.includes('intervention'))return 'zoneInt';
+  if(t.includes('desactive'))return 'desactive';
+  if(t.includes('controle'))return 'controle';
+  if(t.includes('emplacement')&&t.includes('allee'))return 'allee';
+  if(t.includes('emplacement')&&t.includes('face'))return 'face';
+  if(t.includes('emplacement')&&t.includes('colonne'))return 'colonne';
+  if(t.includes('tampon'))return 'tampon';
+  if(t.includes('sequence'))return 'sequence';
+  return null;
+}
+
+function parseSheet(ws,file,sheet){
+  const a=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
+  let best=-1,score=0,map=[];
+  for(let i=0;i<Math.min(a.length,25);i++){
+    const m=(a[i]||[]).map(c=>guess(c)),n=m.filter(Boolean).length;
+    if(n>score){score=n;best=i;map=m;}
+  }
+  if(best<0||score<2)return [];
+  const hdr=a[best]||[],out=[];
+  for(let i=best+1;i<a.length;i++){
+    const row=a[i];if(!row)continue;
+    const vals=row.map(v=>String(v??'').trim());
+    if(!vals.some(v=>v&&v!=='...'))continue;
+    if(vals.every((v,j)=>!map[j]||N(v)===N(hdr[j]||'')))continue;
+    const r={_file:file,_sheet:sheet,_row:i+1,extra:{},_labels:{}};
+    row.forEach((v,j)=>{
+      const s=String(v??'').trim(),k=map[j];
+      if(k){if(s)r[k]=s;}
+      else if(s){const ek='x'+j;r.extra[ek]=s;r._labels[ek]=String(hdr[j]||ek);}
+    });
+    if(r.zi||r.zg||r.gdep||r.numEmpl||r.code||r.typeMatCode||r.typeSupCode)out.push(r);
+  }
+  return out;
+}
+
+function dedup(rows){
+  const seen=new Set(),out=[];let dup=0;
+  rows.forEach(r=>{
+    const sig=JSON.stringify([r.depot,r.zi,r.ze,r.gdep,r.garr,r.zgDep,r.zgArr,r.zg,r.libZg,
+      r.libGdep,r.libGarr,r.libZE,r.libZI,r.sequence,r.empl1,r.empl2,r.empl3,r.numEmpl,
+      r.code,r.typeMat,r.zoneInt,r.typeMatCode,r.typeSupCode,r.extra]);
+    if(seen.has(sig))dup++;else{seen.add(sig);out.push(r);}
+  });
+  return {rows:out,dup};
+}
+
+function detectKind(rows){
+  if(rows.some(r=>r.numEmpl))return 'empl';
+  if(rows.some(r=>r.empl1||r.typeEmpl))return 'tampon';
+  if(rows.some(r=>r.typeSupCode))return 'matsup';
+  if(rows.some(r=>r.typeMat&&r.zoneInt))return 'materiel';
+  if(rows.some(r=>r.desactive!==undefined&&r.code))return 'mattype';
+  if(rows.some(r=>r.zgArr))return 'flux';
+  if(rows.some(r=>r.zgDep))return 'depart';
+  if(rows.some(r=>r.zg))return 'ref';
+  return null;
+}
+
+function detectByName(name){
+  const n=N(name);
+  if(n.includes('support'))return 'matsup';
+  if(n.includes('type'))return 'mattype';
+  if(n.includes('materiel')||n.includes('matos'))return 'materiel';
+  if(n.includes('tampon'))return 'tampon';
+  if(n.includes('zizezg'))return 'ref';
+  if(n.includes('empl'))return 'empl';
+  if(n.includes('arrive'))return 'flux';
+  if(n.includes('depart'))return 'depart';
+  return null;
+}
+
+/* ================= État ================= */
+const LABELS={depart:'F1 · Départ',flux:'F2 · Flux',ref:'F3 · Référentiel',tampon:'F4 · Tampon',empl:'F5 · Emplacements',
+materiel:'F6 · Matériel',mattype:'F7 · Types matériel',matsup:'F8 · Types supports'};
+const KIND_ORDER=['depart','flux','ref','tampon','empl','materiel','mattype','matsup'];
+const CORE_KINDS=['depart','flux','ref','tampon','empl'];
+const OPT_KINDS=['materiel','mattype','matsup'];
+
+const S={raw:{depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]},files:{},stats:{},exclRows:[],
+  flux:[],depart:[],ref:[],empl:[],materiel:[],mattype:[],filters:{},q:'',tab:'accueil',sort:null,limit=200,controls:[],fiche:null,path:null,loading:false,
+  showDrop:true,hasSession:false,posCount:0,mapSel:null,
+  matTypes:[],matSupAll:[],matTypeCount:0,mattypeDes:new Set(),
+  map:{mag:'',mode:'zg',hl:'',tamOnly:localStorage.getItem('zgMapTam')==='1'},
+  mat:{type:'',qsup:'',supFilter:'',supLimit:120},
+  mapCfg:(()=>{try{return JSON.parse(localStorage.getItem('zgMapCfg')||'{}')}catch(e){return{}}})(),
+  _imgs:{},_mapXY:[],_mapGrid:new Map(),
+  pathView:localStorage.getItem('zgPathView')||'simple',
+  simple:localStorage.getItem('zgMode')!=='expert',
+  theme:localStorage.getItem('zgTheme')||'dark',
+  fsz:localStorage.getItem('zgFs')||'0',
+  loadedFiles:[],pendingFiles:[],
+  cachedFiles:[]};
+
+const IDX={dep:new Map(),depByG:new Map(),ref:new Map(),lib:new Map(),byDepZg:new Map(),byArrZg:new Map(),
+  tam5:new Map(),tam4:new Map(),empl:new Map(),fluxDep:new Map(),fluxArr:new Map(),fluxDepZg:new Map(),
+  matByType:new Map(),matByZi:new Map(),supByType:new Map(),typesBySup:new Map()};
+const LAB={zi:new Map(),ze:new Map(),g:new Map(),zg:new Map(),typeMat:new Map(),typeSup:new Map()};
+const DICT={zi:LAB.zi,ze:LAB.ze,g:LAB.g,zg:LAB.zg,typeMat:LAB.typeMat,typeSup:LAB.typeSup};
+const labOf=(c,v)=>{const m=c&&c.dict?DICT[c.dict]:null;return m?(m.get(v)||''):'';};
+
+const INFO={depot:'Site physique (ici NE1).',zi:'Zone d\'Intervention.',ze:'Zone d\'Évolution.',
+gdep:'Groupe de ZG d\'où part le flux.',garr:'Groupe de ZG où arrive le flux.',zgArr:'Zone géographique de destination.',zgDep:'Zone géographique contenue dans le groupe de départ.',
+zg:'Zone géographique.',tamponList:'Tampon(s) traversé(s).',depZGs:'ZG contenues dans le groupe de départ.',
+refZEs:'ZE du référentiel.',nbEmpl:'Nombre d\'emplacements F5.',numEmpl:'Numéro interne.',
+nomEmpl:'Nom complet.',allee:'Allée.',face:'Face.',colonne:'Colonne.',
+niveau:'Niveau.',empl:'Complément.',sequence:'Ordre de priorité.',empl1:'Code principal.',
+empl2:'Sens.',empl3:'Sous-localisation.',libTampon:'Libellé.',inFlux:'Utilisé ?',
+usage:'Utilisée ?',_ctl:'État.',_phrase:'Explication.',zoneInv:'Zone d\'inventaire.',
+magasin:'Code magasin.',nbStock:'Supports stockables.',nbDispo:'Supports disponibles.',libEmpl:'Libellé.',refVia:'ZI/ZE.',
+depGroups:'Groupes de départ.',arrGroups:'Groupes d\'arrivée.',libZg:'Libellé.',libGdep:'Libellé groupe départ.',
+libGarr:'Libellé groupe arrivée.',_lab:'Chemin tampon.',typeEmpl:'Type.',_file:'Fichier.',
+topTampon:'Indicateur tampon.',topStock:'Indicateur stockage.',topPick:'Indicateur picking.',active:'Implantation active ?',zp:'Zone physique ZP.',zs:'Zone physique ZS.',
+posX:'Coordonnée X.',posY:'Coordonnée Y.',taille:'Code taille.',
+matCode:'Code matériel.',libMat:'Libellé matériel.',typeMat:'Type de matériel.',typeLib:'Libellé type.',
+zoneInt:'ZI d\'intervention.',emplMat:'Emplacement parc.',
+nbSup:'Nombre de supports.',
+typeMatCode:'Code type matériel.',libTypeMat:'Libellé type matériel.',desactive:'Type désactivé ?',
+typeSupCode:'Code type support.',typeSupLib:'Libellé type support.'};
+
+function tamponLabel(r){
+  const em=[r.empl1,r.empl2,r.empl3,r.empl4,r.empl5]
+    .map(v=>String(v??'').trim()).filter(v=>v&&v!=='.').join('/');
+  return [r.sequence?('S'+r.sequence):'',em,r.libTampon].filter(Boolean).join(' · ');
+}
+
+function buildEmplName(r){return EMPL_NAME_FIELDS.map(k=>String(r[k]??'').trim()).join('');}
+
+function buildLabels(){
+  [S.raw.depart,S.raw.flux,S.raw.tampon,S.raw.ref,S.raw.empl].forEach(rows=>rows.forEach(r=>{
+    if(r.zi&&!LAB.zi.has(r.zi))LAB.zi.set(r.zi,r.libZI||r.courtZI||'');
+    if(r.ze&&!LAB.ze.has(r.ze))LAB.ze.set(r.ze,r.libZE||'');
+    if(r.gdep&&!LAB.g.has(r.gdep))LAB.g.set(r.gdep,r.libGdep||'');
+    if(r.garr&&!LAB.g.has(r.garr))LAB.g.set(r.garr,r.libGarr||'');
+    if(r.zgArr&&r.libZg&&!LAB.zg.has(r.zgArr))LAB.zg.set(r.zgArr,r.libZg);
+  }));
+}
+
+const gl=(d,v)=>{const l=d.get(v);return l?`${esc(l)} (<b>${esc(v)}</b>)`:`<b>${esc(v)}</b>`;};
+
+function flowHTML(dg,ag,tam,nz,ne){
+  return `<span class="flow"><span class="fbox g">${esc(LAB.g.get(dg)||dg)}</span><span class="farr">→</span>`+
+    `<span class="fbox t">⏳ ${esc(tam||'sans tampon')}</span><span class="farr">→</span>`+
+    `<span class="fbox g">${esc(LAB.g.get(ag)||ag)}</span>`+
+    (nz!=null?`<span class="farr">→</span><span class="fbox z">${fmt(nz)} ZG</span>`:'')+
+    (ne!=null?`<span class="farr">→</span><span class="fbox e">${fmt(ne)} empl.</span>`:'')+`</span>`;
+}
+
+function kindState(k){
+  if(S.files[k])return 'done';
+  if(S.loading)return 'wait';
+  if(S.hasSession&&CORE_KINDS.includes(k))return 'warn';
+  return 'no';
+}
+
+function statusChip(k){
+  const st=kindState(k);
+  const ic=st==='done'?'<span class="ic ok">✓</span>'
+        :st==='wait'?'<span class="spinmini"></span>'
+        :st==='warn'?'<span class="ic warn">!</span>'
+        :'<span class="ic no">○</span>';
+  const n=S.files[k]?` <small>· ${fmt(S.stats[k].n)}</small>`:'';
+  return `<span class="fstatus">${ic} ${esc(LABELS[k])}${n}</span>`;
+}
+
+function renderFileStatus(){
+  const html=KIND_ORDER.map(statusChip).join('');
+  const el=$('#fileStatus');if(el)el.innerHTML=html;
+}
+
+function updateProgress(done, total){
+  const pct = total > 0 ? (done/total*100) : 0;
+  const fill = document.querySelector('#loading .fill');
+  const count = $('#loadCount');
+  if(fill) fill.style.width = pct + '%';
+  if(count) count.textContent = `${done} / ${total}`;
+}
+
+function store(kind,rows,name){
+  if(kind==='empl')rows.forEach(r=>{
+    if(r.libTampon!==undefined){r.libEmpl=r.libTampon;delete r.libTampon;}
+    r.nomEmpl=buildEmplName(r);
+  });
+  if(kind==='materiel')rows.forEach(r=>{
+    r.matCode=r.code||'';
+    r.libMat=r.libTampon||'';delete r.libTampon;
+    r.emplMat=[r.allee,r.face,r.colonne].map(v=>String(v??'').trim()).filter(v=>v&&v!=='.').join('·');
+  });
+  if(kind==='mattype')rows.forEach(r=>{
+    r.typeMatCode=r.code||'';
+    r.libTypeMat=r.libTampon||'';delete r.libTampon;
+  });
+  const kept=[],excl=[];
+  rows.forEach(r=>{if(!r.depot||N(r.depot)===N(DEPOT_KEEP))kept.push(r);else excl.push(r);});
+  S.exclRows=S.exclRows.concat(excl);
+  const d=dedup(kept);
+  S.raw[kind]=d.rows;S.stats[kind]={n:d.rows.length,dup:d.dup,excl:excl.length};S.files[kind]=name;
+}
+
+function showLoad(msg,sub){
+  $('#loadingMsg').textContent=msg;
+  $('#loadingSub').textContent=sub||'Merci de patienter.';
+  $('#loading').hidden=false;
+  renderFileStatus();
+}
+
+function hideLoad(){$('#loading').hidden=true;}
+
+async function processFiles(files){
+  if(!files||!files.length||S.loading)return;
+  S.loading=true;
+  S.loadedFiles = [];
+  
+  showLoad('Préparation du chargement…','0 / '+files.length+' fichier(s)');
+  updateProgress(0, files.length);
+  await frame();
+  
+  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};
+  S.files={};S.stats={};S.exclRows=[];
+  renderFileStatus();
+  
+  let done=0;let i=0;
+  for(const f of files){
+    i++;
+    showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'Ouverture…');
+    await frame();
+    try{
+      const buf = await readBuffer(f);
+      const wb=XLSX.read(buf,{type:'array'});
+      let rows=[];wb.SheetNames.forEach(sn=>{rows=rows.concat(parseSheet(wb.Sheets[sn],f.name,sn));});
+      const kind=detectKind(rows)||detectByName(f.name);
+      
+      if(!kind){
+        cacheDeleteFile(f.name);
+        alert('Fichier non reconnu : '+f.name);
+      } else {
+        store(kind,rows,f.name);
+        await cachePutFile(f.name, kind, buf);
+        showLoad('Lecture du fichier '+i+' / '+files.length+' : '+f.name,'✓ '+fmt(rows.length)+' lignes');
+        renderFileStatus();
+      }
+      
+      done++;
+      updateProgress(done, files.length);
+      await frame();
+    }catch(err){
+      cacheDeleteFile(f.name);
+      done++;
+      updateProgress(done, files.length);
+      alert('Erreur de lecture '+f.name+' : '+err.message);
+    }
+  }
+  showLoad('Calcul des recoupements…',done+' fichier(s) chargé(s)');
+  await frame();
+  try{
+    buildModel();
+    if(done) S.showDrop = false;
+    render();
+    $('#bulkState').innerHTML=done
+      ?`<span class="ok">✓ ${done} fichier(s) chargé(s)</span>`
+      :'<span class="warn">Aucun fichier reconnu</span>';
+  }finally{
+    hideLoad();S.loading=false;S.hasSession=true;renderFileStatus();
+    renderRestoreBanner();
+  }
+}
+
+async function loadFiles(files){
+  return processFiles([...files]);
+}
+
+async function restoreFromCache() {
+  const cached = await cacheGetAll();
+  if (!cached.length) {
+    renderRestoreBanner();
+    return;
+  }
+  S.cachedFiles = cached;
+  return processFiles(cached);
+}
+
+function buildModel(){
+  Object.values(IDX).forEach(m=>m.clear());
+  S.raw.depart.forEach(r=>{
+    const k=K(r.depot,r.zi,r.gdep);
+    if(!IDX.dep.has(k))IDX.dep.set(k,{zgs:new Set(),zes:new Set()});
+    const o=IDX.dep.get(k);
+    if(r.zgDep){o.zgs.add(r.zgDep);const zk=K(r.depot,r.zgDep);
+      if(!IDX.byDepZg.has(zk))IDX.byDepZg.set(zk,new Set());IDX.byDepZg.get(zk).add(r.gdep);}
+    if(r.ze)o.zes.add(r.ze);
+    const kg=K(r.depot,r.gdep);
+    if(!IDX.depByG.has(kg))IDX.depByG.set(kg,{zis:new Set(),zes:new Set(),zgs:new Set()});
+    const og=IDX.depByG.get(kg);
+    if(r.zi)og.zis.add(r.zi);if(r.ze)og.zes.add(r.ze);if(r.zgDep)og.zgs.add(r.zgDep);
+  });
+  S.raw.ref.forEach(r=>{const k=K(r.depot,r.zg);if(!IDX.ref.has(k))IDX.ref.set(k,[]);IDX.ref.get(k).push(r);});
+  const fk5=new Set(),fk4=new Set(),dk4=new Set();
+  S.raw.flux.forEach(r=>{
+    if(r.zgArr&&r.libZg){const k=K(r.depot,r.zgArr);
+      if(!IDX.lib.has(k))IDX.lib.set(k,new Set());IDX.lib.get(k).add(r.libZg);}
+    if(r.zgArr&&r.garr){const k=K(r.depot,r.zgArr);
+      if(!IDX.byArrZg.has(k))IDX.byArrZg.set(k,new Set());IDX.byArrZg.get(k).add(r.garr);}
+    fk5.add(K(r.depot,r.zi,r.ze,r.gdep,r.garr));
+    fk4.add(K(r.depot,r.gdep,r.garr));
+    dk4.add(K(r.depot,r.gdep));
+    const a=K(r.depot,r.gdep);if(!IDX.fluxDep.has(a))IDX.fluxDep.set(a,new Set());IDX.fluxDep.get(a).add(r.garr);
+    const b=K(r.depot,r.garr);if(!IDX.fluxArr.has(b))IDX.fluxArr.set(b,new Set());IDX.fluxArr.get(b).add(r.gdep);
+    const kd=K(r.depot,r.gdep);
+    if(!IDX.fluxDepZg.has(kd))IDX.fluxDepZg.set(kd,new Map());
+    const mm=IDX.fluxDepZg.get(kd);
+    if(!mm.has(r.garr))mm.set(r.garr,new Set());
+    if(r.zgArr)mm.get(r.garr).add(r.zgArr);
+  });
+  S.fluxKeys4=fk4;S.depKeys4=dk4;
+  S.raw.tampon.forEach(r=>{
+    r._label=tamponLabel(r);
+    const k5=K(r.depot,r.zi,r.ze,r.gdep,r.garr),k4=K(r.depot,r.gdep,r.garr);
+    if(!IDX.tam5.has(k5))IDX.tam5.set(k5,[]);IDX.tam5.get(k5).push(r._label);
+    if(!IDX.tam4.has(k4))IDX.tam4.set(k4,[]);IDX.tam4.get(k4).push(r._label);
+    r.hasFlux=fk5.has(k5)||fk4.has(k4);
+  });
+  S.raw.empl.forEach(r=>{
+    const k=K(r.depot,r.zg);
+    if(!IDX.empl.has(k))IDX.empl.set(k,[]);IDX.empl.get(k).push(r);
+  });
+  S.raw.materiel.forEach(r=>{
+    if(r.typeMat){if(!IDX.matByType.has(r.typeMat))IDX.matByType.set(r.typeMat,[]);IDX.matByType.get(r.typeMat).push(r);}
+    if(r.zoneInt){if(!IDX.matByZi.has(r.zoneInt))IDX.matByZi.set(r.zoneInt,[]);IDX.matByZi.get(r.zoneInt).push(r);}
+  });
+  S.raw.matsup.forEach(r=>{
+    if(r.typeMatCode&&r.typeSupCode){
+      if(!IDX.supByType.has(r.typeMatCode))IDX.supByType.set(r.typeMatCode,[]);
+      IDX.supByType.get(r.typeMatCode).push({c:r.typeSupCode,l:r.typeSupLib||''});
+      if(!IDX.typesBySup.has(r.typeSupCode))IDX.typesBySup.set(r.typeSupCode,new Set());
+      IDX.typesBySup.get(r.typeSupCode).add(r.typeMatCode);
+    }
+    if(r.typeSupCode&&!LAB.typeSup.has(r.typeSupCode))LAB.typeSup.set(r.typeSupCode,r.typeSupLib||'');
+    if(r.typeMatCode&&r.typeMatLib&&!LAB.typeMat.has(r.typeMatCode))LAB.typeMat.set(r.typeMatCode,r.typeMatLib);
+  });
+  S.raw.mattype.forEach(r=>{if(r.typeMatCode&&!LAB.typeMat.has(r.typeMatCode))LAB.typeMat.set(r.typeMatCode,r.libTypeMat||'');});
+  S.raw.materiel.forEach(r=>{if(r.typeMat&&!LAB.typeMat.has(r.typeMat))LAB.typeMat.set(r.typeMat,'');});
+  IDX.supByType.forEach(arr=>arr.sort((a,b)=>String(a.c).localeCompare(String(b.c),'fr',{numeric:true})));
+  S.mattypeDes=new Set(S.raw.mattype.filter(r=>TAM_YES.has(N(r.desactive))).map(r=>r.typeMatCode));
+  S.matTypes=sortU([...S.raw.mattype.map(r=>r.typeMatCode),...S.raw.materiel.map(r=>r.typeMat),...S.raw.matsup.map(r=>r.typeMatCode)].filter(Boolean));
+  S.matSupAll=(()=>{const m=new Map();S.raw.matsup.forEach(r=>{if(r.typeSupCode&&!m.has(r.typeSupCode))m.set(r.typeSupCode,r.typeSupLib||'');});
+    return [...m].map(([c,l])=>({c,l})).sort((a,b)=>String(a.c).localeCompare(String(b.c),'fr',{numeric:true}));})();
+  S.matTypeCount=S.matTypes.length;
+  S.materiel=S.raw.materiel.map(r=>({...r,typeLib:LAB.typeMat.get(r.typeMat)||'',nbSup:(IDX.supByType.get(r.typeMat)||[]).length}));
+  S.mattype=S.raw.mattype.map(r=>({...r,nbMat:(IDX.matByType.get(r.typeMatCode)||[]).length,nbSup:(IDX.supByType.get(r.typeMatCode)||[]).length}));
+  S.flux=S.raw.flux.map(r=>{
+    const d=IDX.dep.get(K(r.depot,r.zi,r.gdep));
+    const ref=IDX.ref.get(K(r.depot,r.zgArr))||[];
+    const k5=K(r.depot,r.zi,r.ze,r.gdep,r.garr),k4=K(r.depot,r.gdep,r.garr);
+    const tams=uniq([...(IDX.tam5.get(k5)||[]),...(IDX.tam4.get(k4)||[])]);
+    return {...r,depZGs:d?[...d.zgs].sort():[],refZEs:sortU(ref.map(x=>x.ze)),
+      tamponList:tams,hasDep:!!d,hasRef:ref.length>0};
+  });
+  S.depart=S.raw.depart.map(r=>({...r,
+    refZEs:sortU((IDX.ref.get(K(r.depot,r.zgDep))||[]).map(x=>x.ze)),
+    inFlux:dk4.has(K(r.depot,r.gdep))?'oui':'non'}));
+  S.ref=S.raw.ref.map(r=>({...r,
+    libZg:[...(IDX.lib.get(K(r.depot,r.zg))||[])].join(' / '),
+    depGroups:[...(IDX.byDepZg.get(K(r.depot,r.zg))||[])].sort().join(', '),
+    arrGroups:[...(IDX.byArrZg.get(K(r.depot,r.zg))||[])].sort().join(', ')}));
+  S.empl=S.raw.empl.map(r=>{
+    const ref=IDX.ref.get(K(r.depot,r.zg))||[];
+    return {...r,nomEmpl:buildEmplName(r),px:pf(r.posX),py:pf(r.posY),
+      refVia:sortU(ref.map(x=>x.zi+'/'+x.ze)),
+      depGroups:[...(IDX.byDepZg.get(K(r.depot,r.zg))||[])].sort().join(', '),
+      arrGroups:[...(IDX.byArrZg.get(K(r.depot,r.zg))||[])].sort().join(', ')};
+  });
+  S.posCount=S.empl.filter(r=>r.px!=null&&r.py!=null).length;
+  buildLabels();
+  S.controls=makeControls();
+}
+
+const emplCount=(depot,zg)=>{const a=IDX.empl.get(K(depot,zg));return a?a.length:0;};
+
+function makeControls(){
+  const out=[];
+  const grp=(rows,fn,tab)=>{
+    const m=new Map();
+    rows.forEach(r=>{const o=fn(r);if(!o)return;const k=JSON.stringify(o);
+      if(!m.has(k))m.set(k,{o,n:0});m.get(k).n++;});
+    return [...m.values()].map(({o,n})=>({code:Object.values(o).join(' → '),n,tab,filters:o}))
+      .sort((a,b)=>b.n-a.n);
+  };
+  const add=(title,hint,items)=>{if(items.length)out.push({title,hint,items});};
+  add('Flux sans tampon','Aucune ligne F4.',
+    grp(S.flux.filter(r=>!r.tamponList.length),r=>r.gdep&&r.garr?{gdep:r.gdep,garr:r.garr}:null,'flux'));
+  add('Tampons sans flux','Ligne F4 orpheline.',
+    grp(S.raw.tampon.filter(r=>!r.hasFlux),r=>r.gdep&&r.garr?{gdep:r.gdep,garr:r.garr}:null,'tampon'));
+  return out;
+}
+
+const C=(k,l,ex={})=>({k,l,dim:false,get:r=>r[k]??'',...ex});
+const MULTI=(k,l,ex={})=>C(k,l,{dim:true,vals:r=>r[k]||[],has:(r,v)=>(r[k]||[]).some(t=>String(t).includes(v)),get:r=>(r[k]||[]).join(', '),...ex});
+const FICHE=(k,getCode)=>C(k,'📄',{btn:r=>{const v=getCode(r);return v?`<button class="fbtn" data-fiche="zg:${esc(v)}">📄</button>`:'';}});
+const zgLab=z=>(LAB.zg.get(z)?LAB.zg.get(z)+' ('+z+')':z);
+const gLab=g=>(LAB.g.get(g)||g);
+
+const COLS={
+ accueil:[],carte:[],mattype:[],config:[],
+ flux:[
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('zi','ZI',{dim:true,dict:'zi'}),
+  C('ze','ZE',{dim:true,dict:'ze'}),
+  C('gdep','Groupe départ',{dim:true,dict:'g'}),
+  C('garr','Groupe arrivée',{dim:true,dict:'g'}),
+  C('zgArr','ZG arrivée',{dim:true,dict:'zg'}),
+  FICHE('_fiche',r=>r.zgArr),
+  MULTI('tamponList','Tampon',{dict:'tam'}),
+  C('_ctl','Contrôle',{get:r=>{
+    const w=[];
+    if(!r.hasDep)w.push('groupe départ absent');
+    if(!r.hasRef)w.push('ZG sans ZE');
+    if(!(r.tamponList||[]).length)w.push('aucun tampon');
+    return w.length?('À vérifier : '+w.join(' · ')):'OK';},lSimple:'État'}),
+ ],
+ depart:[
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('zi','ZI',{dim:true,dict:'zi'}),C('ze','ZE',{dim:true,dict:'ze'}),
+  C('gdep','Groupe départ',{dim:true,dict:'g'}),
+  C('zgDep','ZG départ',{dim:true,dict:'zg'}),
+  FICHE('_fiche',r=>r.zgDep),
+ ],
+ ref:[
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('zi','ZI',{dim:true,dict:'zi'}),C('ze','ZE',{dim:true,dict:'ze'}),
+  C('zg','ZG',{dim:true,dict:'zg'}),
+  FICHE('_fiche',r=>r.zg),
+ ],
+ tampon:[
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('zi','ZI',{dim:true,dict:'zi'}),C('ze','ZE',{dim:true,dict:'ze'}),
+  C('gdep','Groupe départ',{dim:true,dict:'g'}),C('garr','Groupe arrivée',{dim:true,dict:'g'}),
+  C('sequence','Séquence',{dim:true}),
+  C('empl1','EMPL 1',{dim:true}),
+  C('libTampon','Libellé',{dim:true}),
+ ],
+ empl:[
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('numEmpl','N° emplacement',{dim:true}),
+  C('nomEmpl','Nom emplacement',{dim:true}),
+  C('zg','ZG',{dim:true,dict:'zg'}),
+  FICHE('_fiche',r=>r.zg),
+  C('_path','🧭',{btn:r=>`<button class="fbtn" data-path="${esc(r.nomEmpl)}">🧭</button>`}),
+  C('allee','Allée',{dim:true}),C('face','Face',{dim:true}),
+  C('colonne','Colonne',{dim:true}),C('niveau','Niveau',{dim:true}),
+ ],
+ materiel:[
+  C('depot','Dépôt',{dim:true,expertOnly:true}),
+  C('matCode','Code matériel',{dim:true}),
+  C('libMat','Libellé matériel'),
+  C('typeMat','Type de matériel',{dim:true,dict:'typeMat'}),
+  C('zoneInt','ZI intervention',{dim:true,dict:'zi'}),
+ ],
+ excl:[
+  C('_file','Fichier'),C('depot','Dépôt',{dim:true}),
+  C('zg','ZG',{dim:true,dict:'zg'}),C('numEmpl','N° emplacement'),
+  C('nomEmpl','Nom emplacement'),
+ ],
+ arbre:[],chemin:[],ecart:[]
+};
+
+function cols(){
+  let cs=COLS[S.tab]||[];
+  if(S.tab==='tampon')cs=cs.filter(c=>S.raw.tampon.some(r=>String(c.get(r))!==''));
+  cs=S.simple?cs.filter(c=>!c.expertOnly):cs.filter(c=>!c.simpleOnly);
+  return cs;
+}
+
+const lbl=c=>(S.simple&&c.lSimple)?c.lSimple:c.l;
+function colDef(k){return cols().find(c=>c.k===k);}
+function baseRows(){return ({flux:S.flux,depart:S.depart,ref:S.ref,tampon:S.raw.tampon,empl:S.empl,materiel:S.materiel,excl:S.exclRows,ecart:[],arbre:[],chemin:[],accueil:[],carte:[],mattype:[],config:[]})[S.tab]||[];}
+function withSearch(rows){if(!S.q)return rows;const q=N(S.q);return rows.filter(r=>N(JSON.stringify(r)).includes(q));}
+function matchRow(c,r,v){return c.has?c.has(r,v):String(c.get(r))===v;}
+function filtered(){
+  let rows=withSearch(baseRows());
+  cols().filter(c=>c.dim&&S.filters[c.k]!=null).forEach(c=>{rows=rows.filter(r=>matchRow(c,r,S.filters[c.k]));});
+  if(S.sort){const c=colDef(S.sort.k);
+    if(c)rows=[...rows].sort((a,b)=>String(c.get(a)).localeCompare(String(c.get(b)),'fr',{numeric:true})*S.sort.dir);}
+  return rows;
+}
+
+function renderHome(){
+  const box=$('#home');
+  const has=Object.keys(S.files).length>0;
+  if(S.tab!=='accueil'){box.hidden=true;box.innerHTML='';return;}
+  box.hidden=false;
+  if(!has){
+    box.innerHTML=`<b>👋 Bienvenue</b>
+      <div class="homeGrid" style="margin-top:12px">
+        <button class="homeCard" data-home="load"><b>1 · Charger vos fichiers</b><small>Glissez-déposez vos classeurs Excel</small></button>
+        <button class="homeCard" data-home="config"><b>2 · Configurer les jointures</b><small>Interface visuelle pour relier les fichiers</small></button>
+      </div>`;
+  }else{
+    box.innerHTML=`<b>🏠 Tableau de bord</b>
+      <div class="homeGrid" style="margin-top:12px">
+        <button class="homeCard" data-home="flux"><b>📦 Flux</b><small>${fmt(S.flux.length)} lignes</small></button>
+        <button class="homeCard" data-home="empl"><b>📍 Emplacements</b><small>${fmt(S.empl.length)} emplacements</small></button>
+        <button class="homeCard" data-home="config"><b>⚙️ Configuration</b><small>Gérer les jointures</small></button>
+      </div>`;
+  }
+}
+
+function renderMenu(){
+  const has=Object.keys(S.files).length;
+  $('#menuBar').innerHTML=
+    `<button class="menu-item${S.tab==='accueil'?' active':''}" data-go="accueil">🏠 Accueil</button>`+
+    `<button class="menu-item" id="menuChargement">📂 Chargement <span class="mbadge ${has?'ok':'warn'}">${has}/8</span></button>`;
+}
+
+function renderStats(){
+  const ec=S.controls.reduce((s,c)=>s+c.items.length,0);
+  $('#kpis').innerHTML=[
+    ['Lignes de flux',fmt(S.flux.length)],
+    ['Emplacements',fmt(S.empl.length)],
+    ['Écarts détectés',fmt(ec)]
+  ].map(([l,v])=>`<div class="kpi"><small>${l}</small><b>${v}</b></div>`).join('');
+}
+
+function renderFilters(){
+  const dims=cols().filter(c=>c.dim);
+  let html='';
+  dims.forEach(c=>{
+    let pool=withSearch(baseRows());
+    dims.filter(d=>d.k!==c.k&&S.filters[d.k]!=null).forEach(d=>{pool=pool.filter(r=>matchRow(d,r,S.filters[d.k]));});
+    const vals=sortU(pool.flatMap(r=>c.vals?c.vals(r):[c.get(r)]));
+    const cur=S.filters[c.k]??'';
+    html+=`<label>${esc(lbl(c))}<select data-filter="${c.k}"><option value="">Tous</option>${
+      vals.map(v=>`<option value="${esc(v)}" ${String(v)===cur?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
+  });
+  $('#fselects').innerHTML=html||'<span class="mut">Filtres disponibles.</span>';
+}
+
+function renderGrid(){
+  const cs=cols(),rows=filtered(),grid=$('#grid');
+  if(!cs.length){grid.innerHTML='';$('#tableInfo').textContent='';$('#more').hidden=true;return;}
+  let html='<thead><tr>'+cs.map(c=>`<th><button class="th" data-explorer="${c.k}">${esc(lbl(c))}</button>
+    <button class="sort" data-sort="${c.k}">${S.sort&&S.sort.k===c.k?(S.sort.dir>0?'↑':'↓'):'↕'}</button></th>`).join('')+'</tr></thead><tbody>';
+  rows.slice(0,S.limit).forEach(r=>{
+    html+='<tr>'+cs.map(c=>{
+      if(c.btn)return `<td>${c.btn(r)}</td>`;
+      const vals=(c.vals?c.vals(r):[c.get(r)]).filter(v=>v!==''&&v!=null);
+      return `<td class="${c.cls||'plain'}">${esc(vals.join(' · ')||'—')}</td>`;
+    }).join('')+'</tr>';
+  });
+  html+='</tbody>';
+  grid.innerHTML=rows.length?html:`<thead><tr>${cs.map(c=>`<th>${esc(lbl(c))}</th>`).join('')}</tr></thead><tbody><tr><td colspan="${cs.length}" class="mut">Aucune ligne.</td></tr></tbody>`;
+  $('#tableInfo').textContent=`${fmt(Math.min(rows.length,S.limit))} ligne(s) sur ${fmt(rows.length)}`;
+  $('#more').hidden=rows.length<=S.limit;
+}
+
+function renderRestoreBanner() {
+  const banner = $('#restoreBanner');
+  if (!banner) return;
+  const hasLoaded = Object.keys(S.files).length > 0;
+  const show = S.cachedFiles.length > 0 && !hasLoaded && !S.loading;
+  banner.hidden = !show;
+}
+
+function render(){
+  const valid=new Set(cols().filter(c=>c.dim).map(c=>c.k));
+  Object.keys(S.filters).forEach(k=>{if(!valid.has(k))delete S.filters[k];});
+  const hasFiles=Object.keys(S.files).length>0;
+  
+  const showLoadUI = (!hasFiles || S.showDrop) && !S.loading;
+  $('#drop').hidden = !showLoadUI;
+  $('#dropHide').hidden = !hasFiles;
+  
+  renderRestoreBanner();
+  renderMenu();renderStats();
+  $('#kpis').hidden = hasFiles;
+  renderHome();renderFilters();
+  
+  const isHome=S.tab==='accueil',isConfig=S.tab==='config';
+  const hideTable=isHome||isConfig;
+  
+  $('#configPanel').hidden=!isConfig;
+  $('#tableWrap').style.display=hideTable?'none':'';
+  $('#tableInfo').style.display=hideTable?'none':'';
+  $('#filterPanel').style.display=(isHome||isConfig)?'none':'';
+  
+  if(isConfig){
+    loadConfigFromStorage();
+    $('#more').hidden=true;
+  }
+  else if(!isHome)renderGrid();
+}
+
+const FS=['14.5px','16px','17.5px'],FL=['A','A+','A++'];
+function applyTheme(){
+  document.body.classList.toggle('light',S.theme==='light');
+  document.documentElement.style.setProperty('--fs',FS[+S.fsz||0]);
+}
+
+async function clearAll(){
+  S.raw={depart:[],flux:[],ref:[],tampon:[],empl:[],materiel:[],mattype:[],matsup:[]};S.files={};S.stats={};S.exclRows=[];
+  S.filters={};S.q='';$('#q').value='';S.limit=200;S.tab='accueil';S.showDrop=true;S.hasSession=false;
+  $('#bulk').value='';$('#bulkState').textContent='Aucun fichier chargé';
+  await cacheClearAll();
+  S.cachedFiles = [];
+  buildModel();render();
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  
+  if(b.id==='configClose'){S.tab='accueil';render();return;}
+  if(b.id==='configAutoDetect'){autoDetectColumns();return;}
+  if(b.id==='configSave'){saveConfigToStorage();showConfigStatus('Configuration sauvegardée');return;}
+  if(b.id==='configReset'){resetConfig();return;}
+  if(b.id==='configClear'){clearConfig();return;}
+  
+  if(b.id==='menuChargement'){
+    const hasF=Object.keys(S.files).length>0;
+    if(!hasF){S.showDrop=true;render();$('#drop').scrollIntoView({behavior:'smooth',block:'center'});return;}
+    S.showDrop=!S.showDrop;render();
+    return;
+  }
+  
+  if(b.dataset.home){
+    const h=b.dataset.home;
+    if(h==='load'){$('#bulk').click();return;}
+    if(h==='restore'){restoreFromCache();return;}
+    S.tab=h;render();return;
+  }
+  
+  if(b.id==='more'){S.limit+=200;renderGrid();return;}
+  
+  if(b.dataset.go){closeMenus();S.tab=b.dataset.go;S.filters={};S.sort=null;S.limit=200;render();return;}
+  
+  if(b.id==='restoreBtn'){restoreFromCache();return;}
+  if(b.id==='cacheClearBtn'){
+    if(confirm('Effacer le cache ?')){
+      cacheClearAll().then(() => {
+        S.cachedFiles = [];
+        renderRestoreBanner();
+        render();
+      });
+    }
+    return;
+  }
+});
+
+document.addEventListener('change',e=>{
+  if(e.target.dataset.filter){
+    const k=e.target.dataset.filter,v=e.target.value;
+    if(v)S.filters[k]=v;else delete S.filters[k];
+    S.limit=200;render();
+  }
+});
+
+document.addEventListener('input',e=>{
+  // Gestion des inputs
+});
+
+$('#q').addEventListener('input',e=>{S.q=e.target.value;S.limit=200;renderFilters();renderGrid();});
+$('#bulk').addEventListener('change',e=>{loadFiles([...e.target.files]);e.target.value='';});
+
+const dz=$('#drop');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');loadFiles([...e.dataTransfer.files]);});
+
+document.addEventListener('dragover',e=>{
+  if($('#drop').hidden && e.dataTransfer && [...(e.dataTransfer.types||[])].includes('Files')) {
+    e.preventDefault();
+  }
+});
+
+document.addEventListener('drop',e=>{
+  if(e.target.closest('#drop')) return;
+  if($('#drop').hidden && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length){
+    e.preventDefault();
+    loadFiles([...e.dataTransfer.files]);
+  }
+});
+
+if(typeof XLSX==='undefined'){
+  $('#notice').hidden=false;
+  $('#notice').textContent='Librairie SheetJS non chargée.';
+}
+
+applyTheme();
+buildModel();render();
+
+(async () => {
+  try {
+    await openCacheDB();
+    S.cachedFiles = await cacheGetAll();
+    renderRestoreBanner();
+    render();
+  } catch (err) {
+    console.warn('[cache] IndexedDB indisponible :', err);
+  }
+})();
 </script>
-
 </body>
 </html>
